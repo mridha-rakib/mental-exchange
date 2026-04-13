@@ -1,0 +1,60 @@
+import express from 'express';
+import pb from '../utils/pocketbaseClient.js';
+import logger from '../utils/logger.js';
+
+const router = express.Router();
+
+const escapeFilterValue = (value) => String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+
+const formatProduct = (record, source) => ({
+  id: record.id,
+  collectionId: record.collectionId,
+  collectionName: record.collectionName,
+  name: record.name,
+  description: record.description || '',
+  price: record.price,
+  image: record.image || null,
+  condition: record.condition || null,
+  fachbereich: record.fachbereich || [],
+  product_type: record.product_type || (source === 'shop' ? 'shop' : 'Article'),
+  source,
+});
+
+router.get('/', async (req, res) => {
+  const query = String(req.query.query || '').trim();
+  const limit = Math.min(parseInt(req.query.limit, 10) || 8, 20);
+
+  if (query.length < 2) {
+    return res.json({ items: [] });
+  }
+
+  const search = escapeFilterValue(query);
+  const marketplaceFilter = `(name~"${search}" || description~"${search}" || seller_username~"${search}") && status="active"`;
+  const shopFilter = `(name~"${search}" || description~"${search}")`;
+
+  const [marketplaceProducts, shopProducts] = await Promise.all([
+    pb.collection('products').getList(1, limit, {
+      filter: marketplaceFilter,
+      sort: '-created',
+    }).catch((error) => {
+      logger.warn(`[SEARCH] Marketplace search failed: ${error.message}`);
+      return { items: [] };
+    }),
+    pb.collection('shop_products').getList(1, limit, {
+      filter: shopFilter,
+      sort: '-created',
+    }).catch((error) => {
+      logger.warn(`[SEARCH] Shop search failed: ${error.message}`);
+      return { items: [] };
+    }),
+  ]);
+
+  const items = [
+    ...marketplaceProducts.items.map((record) => formatProduct(record, 'marketplace')),
+    ...shopProducts.items.map((record) => formatProduct(record, 'shop')),
+  ].slice(0, limit);
+
+  res.json({ items });
+});
+
+export default router;

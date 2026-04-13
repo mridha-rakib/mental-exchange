@@ -1,0 +1,56 @@
+[INFO] Connecting to PocketBase at http://localhost:8090
+[INFO] [CHECKOUT] Configuration loaded from environment variables
+[INFO] [CHECKOUT] Frontend URL: https://ee44c44d-e3d6-46f2-a1fd-aa631a0ae621.app-preview.com
+[INFO] [DHL-SERVICE] DHL Configuration loaded from environment variables
+[INFO] [DHL-SERVICE] Token URL: https://api-eu.dhl.com/parcel/de/account/auth/ropc/v1/token
+[INFO] [DHL-SERVICE] Shipping URL: https://api-eu.dhl.com/parcel/de/shipping/v2/orders
+[INFO] [DHL-SERVICE] Warehouse: Patrick Tchoquessi, Angelika-machinek-Straße 12, 60486 Frankfurt, DE
+[INFO] [MAIN] Registering Stripe webhook handler
+[INFO] [MAIN] Registering auth middleware BEFORE routes
+[INFO] [MAIN] Mounting routes
+[INFO] [ROUTES] Registering /checkout routes
+[INFO] [ROUTES] Registering /dhl-labels routes
+[INFO] [ROUTES] Registering /favorites routes
+[INFO] [ROUTES] Registering /admin routes
+[INFO] [ROUTES] Registering /email routes
+[INFO] [ROUTES] Registering /verification routes
+[INFO] [ROUTES] Registering /orders routes
+[INFO] [ROUTES] Registering /search routes
+[INFO] [ROUTES] Registering /settings routes
+[INFO] [ROUTES] Stripe webhook is registered in main.js with express.raw() middleware
+[INFO] [ROUTES] All routes registered successfully
+[INFO] 🚀 API Server running on http://localhost:3001
+[INFO] PocketBase client initialized successfully
+[INFO] [AUTH] Authorization header received: MISSING
+[WARN] [AUTH] FAILED: Authorization header is missing
+::1 - - [11/Apr/2026:21:29:18 +0000] "GET /settings/fees HTTP/1.1" 200 92 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.7920"
+[INFO] [AUTH] Authorization header received: MISSING
+[WARN] [AUTH] FAILED: Authorization header is missing
+::1 - - [11/Apr/2026:21:29:18 +0000] "GET /search?query=test HTTP/1.1" 200 12 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.7920"
+[INFO] [AUTH] Authorization header received: MISSING
+[WARN] [AUTH] FAILED: Authorization header is missing
+::1 - - [11/Apr/2026:21:29:33 +0000] "GET /settings/fees HTTP/1.1" 200 92 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.7920"
+[INFO] [AUTH] Authorization header received: MISSING
+[WARN] [AUTH] FAILED: Authorization header is missing
+::1 - - [11/Apr/2026:21:29:33 +0000] "GET /search?query=test HTTP/1.1" 200 12 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.7920"
+[INFO] [AUTH] Authorization header received: MISSING
+[WARN] [AUTH] FAILED: Authorization header is missing
+::1 - - [11/Apr/2026:21:29:59 +0000] "GET /settings/fees HTTP/1.1" 200 93 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.7920"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Attempting authentication via PocketBase authStore...
+[INFO] [AUTH] pb.authStore available: YES
+[INFO] [AUTH] Token saved to pb.authStore
+[INFO] [AUTH] pb.authStore.isValid AFTER save: true
+[INFO] [AUTH] pb.authStore.record AFTER save: NULL
+[WARN] [AUTH] PocketBase authStore.record is NULL or missing ID after save - attempting JWT fallback
+[INFO] [AUTH] Attempting manual JWT decoding fallback...
+[INFO] [AUTH] JWT decoded successfully. Payload keys: collectionId, exp, id, refreshable, type
+[INFO] [AUTH] JWT sub (user ID): MISSING
+[INFO] [AUTH] JWT id (user ID): erq3h5qqq23d3x2
+[INFO] [AUTH] Extracted user ID from JWT: erq3h5qqq23d3x2
+[INFO] [AUTH] Querying PocketBase for user record - ID: erq3h5qqq23d3x2
+[INFO] [AUTH] User record found in PocketBase - Email: rmridha.diu@gmail.com
+[INFO] [AUTH] SUCCESS via JWT fallback - User ID: erq3h5qqq23d3x2, Email: rmridha.diu@gmail.com, Admin: false
+[WARN] [SETTINGS] Falling back to defaults: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [11/Apr/2026:21:30:46 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"

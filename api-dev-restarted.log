@@ -1,0 +1,78 @@
+[INFO] Connecting to PocketBase at http://localhost:8090
+[INFO] [CHECKOUT] Configuration loaded from environment variables
+[INFO] [CHECKOUT] Frontend URL: https://ee44c44d-e3d6-46f2-a1fd-aa631a0ae621.app-preview.com
+[INFO] [DHL-SERVICE] DHL Configuration loaded from environment variables
+[INFO] [DHL-SERVICE] Token URL: https://api-eu.dhl.com/parcel/de/account/auth/ropc/v1/token
+[INFO] [DHL-SERVICE] Shipping URL: https://api-eu.dhl.com/parcel/de/shipping/v2/orders
+[INFO] [DHL-SERVICE] Warehouse: Patrick Tchoquessi, Angelika-machinek-Straße 12, 60486 Frankfurt, DE
+[INFO] [MAIN] Registering Stripe webhook handler
+[INFO] [MAIN] Registering auth middleware BEFORE routes
+[INFO] [MAIN] Mounting routes
+[INFO] [ROUTES] Registering /checkout routes
+[INFO] [ROUTES] Registering /dhl-labels routes
+[INFO] [ROUTES] Registering /favorites routes
+[INFO] [ROUTES] Registering /admin routes
+[INFO] [ROUTES] Registering /email routes
+[INFO] [ROUTES] Registering /verification routes
+[INFO] [ROUTES] Registering /orders routes
+[INFO] [ROUTES] Registering /search routes
+[INFO] [ROUTES] Registering /settings routes
+[INFO] [ROUTES] Registering /seller routes
+[INFO] [ROUTES] Stripe webhook is registered in main.js with express.raw() middleware
+[INFO] [ROUTES] All routes registered successfully
+[INFO] 🚀 API Server running on http://localhost:3001
+[INFO] PocketBase client initialized successfully
+[INFO] [AUTH] Authorization header received: MISSING
+[WARN] [AUTH] FAILED: Authorization header is missing
+[INFO] [HEALTH CHECK] Health check request - Timestamp: 2026-04-12T20:08:55.771Z
+::ffff:127.0.0.1 - - [12/Apr/2026:20:08:55 +0000] "GET /health HTTP/1.1" 200 54 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.7920"
+[INFO] [AUTH] Authorization header received: MISSING
+[WARN] [AUTH] FAILED: Authorization header is missing
+[INFO] [AUTH] Authorization header received: MISSING
+[WARN] [AUTH] FAILED: Authorization header is missing
+[WARN] [AUTH] Unauthorized access attempt - no valid authentication
+[ERROR] Unauthorized: Authentication required Error: Unauthorized: Authentication required
+    at requireAuth (file:///C:/Users/rakib_2zl331p/Downloads/horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17%20(1)/apps/api/src/middleware/auth.js:87:19)
+    at Layer.handleRequest (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\index.js:295:15
+    at processParams (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\index.js:582:12)
+    at next (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\index.js:291:5)
+    at auth (file:///C:/Users/rakib_2zl331p/Downloads/horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17%20(1)/apps/api/src/middleware/auth.js:27:12)
+::ffff:127.0.0.1 - - [12/Apr/2026:20:08:55 +0000] "POST /seller/activate HTTP/1.1" 401 1770 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.7920"
+[INFO] [AUTH] Authorization header received: MISSING
+[WARN] [AUTH] FAILED: Authorization header is missing
+[INFO] [HEALTH CHECK] Health check request - Timestamp: 2026-04-12T20:09:09.680Z
+::ffff:127.0.0.1 - - [12/Apr/2026:20:09:09 +0000] "GET /health HTTP/1.1" 200 54 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.7920"
+[INFO] [AUTH] Authorization header received: MISSING
+[WARN] [AUTH] FAILED: Authorization header is missing
+[INFO] [AUTH] Authorization header received: MISSING
+[WARN] [AUTH] FAILED: Authorization header is missing
+[WARN] [AUTH] Unauthorized access attempt - no valid authentication
+[ERROR] Unauthorized: Authentication required Error: Unauthorized: Authentication required
+    at requireAuth (file:///C:/Users/rakib_2zl331p/Downloads/horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17%20(1)/apps/api/src/middleware/auth.js:87:19)
+    at Layer.handleRequest (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\index.js:295:15
+    at processParams (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\index.js:582:12)
+    at next (C:\Users\rakib_2zl331p\Downloads\horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17 (1)\node_modules\router\index.js:291:5)
+    at auth (file:///C:/Users/rakib_2zl331p/Downloads/horizons-export-ee44c44d-e3d6-46f2-a1fd-aa631a0ae621-17%20(1)/apps/api/src/middleware/auth.js:27:12)
+::ffff:127.0.0.1 - - [12/Apr/2026:20:09:09 +0000] "POST /seller/activate HTTP/1.1" 401 1770 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.7920"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: x2xyt0hqwqf0u2l, Email: codex-seller-test-1776024564212@example.test, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: x2xyt0hqwqf0u2l, Email: codex-seller-test-1776024564212@example.test, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: x2xyt0hqwqf0u2l
+[INFO] [SELLER] Seller activation attempted for user: x2xyt0hqwqf0u2l
+[INFO] [SELLER] Username provided: codextest1776024564212
+[INFO] [SELLER] Seller account activated successfully for user: x2xyt0hqwqf0u2l
+[INFO] [SELLER] Seller account activated for user x2xyt0hqwqf0u2l with username codextest1776024564212
+::ffff:127.0.0.1 - - [12/Apr/2026:20:09:24 +0000] "POST /seller/activate HTTP/1.1" 200 238 "-" "node"

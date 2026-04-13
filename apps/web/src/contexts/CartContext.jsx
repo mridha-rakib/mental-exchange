@@ -1,0 +1,236 @@
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import pb from '@/lib/pocketbaseClient.js';
+import apiServerClient from '@/lib/apiServerClient.js';
+import { useAuth } from './AuthContext.jsx';
+
+const CartContext = createContext();
+
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within CartProvider');
+  }
+  return context;
+};
+
+export const CartProvider = ({ children }) => {
+  const { currentUser } = useAuth();
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [settings, setSettings] = useState({ shipping_fee: 4.99, service_fee: 1.99 });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await apiServerClient.fetch('/settings/fees');
+        if (!response.ok) throw new Error('Failed to fetch fees');
+
+        const data = await response.json();
+        setSettings(prev => {
+          const next = {
+            shipping_fee: data.shipping_fee ?? 4.99,
+            service_fee: data.service_fee ?? 1.99,
+          };
+
+          if (prev.shipping_fee === next.shipping_fee && prev.service_fee === next.service_fee) {
+            return prev;
+          }
+
+          return next;
+        });
+      } catch (error) {
+        console.error('Failed to fetch platform fees:', error);
+      }
+    };
+
+    fetchSettings();
+    const interval = setInterval(fetchSettings, 30000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log('🔄 useEffect triggered in CartContext (Load LocalStorage)');
+    const savedCart = localStorage.getItem('shopping_cart');
+    if (savedCart) {
+      try {
+        setCartItems(JSON.parse(savedCart));
+      } catch (e) {
+        console.error('Failed to parse cart from localStorage', e);
+      }
+    }
+  }, []);
+
+  const loadCart = useCallback(async () => {
+    if (!currentUser) return;
+
+    setLoading(true);
+    try {
+      const items = await pb.collection('cart_items').getFullList({
+        filter: `user_id = "${currentUser.id}"`,
+        $autoCancel: false
+      });
+
+      const itemsWithProducts = await Promise.all(
+        items.map(async (item) => {
+          try {
+            let product;
+            if (item.product_type === 'shop') {
+              product = await pb.collection('shop_products').getOne(item.product_id, { $autoCancel: false });
+            } else {
+              product = await pb.collection('products').getOne(item.product_id, { $autoCancel: false });
+            }
+            return { ...item, product };
+          } catch (err) {
+            return null;
+          }
+        })
+      );
+
+      const validItems = itemsWithProducts.filter(item => item !== null);
+      setCartItems(validItems);
+    } catch (error) {
+      console.error('Failed to load cart from DB:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    console.log('🔄 useEffect triggered in CartContext (Sync DB on User Change)', { userId: currentUser?.id });
+    if (currentUser) {
+      loadCart();
+    }
+  }, [currentUser, loadCart]);
+
+  useEffect(() => {
+    console.log('🔄 useEffect triggered in CartContext (Save LocalStorage)', { itemsCount: cartItems.length });
+    localStorage.setItem('shopping_cart', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  const addToCart = async (product, quantity = 1, productType = 'marketplace') => {
+    const existingIndex = cartItems.findIndex(
+      item => item.product_id === product.id && item.product_type === productType
+    );
+
+    let newCart = [...cartItems];
+    if (existingIndex >= 0) {
+      newCart[existingIndex].quantity += quantity;
+    } else {
+      newCart.push({
+        id: `local_${Date.now()}`,
+        product_id: product.id,
+        product_type: productType,
+        quantity,
+        product
+      });
+    }
+    setCartItems(newCart);
+
+    if (currentUser) {
+      try {
+        const existingDbItem = await pb.collection('cart_items').getFirstListItem(
+          `user_id="${currentUser.id}" && product_id="${product.id}" && product_type="${productType}"`,
+          { $autoCancel: false }
+        ).catch(() => null);
+
+        if (existingDbItem) {
+          await pb.collection('cart_items').update(existingDbItem.id, {
+            quantity: existingDbItem.quantity + quantity
+          }, { $autoCancel: false });
+        } else {
+          await pb.collection('cart_items').create({
+            user_id: currentUser.id,
+            product_id: product.id,
+            product_type: productType,
+            quantity
+          }, { $autoCancel: false });
+        }
+        await loadCart();
+      } catch (error) {
+        console.error('Failed to sync cart add to DB:', error);
+      }
+    }
+  };
+
+  const removeFromCart = async (cartItemId, productId) => {
+    setCartItems(prev => prev.filter(item => item.id !== cartItemId && item.product_id !== productId));
+
+    if (currentUser && !cartItemId.toString().startsWith('local_')) {
+      try {
+        await pb.collection('cart_items').delete(cartItemId, { $autoCancel: false });
+      } catch (error) {
+        console.error('Failed to remove from DB cart:', error);
+      }
+    }
+  };
+
+  const updateQuantity = async (cartItemId, productId, quantity) => {
+    if (quantity < 1) {
+      await removeFromCart(cartItemId, productId);
+      return;
+    }
+
+    setCartItems(prev => prev.map(item =>
+      (item.id === cartItemId || item.product_id === productId)
+        ? { ...item, quantity }
+        : item
+    ));
+
+    if (currentUser && !cartItemId.toString().startsWith('local_')) {
+      try {
+        await pb.collection('cart_items').update(cartItemId, { quantity }, { $autoCancel: false });
+      } catch (error) {
+        console.error('Failed to update quantity in DB:', error);
+      }
+    }
+  };
+
+  const clearCart = async () => {
+    setCartItems([]);
+    if (currentUser) {
+      try {
+        const items = await pb.collection('cart_items').getFullList({
+          filter: `user_id = "${currentUser.id}"`,
+          $autoCancel: false
+        });
+        const deletePromises = items.map(item =>
+          pb.collection('cart_items').delete(item.id, { $autoCancel: false })
+        );
+        await Promise.all(deletePromises);
+      } catch (error) {
+        console.error('Failed to clear DB cart:', error);
+      }
+    }
+  };
+
+  const getSubtotal = () => {
+    return cartItems.reduce((sum, item) => {
+      return sum + (item.product?.price || 0) * (item.quantity || 1);
+    }, 0);
+  };
+
+  const getTotal = () => {
+    const subtotal = getSubtotal();
+    return subtotal > 0 ? subtotal + settings.shipping_fee + settings.service_fee : 0;
+  };
+
+  const value = {
+    cartItems,
+    loading,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    loadCart,
+    getSubtotal,
+    getTotal,
+    SHIPPING_FEE: settings.shipping_fee,
+    SERVICE_FEE: settings.service_fee,
+    itemCount: cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0)
+  };
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+};
