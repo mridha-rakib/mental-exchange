@@ -342,7 +342,10 @@ const Header = () => {
                 <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                   <DropdownMenuTrigger className="focus:outline-none">
                     <Avatar className="h-10 w-10 border border-[hsl(var(--border))] bg-white hover:border-[#0000FF] transition-all duration-150 cursor-pointer">
-                      <AvatarImage src={currentUser?.avatar ? pb.files.getUrl(currentUser, currentUser.avatar) : ''} />
+                      <AvatarImage
+                        src={currentUser?.avatar ? pb.files.getUrl(currentUser, currentUser.avatar, { thumb: '96x96' }) : ''}
+                        alt={currentUser?.name || currentUser?.email || 'Profile'}
+                      />
                       <AvatarFallback className="bg-blue-50 text-[#0000FF] font-medium flex items-center justify-center">
                         {getInitial()}
                       </AvatarFallback>
@@ -357,9 +360,11 @@ const Header = () => {
                       <Link to="/profile" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">{t('nav.profile')}</Link>
                     </DropdownMenuItem>
                     
-                    <DropdownMenuItem asChild className="cursor-pointer hover:bg-gray-50 rounded-md focus:bg-gray-50">
-                      <Link to="/orders" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">{t('nav.orders')}</Link>
-                    </DropdownMenuItem>
+                    {!isAdmin && (
+                      <DropdownMenuItem asChild className="cursor-pointer hover:bg-gray-50 rounded-md focus:bg-gray-50">
+                        <Link to="/my-orders" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">{t('nav.orders')}</Link>
+                      </DropdownMenuItem>
+                    )}
                     
                     {isSeller && (
                       <DropdownMenuItem asChild className="cursor-pointer hover:bg-gray-50 rounded-md focus:bg-gray-50">
@@ -465,7 +470,10 @@ const Header = () => {
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-3 my-4 rounded-[8px] border border-[hsl(var(--border))] bg-white p-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={currentUser?.avatar ? pb.files.getUrl(currentUser, currentUser.avatar) : ''} />
+                      <AvatarImage
+                        src={currentUser?.avatar ? pb.files.getUrl(currentUser, currentUser.avatar, { thumb: '96x96' }) : ''}
+                        alt={currentUser?.name || currentUser?.email || 'Profile'}
+                      />
                       <AvatarFallback className="bg-blue-50 text-[#0000FF] flex items-center justify-center">
                         {getInitial()}
                       </AvatarFallback>
@@ -473,7 +481,7 @@ const Header = () => {
                     <span className="font-medium">{currentUser?.name || currentUser?.email}</span>
                   </div>
                   <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.profile')}</Link>
-                  <Link to="/orders" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.orders')}</Link>
+                  {!isAdmin && <Link to="/my-orders" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.orders')}</Link>}
                   {isSeller && <Link to="/seller-products" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.seller_items')}</Link>}
                   {isAdmin && <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.admin')}</Link>}
                   <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="rounded-[8px] px-3.5 py-3 text-left text-[16px] font-medium text-red-600 hover:bg-red-50">{t('nav.logout')}</button>

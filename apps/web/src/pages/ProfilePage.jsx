@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   BadgeCheck,
+  Camera,
   CircleUserRound,
   GraduationCap,
-  IdCard,
+  KeyRound,
   Mail,
   PackageCheck,
   Pencil,
@@ -16,13 +17,16 @@ import {
   ShieldCheck,
   ShoppingBag,
   Store,
+  Trash2,
   Truck,
   X
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog.jsx';
 import { Input } from '@/components/ui/input.jsx';
 import { Label } from '@/components/ui/label.jsx';
 import { Switch } from '@/components/ui/switch.jsx';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.jsx';
 import ShippingInfoSection from '@/components/ShippingInfoSection.jsx';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
@@ -42,9 +46,11 @@ const getInitials = (name = '', email = '') => {
 const primaryActionClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#0000FF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0000CC] disabled:pointer-events-none disabled:opacity-60';
 const secondaryActionClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-black/15 bg-white px-5 py-2.5 text-sm font-semibold text-[#151515] transition-colors hover:border-[#0000FF]/35 hover:bg-[#f3f3ff] disabled:pointer-events-none disabled:opacity-60';
 const inverseActionClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/30 bg-transparent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-[#0000FF]';
+const heroAvatarFrameClass = 'relative flex h-28 w-28 shrink-0 items-center justify-center rounded-[4px] p-0 shadow-[0_22px_44px_-28px_rgba(15,23,42,0.22)]';
+const managerAvatarFrameClass = 'relative flex h-24 w-24 shrink-0 items-center justify-center rounded-[18px] bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fc_100%)] p-1.5 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.32)] ring-1 ring-black/6';
 
 const ProfilePage = () => {
-  const { currentUser, isSeller, refreshUser } = useAuth();
+  const { currentUser, isSeller, isAdmin, refreshUser } = useAuth();
   const { t, language } = useTranslation();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -52,14 +58,40 @@ const ProfilePage = () => {
   const [isTogglingSeller, setIsTogglingSeller] = useState(false);
   const [isEditingAccount, setIsEditingAccount] = useState(false);
   const [accountLoading, setAccountLoading] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [isAvatarPreviewOpen, setIsAvatarPreviewOpen] = useState(false);
+  const avatarInputRef = useRef(null);
   const [accountData, setAccountData] = useState({
     name: currentUser?.name || '',
     email: currentUser?.email || '',
     phone: currentUser?.phone || '',
     university: currentUser?.university || ''
   });
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    password: '',
+    passwordConfirm: ''
+  });
 
   const dateLocale = language === 'EN' ? 'en-US' : 'de-DE';
+  const avatarUrl = useMemo(() => {
+    if (!currentUser?.avatar) {
+      return '';
+    }
+
+    return pb.files.getUrl(currentUser, currentUser.avatar, {
+      thumb: '256x256'
+    });
+  }, [currentUser]);
+  const avatarPreviewUrl = useMemo(() => {
+    if (!currentUser?.avatar) {
+      return '';
+    }
+
+    return pb.files.getUrl(currentUser, currentUser.avatar);
+  }, [currentUser]);
 
   useEffect(() => {
     setAccountData({
@@ -72,7 +104,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const loadOrders = async () => {
-      if (!currentUser?.id) return;
+      if (!currentUser?.id || isAdmin) return;
 
       setIsLoadingOrders(true);
       try {
@@ -90,7 +122,7 @@ const ProfilePage = () => {
     };
 
     loadOrders();
-  }, [currentUser?.id]);
+  }, [currentUser?.id, isAdmin]);
 
   const profileStats = useMemo(() => {
     const activeOrders = orders.filter(order => ['pending', 'processing', 'shipped'].includes(order.status)).length;
@@ -135,19 +167,13 @@ const ProfilePage = () => {
       label: t('auth.university'),
       value: currentUser?.university || t('profile.not_provided'),
       Icon: GraduationCap
-    },
-    {
-      label: t('profile.user_id'),
-      value: currentUser?.user_id || currentUser?.id || t('profile.not_provided'),
-      Icon: IdCard,
-      mono: true
     }
   ];
 
   const flowSteps = [
     t('profile.flow_account'),
     t('profile.flow_seller'),
-    t('profile.flow_orders')
+    isAdmin ? t('nav.admin') : t('profile.flow_orders')
   ];
 
   const formatCurrency = (amount) => {
@@ -204,6 +230,130 @@ const ProfilePage = () => {
     setAccountData(prev => ({ ...prev, [name]: value }));
   };
 
+  const resetAvatarInput = () => {
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = '';
+    }
+  };
+
+  const handleAvatarUpload = async (event) => {
+    const selectedFile = event.target.files?.[0];
+
+    if (!selectedFile || !currentUser?.id) {
+      resetAvatarInput();
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(selectedFile.type)) {
+      toast.error(t('upload.invalid_type'));
+      resetAvatarInput();
+      return;
+    }
+
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      toast.error(t('upload.too_large', { file: selectedFile.name }));
+      resetAvatarInput();
+      return;
+    }
+
+    setAvatarLoading(true);
+    try {
+      const data = new FormData();
+      data.append('avatar', selectedFile);
+
+      await pb.collection('users').update(currentUser.id, data, { $autoCancel: false });
+      await refreshUser();
+      toast.success(t('profile.photo_save_success'));
+    } catch (error) {
+      console.error('Avatar update error:', error);
+      toast.error(t('profile.photo_save_error'));
+    } finally {
+      setAvatarLoading(false);
+      resetAvatarInput();
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!currentUser?.id || !currentUser?.avatar) {
+      return;
+    }
+
+    setAvatarLoading(true);
+    try {
+      const data = new FormData();
+      data.append('avatar-', currentUser.avatar);
+
+      await pb.collection('users').update(currentUser.id, data, { $autoCancel: false });
+      await refreshUser();
+      toast.success(t('profile.photo_remove_success'));
+    } catch (error) {
+      console.error('Avatar removal error:', error);
+      toast.error(t('profile.photo_remove_error'));
+    } finally {
+      setAvatarLoading(false);
+      resetAvatarInput();
+    }
+  };
+
+  const renderAvatarManager = () => (
+    <div className="mb-6 rounded-[24px] border border-black/8 bg-[linear-gradient(180deg,#ffffff_0%,#fbfbf8_100%)] p-5 shadow-[0_18px_36px_-30px_rgba(15,23,42,0.26)]">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <div className={managerAvatarFrameClass}>
+            <Avatar className="h-full w-full rounded-[14px] border border-white/80 bg-white">
+              <AvatarImage src={avatarUrl} alt={currentUser?.name || currentUser?.email || t('profile.title')} />
+              <AvatarFallback className="rounded-[14px] bg-[#0000FF] text-xl font-bold text-white">
+                {getInitials(currentUser?.name, currentUser?.email)}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#777777]">
+              {t('profile.photo_title')}
+            </p>
+            <p className="mt-2 max-w-md text-sm leading-6 text-[#666666]">
+              {t('profile.photo_body')}
+            </p>
+          </div>
+        </div>
+
+        <input
+          ref={avatarInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={handleAvatarUpload}
+        />
+
+        <div className="flex flex-col gap-2 sm:items-end">
+          <button
+            type="button"
+            className={primaryActionClass}
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={avatarLoading}
+          >
+            <Camera className="h-4 w-4" />
+            {avatarLoading ? t('shipping.saving') : t('profile.photo_upload')}
+          </button>
+
+          {currentUser?.avatar && (
+            <button
+              type="button"
+              className={secondaryActionClass}
+              onClick={handleRemoveAvatar}
+              disabled={avatarLoading}
+            >
+              <Trash2 className="h-4 w-4" />
+              {t('profile.photo_remove')}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   const resetAccountForm = () => {
     setIsEditingAccount(false);
     setAccountData({
@@ -214,7 +364,9 @@ const ProfilePage = () => {
     });
   };
 
-  const handleSaveAccount = async () => {
+  const handleSaveAccount = async (event) => {
+    event?.preventDefault();
+
     if (!accountData.email) {
       toast.error(t('profile.email_required'));
       return;
@@ -234,6 +386,258 @@ const ProfilePage = () => {
     }
   };
 
+  const handlePasswordChange = (event) => {
+    const { name, value } = event.target;
+    setPasswordData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const resetPasswordForm = () => {
+    setIsEditingPassword(false);
+    setPasswordData({
+      oldPassword: '',
+      password: '',
+      passwordConfirm: ''
+    });
+  };
+
+  const handleSavePassword = async (event) => {
+    event.preventDefault();
+
+    if (!passwordData.oldPassword || !passwordData.password || !passwordData.passwordConfirm) {
+      toast.error(t('profile.password_required'));
+      return;
+    }
+
+    if (passwordData.password.length < 8) {
+      toast.error(t('profile.password_min'));
+      return;
+    }
+
+    if (passwordData.password !== passwordData.passwordConfirm) {
+      toast.error(t('profile.password_mismatch'));
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      await pb.collection('users').update(currentUser.id, {
+        oldPassword: passwordData.oldPassword,
+        password: passwordData.password,
+        passwordConfirm: passwordData.passwordConfirm
+      }, { $autoCancel: false });
+
+      toast.success(t('profile.password_save_success'));
+      resetPasswordForm();
+    } catch (error) {
+      console.error('Password update error:', error);
+      toast.error(t('profile.password_save_error'));
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  if (isAdmin) {
+    return (
+      <>
+        <Helmet>
+          <title>{t('profile.admin_title')} - Zahnibörse</title>
+        </Helmet>
+
+        <main className="flex-1 overflow-hidden bg-[#f4f5f8] py-8 md:py-12">
+          <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <section className="overflow-hidden rounded-[32px] border border-black/10 bg-slate-950 text-white">
+              <div className="grid gap-8 p-6 md:p-10 lg:grid-cols-[1fr_360px] lg:items-center">
+                <div>
+                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-blue-200">
+                    {t('profile.admin_eyebrow')}
+                  </p>
+                  <h1 className="text-4xl font-bold leading-tight md:text-5xl">
+                    {currentUser?.name || t('profile.admin_title')}
+                  </h1>
+                  <p className="mt-4 max-w-2xl text-sm leading-6 text-white/68 md:text-base">
+                    {t('profile.admin_subtitle')}
+                  </p>
+                  <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                    <Link to="/admin" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0000FF] transition-colors hover:bg-blue-50">
+                      {t('nav.admin')}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                    <Link to="/admin/verifications" className={inverseActionClass}>
+                      {t('profile.admin_verifications')}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="rounded-[28px] border border-white/12 bg-white/[0.06] p-5">
+                  <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-[#0000FF]">
+                    <ShieldCheck className="h-8 w-8" />
+                  </div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/52">
+                    {t('profile.admin_role')}
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold">{t('profile.admin_access')}</p>
+                  <p className="mt-3 text-sm leading-6 text-white/62">
+                    {t('profile.admin_access_body')}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section className="mt-6 grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+              <div className="overflow-hidden rounded-[28px] border border-black/10 bg-white">
+                <header className="flex flex-col gap-4 border-b border-black/10 p-6 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#0000FF]">
+                      {t('profile.details_eyebrow')}
+                    </p>
+                    <h2 className="text-2xl font-semibold">{t('profile.account_info')}</h2>
+                  </div>
+                  {!isEditingAccount && (
+                    <button type="button" className={secondaryActionClass} onClick={() => setIsEditingAccount(true)}>
+                      <Pencil className="h-4 w-4" />
+                      {t('seller.edit')}
+                    </button>
+                  )}
+                </header>
+
+                <div className="p-6">
+                  {renderAvatarManager()}
+
+                  {isEditingAccount ? (
+                    <form className="space-y-5" onSubmit={handleSaveAccount}>
+                      <div className="space-y-2">
+                        <Label htmlFor="admin-name">{t('shipping.name')}</Label>
+                        <Input id="admin-name" name="name" value={accountData.name} onChange={handleAccountChange} autoComplete="name" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="admin-email">E-Mail *</Label>
+                        <Input id="admin-email" name="email" type="email" value={accountData.email} onChange={handleAccountChange} autoComplete="email" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="admin-phone">{t('shipping.phone')}</Label>
+                        <Input id="admin-phone" name="phone" value={accountData.phone} onChange={handleAccountChange} autoComplete="tel" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="admin-university">{t('auth.university')}</Label>
+                        <Input id="admin-university" name="university" value={accountData.university} onChange={handleAccountChange} />
+                      </div>
+                      <div className="flex flex-col gap-2 pt-2 sm:flex-row">
+                        <button type="submit" disabled={accountLoading} className={primaryActionClass}>
+                          <Save className="h-4 w-4" />
+                          {accountLoading ? t('shipping.saving') : t('shipping.save')}
+                        </button>
+                        <button type="button" onClick={resetAccountForm} disabled={accountLoading} className={secondaryActionClass}>
+                          <X className="h-4 w-4" />
+                          {t('common.cancel')}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="grid gap-3">
+                      {accountItems.map(({ label, value, Icon, mono }) => (
+                        <div key={label} className="flex gap-4 rounded-[22px] border border-black/10 bg-[#fbfbf8] p-4">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#0000FF]/15 bg-[#f1f1ff] text-[#0000FF]">
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#777777]">{label}</p>
+                            <p className={`mt-1 break-words text-sm font-semibold text-[#151515] ${mono ? 'font-mono' : ''}`}>
+                              {value}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid gap-5">
+                <section className="rounded-[28px] border border-black/10 bg-white p-6">
+                  <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[#0000FF]">
+                    <Store className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-2xl font-semibold">{t('profile.admin_workspace_title')}</h2>
+                  <p className="mt-2 text-sm leading-6 text-[#666666]">
+                    {t('profile.admin_workspace_body')}
+                  </p>
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                    <Link to="/admin" className={primaryActionClass}>
+                      {t('profile.admin_open_dashboard')}
+                    </Link>
+                    <Link to="/admin/verifications" className={secondaryActionClass}>
+                      {t('profile.admin_review_products')}
+                    </Link>
+                  </div>
+                </section>
+
+                <section className="rounded-[28px] border border-black/10 bg-white p-6">
+                  <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f1f1ff] text-[#0000FF]">
+                    <KeyRound className="h-6 w-6" />
+                  </div>
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#0000FF]">
+                        {t('profile.security_eyebrow')}
+                      </p>
+                      <h2 className="text-2xl font-semibold">{t('profile.password_title')}</h2>
+                      <p className="mt-2 text-sm leading-6 text-[#666666]">
+                        {t('profile.password_body')}
+                      </p>
+                    </div>
+                    {!isEditingPassword && (
+                      <button type="button" className={secondaryActionClass} onClick={() => setIsEditingPassword(true)}>
+                        <Pencil className="h-4 w-4" />
+                        {t('profile.password_change')}
+                      </button>
+                    )}
+                  </div>
+
+                  {isEditingPassword && (
+                    <form className="mt-6 space-y-4" onSubmit={handleSavePassword}>
+                      <div className="space-y-2">
+                        <Label htmlFor="admin-old-password">{t('profile.current_password')}</Label>
+                        <Input id="admin-old-password" name="oldPassword" type="password" value={passwordData.oldPassword} onChange={handlePasswordChange} autoComplete="current-password" />
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="admin-new-password">{t('profile.new_password')}</Label>
+                          <Input id="admin-new-password" name="password" type="password" value={passwordData.password} onChange={handlePasswordChange} autoComplete="new-password" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="admin-confirm-password">{t('profile.confirm_password')}</Label>
+                          <Input id="admin-confirm-password" name="passwordConfirm" type="password" value={passwordData.passwordConfirm} onChange={handlePasswordChange} autoComplete="new-password" />
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2 pt-2 sm:flex-row">
+                        <button type="submit" disabled={passwordLoading} className={primaryActionClass}>
+                          <Save className="h-4 w-4" />
+                          {passwordLoading ? t('shipping.saving') : t('profile.password_save')}
+                        </button>
+                        <button type="button" onClick={resetPasswordForm} disabled={passwordLoading} className={secondaryActionClass}>
+                          <X className="h-4 w-4" />
+                          {t('common.cancel')}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </section>
+
+                <section className="rounded-[28px] border border-black/10 bg-[#fffaf0] p-6">
+                  <h2 className="text-xl font-semibold">{t('profile.admin_no_orders_title')}</h2>
+                  <p className="mt-2 text-sm leading-6 text-[#686868]">
+                    {t('profile.admin_no_orders_body')}
+                  </p>
+                </section>
+              </div>
+            </section>
+          </div>
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
       <Helmet>
@@ -249,9 +653,23 @@ const ProfilePage = () => {
                   {t('profile.account_eyebrow')}
                 </p>
                 <div className="flex flex-col gap-6 md:flex-row md:items-center">
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-[30px] border border-[#0000FF] bg-[#0000FF] text-3xl font-bold text-white">
-                    {getInitials(currentUser?.name, currentUser?.email)}
-                  </div>
+                  <button
+                    type="button"
+                    className={`${heroAvatarFrameClass} ${avatarPreviewUrl ? 'cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-[#0000FF]/20' : 'cursor-default'}`}
+                    onClick={() => {
+                      if (avatarPreviewUrl) {
+                        setIsAvatarPreviewOpen(true);
+                      }
+                    }}
+                    aria-label={avatarPreviewUrl ? t('profile.photo_title') : currentUser?.name || currentUser?.email || t('profile.title')}
+                  >
+                    <Avatar className="h-full w-full rounded-[4px] bg-white">
+                      <AvatarImage src={avatarUrl} alt={currentUser?.name || currentUser?.email || t('profile.title')} />
+                      <AvatarFallback className="rounded-[4px] bg-[#0000FF] text-3xl font-bold text-white">
+                        {getInitials(currentUser?.name, currentUser?.email)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
                   <div className="min-w-0">
                     <div className="mb-4 flex flex-wrap items-center gap-2">
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0000FF]/20 bg-[#f1f1ff] px-3 py-1 text-xs font-semibold text-[#0000FF]">
@@ -349,26 +767,28 @@ const ProfilePage = () => {
                 </header>
 
                 <div className="p-6">
+                  {renderAvatarManager()}
+
                   {isEditingAccount ? (
-                    <div className="space-y-5">
+                    <form className="space-y-5" onSubmit={handleSaveAccount}>
                       <div className="space-y-2">
                         <Label htmlFor="name">{t('shipping.name')}</Label>
-                        <Input id="name" name="name" value={accountData.name} onChange={handleAccountChange} />
+                        <Input id="name" name="name" value={accountData.name} onChange={handleAccountChange} autoComplete="name" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email">E-Mail *</Label>
-                        <Input id="email" name="email" type="email" value={accountData.email} onChange={handleAccountChange} />
+                        <Input id="email" name="email" type="email" value={accountData.email} onChange={handleAccountChange} autoComplete="email" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone">{t('shipping.phone')}</Label>
-                        <Input id="phone" name="phone" value={accountData.phone} onChange={handleAccountChange} />
+                        <Input id="phone" name="phone" value={accountData.phone} onChange={handleAccountChange} autoComplete="tel" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="university">{t('auth.university')}</Label>
                         <Input id="university" name="university" value={accountData.university} onChange={handleAccountChange} />
                       </div>
                       <div className="flex flex-col gap-2 pt-2 sm:flex-row">
-                        <button type="button" onClick={handleSaveAccount} disabled={accountLoading} className={primaryActionClass}>
+                        <button type="submit" disabled={accountLoading} className={primaryActionClass}>
                           <Save className="h-4 w-4" />
                           {accountLoading ? t('shipping.saving') : t('shipping.save')}
                         </button>
@@ -377,7 +797,7 @@ const ProfilePage = () => {
                           {t('common.cancel')}
                         </button>
                       </div>
-                    </div>
+                    </form>
                   ) : (
                     <div className="grid gap-3">
                       {accountItems.map(({ label, value, Icon, mono }) => (
@@ -412,11 +832,72 @@ const ProfilePage = () => {
                 </div>
               </section>
 
-              {orders.length > 0 && (
-                <div className="[&>section]:overflow-hidden">
-                  <ShippingInfoSection />
+              <section className="overflow-hidden rounded-[28px] border border-black/12 bg-white">
+                <header className="flex flex-col gap-4 border-b border-black/10 p-6 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#0000FF]">
+                      {t('profile.security_eyebrow')}
+                    </p>
+                    <h2 className="text-2xl font-semibold">{t('profile.password_title')}</h2>
+                    <p className="mt-2 text-sm leading-6 text-[#666666]">
+                      {t('profile.password_body')}
+                    </p>
+                  </div>
+                  {!isEditingPassword && (
+                    <button type="button" className={secondaryActionClass} onClick={() => setIsEditingPassword(true)}>
+                      <KeyRound className="h-4 w-4" />
+                      {t('profile.password_change')}
+                    </button>
+                  )}
+                </header>
+
+                <div className="p-6">
+                  {isEditingPassword ? (
+                    <form className="space-y-4" onSubmit={handleSavePassword}>
+                      <div className="space-y-2">
+                        <Label htmlFor="old-password">{t('profile.current_password')}</Label>
+                        <Input id="old-password" name="oldPassword" type="password" value={passwordData.oldPassword} onChange={handlePasswordChange} autoComplete="current-password" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="new-password">{t('profile.new_password')}</Label>
+                        <Input id="new-password" name="password" type="password" value={passwordData.password} onChange={handlePasswordChange} autoComplete="new-password" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="confirm-password">{t('profile.confirm_password')}</Label>
+                        <Input id="confirm-password" name="passwordConfirm" type="password" value={passwordData.passwordConfirm} onChange={handlePasswordChange} autoComplete="new-password" />
+                      </div>
+                      <div className="flex flex-col gap-2 pt-2 sm:flex-row">
+                        <button type="submit" disabled={passwordLoading} className={primaryActionClass}>
+                          <Save className="h-4 w-4" />
+                          {passwordLoading ? t('shipping.saving') : t('profile.password_save')}
+                        </button>
+                        <button type="button" onClick={resetPasswordForm} disabled={passwordLoading} className={secondaryActionClass}>
+                          <X className="h-4 w-4" />
+                          {t('common.cancel')}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="flex gap-4 rounded-[22px] border border-black/10 bg-[#fbfbf8] p-4">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#0000FF]/15 bg-[#f1f1ff] text-[#0000FF]">
+                        <KeyRound className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-[#777777]">
+                          {t('profile.password_status')}
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-[#151515]">
+                          {t('profile.password_status_body')}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </section>
+
+              <div className="[&>section]:overflow-hidden">
+                <ShippingInfoSection />
+              </div>
 
               {isSeller && (
                 <section className="overflow-hidden rounded-[28px] border border-[#0000FF] bg-[#0000FF] text-white">
@@ -527,6 +1008,25 @@ const ProfilePage = () => {
           </div>
         </div>
       </main>
+
+      <Dialog open={isAvatarPreviewOpen} onOpenChange={setIsAvatarPreviewOpen}>
+        <DialogContent className="w-[92vw] max-w-3xl overflow-hidden border border-black/8 bg-white p-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>{t('profile.photo_title')}</DialogTitle>
+          </DialogHeader>
+          <div className="bg-[#f7f7f4] p-3 sm:p-4">
+            <div className="overflow-hidden rounded-[8px] bg-white">
+              {avatarPreviewUrl ? (
+                <img
+                  src={avatarPreviewUrl}
+                  alt={currentUser?.name || currentUser?.email || t('profile.title')}
+                  className="max-h-[80vh] w-full object-contain"
+                />
+              ) : null}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

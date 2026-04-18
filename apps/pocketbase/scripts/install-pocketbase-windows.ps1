@@ -8,6 +8,32 @@ $DownloadUrl = "https://github.com/pocketbase/pocketbase/releases/download/v$Ver
 $TempDir = Join-Path ([System.IO.Path]::GetTempPath()) ("pocketbase-$Version-" + [System.Guid]::NewGuid().ToString("N"))
 $ArchivePath = Join-Path $TempDir $ArchiveName
 
+function Get-InstalledPocketBaseVersion {
+  param([string]$Path)
+
+  if (-not (Test-Path $Path)) {
+    return $null
+  }
+
+  try {
+    $VersionOutput = & $Path --version 2>$null
+    if ($VersionOutput -match "version\s+([0-9]+\.[0-9]+\.[0-9]+)") {
+      return $Matches[1]
+    }
+  }
+  catch {
+    return $null
+  }
+
+  return $null
+}
+
+$InstalledVersion = Get-InstalledPocketBaseVersion -Path $ExePath
+if ($InstalledVersion -eq $Version) {
+  Write-Host "PocketBase $Version is already installed at $ExePath"
+  exit 0
+}
+
 New-Item -ItemType Directory -Path $TempDir | Out-Null
 
 try {
@@ -17,7 +43,14 @@ try {
   Write-Host "Extracting PocketBase..."
   Expand-Archive -Path $ArchivePath -DestinationPath $TempDir -Force
 
-  Copy-Item -Path (Join-Path $TempDir "pocketbase.exe") -Destination $ExePath -Force
+  try {
+    Copy-Item -Path (Join-Path $TempDir "pocketbase.exe") -Destination $ExePath -Force
+  }
+  catch [System.IO.IOException] {
+    Write-Error "Cannot replace $ExePath because it is currently in use. Stop the PocketBase dev server, then run npm run setup:windows again."
+    throw
+  }
+
   Write-Host "Installed $ExePath"
 }
 finally {

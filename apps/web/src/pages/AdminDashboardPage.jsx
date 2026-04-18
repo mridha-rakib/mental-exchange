@@ -4,7 +4,7 @@ import {
   Users, Package, ShoppingCart, DollarSign, AlertCircle,
   RefreshCw, Search, Filter, MoreVertical, Edit, Trash2,
   Eye, CheckCircle, XCircle, Download, Store, ArrowUpRight,
-  Settings, BarChart3, RotateCcw
+  Settings, BarChart3, RotateCcw, ArrowLeft
 } from 'lucide-react';
 import pb from '@/lib/pocketbaseClient.js';
 import apiServerClient from '@/lib/apiServerClient.js';
@@ -21,10 +21,19 @@ import { Label } from '@/components/ui/label.jsx';
 import { Textarea } from '@/components/ui/textarea.jsx';
 import { Switch } from '@/components/ui/switch.jsx';
 import { Skeleton } from '@/components/ui/skeleton.jsx';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu.jsx';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { toast } from 'sonner';
+import { useTranslation } from '@/contexts/TranslationContext.jsx';
 
 const AdminDashboardPage = () => {
+  const { t, language } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -34,7 +43,10 @@ const AdminDashboardPage = () => {
   const [tableProducts, setTableProducts] = useState([]);
   const [isProductsLoading, setIsProductsLoading] = useState(false);
   const [users, setUsers] = useState([]);
+  const [tableUsers, setTableUsers] = useState([]);
+  const [isUsersLoading, setIsUsersLoading] = useState(false);
   const [returns, setReturns] = useState([]);
+  const [sellerEarnings, setSellerEarnings] = useState([]);
   const [settings, setSettings] = useState(null);
   const [settingsForm, setSettingsForm] = useState({
     shipping_fee: 4.99,
@@ -55,32 +67,35 @@ const AdminDashboardPage = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
+  const [currentUserRecord, setCurrentUserRecord] = useState(null);
 
   const fetchData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     setIsRefreshing(true);
     try {
-      const [ordersRes, productsRes, usersRes, returnsRes, settingsRes] = await Promise.all([
+      const [ordersRes, productsRes, usersRes, returnsRes, sellerEarningsRes, settingsRes] = await Promise.all([
         pb.collection('orders').getFullList({ sort: '-created', expand: 'buyer_id,seller_id,product_id', $autoCancel: false }),
         pb.collection('products').getFullList({ sort: '-created', expand: 'seller_id', $autoCancel: false }),
         pb.collection('users').getFullList({ sort: '-created', $autoCancel: false }),
         pb.collection('returns').getFullList({ sort: '-created', expand: 'order_id,buyer_id', $autoCancel: false }).catch(() => []),
+        pb.collection('seller_earnings').getFullList({ sort: '-created', $autoCancel: false }).catch(() => []),
         pb.collection('admin_settings').getFirstListItem('', { $autoCancel: false }).catch(() => null)
       ]);
       setOrders(ordersRes);
       setProducts(productsRes);
       setUsers(usersRes);
       setReturns(returnsRes);
+      setSellerEarnings(sellerEarningsRes);
       setSettings(settingsRes);
       setLastRefresh(new Date());
     } catch (error) {
       console.error('Error fetching admin data:', error);
-      if (!silent) toast.error('Fehler beim Laden der Dashboard-Daten');
+      if (!silent) toast.error(t('admin_dashboard.load_error'));
     } finally {
       setLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (!settings) return;
@@ -115,11 +130,37 @@ const AdminDashboardPage = () => {
       setTableProducts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error(error);
-      toast.error('Fehler beim Laden der Produkte: ' + error.message);
+      toast.error(`${t('admin_dashboard.products_load_error')}: ${error.message}`);
     } finally {
       setIsProductsLoading(false);
     }
-  }, [productSearch, productCategoryFilter, productTypeFilter]);
+  }, [productSearch, productCategoryFilter, productTypeFilter, t]);
+
+  const fetchTableUsers = useCallback(async () => {
+    setIsUsersLoading(true);
+    try {
+      const params = new URLSearchParams({ limit: '200' });
+      if (userSearch.trim()) params.append('search', userSearch.trim());
+
+      const token = pb.authStore.token;
+      const res = await apiServerClient.fetch(`/admin/users?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('Failed to fetch users');
+      const data = await res.json();
+      setTableUsers(Array.isArray(data.items) ? data.items : []);
+    } catch (error) {
+      console.error(error);
+      toast.error(`${t('admin_dashboard.users_load_error')}: ${error.message}`);
+    } finally {
+      setIsUsersLoading(false);
+    }
+  }, [userSearch, t]);
 
   useEffect(() => {
     fetchData();
@@ -131,7 +172,7 @@ const AdminDashboardPage = () => {
       if (e.action === 'create') {
         setProducts(prev => [e.record, ...prev]);
         setTableProducts(prev => [e.record, ...prev]);
-        toast.success(`Neues Produkt: ${e.record.name}`);
+        toast.success(t('admin_dashboard.product_created_toast', { name: e.record.name }));
       } else if (e.action === 'update') {
         setProducts(prev => prev.map(p => p.id === e.record.id ? e.record : p));
         setTableProducts(prev => prev.map(p => p.id === e.record.id ? e.record : p));
@@ -144,7 +185,7 @@ const AdminDashboardPage = () => {
     pb.collection('orders').subscribe('*', (e) => {
       if (e.action === 'create') {
         setOrders(prev => [e.record, ...prev]);
-        toast.success('Neue Bestellung eingegangen!');
+        toast.success(t('admin_dashboard.order_created_toast'));
       } else if (e.action === 'update') {
         setOrders(prev => prev.map(o => o.id === e.record.id ? e.record : o));
       }
@@ -155,6 +196,14 @@ const AdminDashboardPage = () => {
         setUsers(prev => [e.record, ...prev]);
       } else if (e.action === 'update') {
         setUsers(prev => prev.map(u => u.id === e.record.id ? e.record : u));
+        setTableUsers(prev => prev.map(u => u.id === e.record.id ? e.record : u));
+        setCurrentUserRecord((current) => current?.id === e.record.id ? e.record : current);
+      } else if (e.action === 'delete') {
+        setUsers(prev => prev.filter(u => u.id !== e.record.id));
+        setTableUsers(prev => prev.filter(u => u.id !== e.record.id));
+        setCurrentUserRecord((current) => {
+          return current?.id === e.record.id ? null : current;
+        });
       }
     }).then(unsub => subscriptions.push(unsub)).catch(() => { });
 
@@ -164,14 +213,21 @@ const AdminDashboardPage = () => {
       pb.collection('orders').unsubscribe('*').catch(() => { });
       pb.collection('users').unsubscribe('*').catch(() => { });
     };
-  }, [fetchData, fetchTableProducts]);
+  }, [fetchData, fetchTableProducts, t]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchTableProducts();
     }, 300);
     return () => clearTimeout(timer);
-  }, [productSearch, productCategoryFilter, productTypeFilter]);
+  }, [fetchTableProducts]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchTableUsers();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [fetchTableUsers]);
 
   const stats = useMemo(() => {
     const totalRevenue = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
@@ -200,12 +256,100 @@ const AdminDashboardPage = () => {
     return last7Days.map(date => {
       const dayOrders = orders.filter(o => o.created.startsWith(date));
       return {
-        name: new Date(date).toLocaleDateString('de-DE', { weekday: 'short' }),
+        name: new Date(date).toLocaleDateString(language === 'EN' ? 'en-US' : 'de-DE', { weekday: 'short' }),
         revenue: dayOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0),
         orders: dayOrders.length
       };
     });
-  }, [orders]);
+  }, [orders, language]);
+
+  const dateLocale = language === 'EN' ? 'en-US' : 'de-DE';
+  const formatCurrency = (value) =>
+    new Intl.NumberFormat(dateLocale, {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(Number(value) || 0);
+
+  const formatDate = (date) => new Date(date).toLocaleDateString(dateLocale);
+
+  const getProductTypeLabel = (type) => {
+    switch (type) {
+      case 'Set':
+        return t('marketplace.type_set');
+      case 'Consumable':
+        return t('marketplace.type_consumable');
+      case 'Article':
+      default:
+        return t('marketplace.type_article');
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    const key = `orders.status_${status}`;
+    const translated = t(key);
+    if (translated !== key) return translated;
+
+    switch (status) {
+      case 'active':
+        return t('seller.status_active');
+      case 'pending_verification':
+        return t('seller.status_pending');
+      case 'sold':
+        return t('seller.status_sold');
+      case 'rejected':
+        return t('seller.status_rejected');
+      case 'draft':
+        return t('admin_dashboard.status_inactive');
+      default:
+        return status || t('orders.status_pending');
+    }
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'active':
+      case 'verified':
+        return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+      case 'pending_verification':
+        return 'border-amber-200 bg-amber-50 text-amber-700';
+      case 'rejected':
+        return 'border-red-200 bg-red-50 text-red-700';
+      case 'draft':
+        return 'border-slate-200 bg-slate-100 text-slate-700';
+      case 'sold':
+        return 'border-blue-200 bg-blue-50 text-blue-700';
+      default:
+        return 'border-slate-200 bg-slate-50 text-slate-700';
+    }
+  };
+
+  const formatProductCategories = (fachbereich) => {
+    if (Array.isArray(fachbereich)) {
+      return fachbereich.filter(Boolean).join(', ') || '-';
+    }
+
+    return fachbereich || '-';
+  };
+
+  const getProductImageUrl = (product) => {
+    if (!product?.image) return null;
+    return pb.files.getUrl(product, product.image);
+  };
+
+  const getProductSellerName = (product) =>
+    product?.seller?.seller_username
+    || product?.seller?.name
+    || product?.seller_username
+    || t('product.anonymous_seller');
+
+  const formatDetailDate = (date) => (date ? formatDate(date) : '-');
+
+  const formatDetailValue = (value) => {
+    if (value === undefined || value === null || value === '') return '-';
+    if (Array.isArray(value)) return value.filter(Boolean).join(', ') || '-';
+    if (typeof value === 'object') return JSON.stringify(value, null, 2);
+    return String(value);
+  };
 
   const filteredOrders = orders.filter(o => {
     const matchesSearch = o.id.toLowerCase().includes(orderSearch.toLowerCase()) ||
@@ -214,18 +358,149 @@ const AdminDashboardPage = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const filteredUsers = users.filter(u =>
-    (u.name || '').toLowerCase().includes(userSearch.toLowerCase()) ||
-    u.email.toLowerCase().includes(userSearch.toLowerCase())
-  );
-
   const sellers = users.filter(u => u.is_seller);
   const filteredSellers = sellers.filter(s =>
     (s.seller_username || s.name || '').toLowerCase().includes(sellerSearch.toLowerCase())
   );
 
+  const getUserRoleLabel = (user) => {
+    if (user.is_admin) return 'Admin';
+    if (user.is_seller) return t('common.seller');
+    return t('admin_dashboard.buyer');
+  };
+
+  const getUserRoleBadgeClass = (user) => {
+    if (user.is_admin) return 'bg-purple-500 text-white';
+    if (user.is_seller) return 'bg-blue-500 text-white';
+    return '';
+  };
+
+  const getUserStatusLabel = (user) => (user.is_deleted ? t('admin_dashboard.user_status_deleted') : t('seller.status_active'));
+
+  const getUserStatusBadgeClass = (user) =>
+    user.is_deleted
+      ? 'border-red-200 bg-red-50 text-red-700'
+      : 'border-green-200 bg-green-50 text-green-600';
+
+  const selectedUserRecords = useMemo(() => {
+    if (!currentUserRecord?.id) {
+      return {
+        buyingOrders: [],
+        sellingOrders: [],
+        listings: [],
+        userReturns: [],
+        earnings: [],
+        purchaseTotal: 0,
+        salesTotal: 0,
+        earningsTotal: 0,
+      };
+    }
+
+    const userId = currentUserRecord.id;
+    const buyingOrders = orders.filter((order) => order.buyer_id === userId);
+    const sellingOrders = orders.filter((order) => order.seller_id === userId);
+    const listings = products.filter((product) => product.seller_id === userId);
+    const userReturns = returns.filter((ret) => ret.buyer_id === userId || ret.seller_id === userId);
+    const sellingOrderIds = new Set(sellingOrders.map((order) => order.id));
+    const earnings = sellerEarnings.filter((earning) => (
+      earning.seller_id === userId || sellingOrderIds.has(earning.order_id)
+    ));
+
+    return {
+      buyingOrders,
+      sellingOrders,
+      listings,
+      userReturns,
+      earnings,
+      purchaseTotal: buyingOrders.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0),
+      salesTotal: sellingOrders.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0),
+      earningsTotal: earnings.reduce((sum, earning) => sum + (Number(earning.net_amount ?? earning.gross_amount) || 0), 0),
+    };
+  }, [currentUserRecord, orders, products, returns, sellerEarnings]);
+
+  const openUserDetails = (user) => {
+    setCurrentUserRecord(user);
+  };
+
+  const handleDeleteUser = async (user) => {
+    const isCurrentUser = user.id === pb.authStore.model?.id;
+    const confirmKey = isCurrentUser
+      ? 'admin_dashboard.user_delete_self_confirm'
+      : user.is_admin
+        ? 'admin_dashboard.user_delete_admin_confirm'
+        : 'admin_dashboard.user_delete_confirm';
+
+    if (!window.confirm(t(confirmKey, { name: user.name || user.email }))) {
+      return;
+    }
+
+    try {
+      const token = pb.authStore.token;
+      const res = await apiServerClient.fetch(`/admin/users/${user.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('Delete failed');
+
+      toast.success(t('admin_dashboard.user_deleted'));
+      setTableUsers((current) => current.filter((currentUser) => currentUser.id !== user.id));
+      setUsers((current) => current.filter((currentUser) => currentUser.id !== user.id));
+      if (currentUserRecord?.id === user.id) {
+        setCurrentUserRecord(null);
+      }
+      fetchData(true);
+
+      if (isCurrentUser) {
+        pb.authStore.clear();
+        window.location.assign('/auth');
+      }
+    } catch (error) {
+      toast.error(t('admin_dashboard.user_delete_error'));
+    }
+  };
+
+  const handleRemoveSellerRole = async (user) => {
+    try {
+      const token = pb.authStore.token;
+      const res = await apiServerClient.fetch(`/admin/users/${user.id}/remove-seller`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('Remove seller failed');
+
+      toast.success(t('admin_dashboard.user_remove_seller_success'));
+      setTableUsers((current) =>
+        current.map((currentUser) => (
+          currentUser.id === user.id
+            ? { ...currentUser, is_seller: false }
+            : currentUser
+        ))
+      );
+      setUsers((current) =>
+        current.map((currentUser) => (
+          currentUser.id === user.id
+            ? { ...currentUser, is_seller: false }
+            : currentUser
+        ))
+      );
+      if (currentUserRecord?.id === user.id) {
+        setCurrentUserRecord((current) => current ? { ...current, is_seller: false } : current);
+      }
+    } catch (error) {
+      toast.error(t('admin_dashboard.user_remove_seller_error'));
+    }
+  };
+
   const handleDeleteProduct = async (id) => {
-    if (!window.confirm('Möchtest du dieses Produkt wirklich löschen?')) return;
+    if (!window.confirm(t('admin_dashboard.delete_confirm'))) return;
     try {
       const token = pb.authStore.token;
       const res = await apiServerClient.fetch(`/admin/products/${id}`, { 
@@ -236,17 +511,18 @@ const AdminDashboardPage = () => {
         }
       });
       if (!res.ok) throw new Error('Delete failed');
-      toast.success('Produkt erfolgreich gelöscht');
+      toast.success(t('seller.delete_success'));
       fetchTableProducts();
       fetchData(true);
     } catch (error) {
-      toast.error('Fehler beim Löschen des Produkts');
+      toast.error(t('seller.delete_error'));
     }
   };
 
   const handleEditProduct = async (id) => {
     try {
       const token = pb.authStore.token;
+      const existingProduct = tableProducts.find((product) => product.id === id);
       const res = await apiServerClient.fetch(`/admin/products/${id}`, {
         method: 'GET',
         headers: {
@@ -256,16 +532,17 @@ const AdminDashboardPage = () => {
       });
       if (!res.ok) throw new Error('Fetch failed');
       const data = await res.json();
-      setCurrentProduct(data);
+      setCurrentProduct({ ...existingProduct, ...data });
       setEditModalOpen(true);
     } catch (error) {
-      toast.error('Fehler beim Laden der Produktdetails');
+      toast.error(t('admin_dashboard.product_details_error'));
     }
   };
 
   const handleViewDetails = async (id) => {
     try {
       const token = pb.authStore.token;
+      const existingProduct = tableProducts.find((product) => product.id === id);
       const res = await apiServerClient.fetch(`/admin/products/${id}`, {
         method: 'GET',
         headers: {
@@ -275,18 +552,18 @@ const AdminDashboardPage = () => {
       });
       if (!res.ok) throw new Error('Fetch failed');
       const data = await res.json();
-      setCurrentProduct(data);
+      setCurrentProduct({ ...existingProduct, ...data });
       setViewModalOpen(true);
     } catch (error) {
-      toast.error('Fehler beim Laden der Produktdetails');
+      toast.error(t('admin_dashboard.product_details_error'));
     }
   };
 
   const handleUpdateStock = async (id, currentStock) => {
-    const qtyStr = window.prompt('Neue Lagermenge eingeben:', currentStock || 0);
+    const qtyStr = window.prompt(t('admin_dashboard.stock_prompt'), currentStock || 0);
     if (qtyStr === null) return;
     const quantity = parseInt(qtyStr, 10);
-    if (isNaN(quantity)) { toast.error('Ungültige Menge'); return; }
+    if (isNaN(quantity)) { toast.error(t('admin_dashboard.invalid_quantity')); return; }
     try {
       const token = pb.authStore.token;
       const res = await apiServerClient.fetch(`/admin/products/${id}/stock`, {
@@ -298,10 +575,10 @@ const AdminDashboardPage = () => {
         body: JSON.stringify({ quantity })
       });
       if (!res.ok) throw new Error('Stock update failed');
-      toast.success('Lagerbestand aktualisiert');
+      toast.success(t('admin_dashboard.stock_updated'));
       fetchTableProducts();
     } catch (error) {
-      toast.error('Fehler beim Aktualisieren des Lagerbestands');
+      toast.error(t('admin_dashboard.stock_update_error'));
     }
   };
 
@@ -318,10 +595,10 @@ const AdminDashboardPage = () => {
         body: JSON.stringify({ status: newStatus })
       });
       if (!res.ok) throw new Error('Status update failed');
-      toast.success(`Status geändert zu ${newStatus}`);
+      toast.success(t('admin_dashboard.status_changed', { status: getStatusLabel(newStatus) }));
       fetchTableProducts();
     } catch (error) {
-      toast.error('Fehler beim Ändern des Status');
+      toast.error(t('admin_dashboard.status_update_error'));
     }
   };
 
@@ -340,7 +617,7 @@ const AdminDashboardPage = () => {
   };
 
   const handleBulkDelete = async () => {
-    if (!window.confirm(`${selectedProducts.length} Produkte wirklich löschen?`)) return;
+    if (!window.confirm(t('admin_dashboard.bulk_delete_confirm', { count: selectedProducts.length }))) return;
     try {
       const token = pb.authStore.token;
       await Promise.all(selectedProducts.map(id =>
@@ -352,12 +629,12 @@ const AdminDashboardPage = () => {
           }
         })
       ));
-      toast.success(`${selectedProducts.length} Produkte gelöscht`);
+      toast.success(t('admin_dashboard.bulk_delete_success', { count: selectedProducts.length }));
       setSelectedProducts([]);
       fetchTableProducts();
       fetchData(true);
     } catch (error) {
-      toast.error('Fehler beim Löschen einiger Produkte');
+      toast.error(t('admin_dashboard.bulk_delete_error'));
     }
   };
 
@@ -384,9 +661,9 @@ const AdminDashboardPage = () => {
 
       const data = await res.json();
       setSettings(data);
-      toast.success('Einstellungen gespeichert');
+      toast.success(t('admin_dashboard.settings_saved'));
     } catch (error) {
-      toast.error('Fehler beim Speichern der Einstellungen');
+      toast.error(t('admin_dashboard.settings_save_error'));
     }
   };
 
@@ -395,7 +672,7 @@ const AdminDashboardPage = () => {
       <div className="flex-1 flex items-center justify-center bg-[hsl(var(--muted-bg))] min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Lade Admin Dashboard...</p>
+          <p className="text-muted-foreground">{t('admin_dashboard.loading')}</p>
         </div>
       </div>
     );
@@ -404,7 +681,7 @@ const AdminDashboardPage = () => {
   return (
     <>
       <Helmet>
-        <title>Admin Dashboard - Zahnibörse</title>
+        <title>{t('admin_dashboard.meta_title')} - Zahnibörse</title>
       </Helmet>
 
       <main className="flex-1 bg-[hsl(var(--muted-bg))] py-8">
@@ -412,19 +689,19 @@ const AdminDashboardPage = () => {
 
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">Admin Control Center</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('admin_dashboard.title')}</h1>
               <p className="text-muted-foreground mt-1 flex items-center gap-2">
-                Übersicht und Verwaltung der gesamten Plattform
+                {t('admin_dashboard.subtitle')}
                 <span className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
                   <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  Live (Letztes Update: {lastRefresh.toLocaleTimeString()})
+                  {t('admin_dashboard.live_update', { time: lastRefresh.toLocaleTimeString() })}
                 </span>
               </p>
             </div>
             <div className="flex items-center gap-3">
               <Button variant="outline" onClick={() => fetchData()} disabled={isRefreshing}>
                 <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                Manuell aktualisieren
+                {t('admin_dashboard.refresh')}
               </Button>
             </div>
           </div>
@@ -432,14 +709,14 @@ const AdminDashboardPage = () => {
           <Tabs defaultValue="overview" className="w-full space-y-6">
             <div className="overflow-x-auto pb-2">
               <TabsList className="bg-background border shadow-sm inline-flex w-max min-w-full sm:min-w-0">
-                <TabsTrigger value="overview" className="gap-2"><BarChart3 className="w-4 h-4" /> Übersicht</TabsTrigger>
-                <TabsTrigger value="orders" className="gap-2"><ShoppingCart className="w-4 h-4" /> Bestellungen</TabsTrigger>
-                <TabsTrigger value="products" className="gap-2"><Package className="w-4 h-4" /> Produkte</TabsTrigger>
-                <TabsTrigger value="users" className="gap-2"><Users className="w-4 h-4" /> Benutzer</TabsTrigger>
-                <TabsTrigger value="sellers" className="gap-2"><Store className="w-4 h-4" /> Verkäufer</TabsTrigger>
-                <TabsTrigger value="returns" className="gap-2"><RotateCcw className="w-4 h-4" /> Retouren</TabsTrigger>
-                <TabsTrigger value="analytics" className="gap-2"><BarChart3 className="w-4 h-4" /> Analytics</TabsTrigger>
-                <TabsTrigger value="settings" className="gap-2"><Settings className="w-4 h-4" /> Einstellungen</TabsTrigger>
+                <TabsTrigger value="overview" className="gap-2"><BarChart3 className="w-4 h-4" /> {t('admin_dashboard.overview')}</TabsTrigger>
+                <TabsTrigger value="orders" className="gap-2"><ShoppingCart className="w-4 h-4" /> {t('admin_dashboard.orders')}</TabsTrigger>
+                <TabsTrigger value="products" className="gap-2"><Package className="w-4 h-4" /> {t('admin_dashboard.products')}</TabsTrigger>
+                <TabsTrigger value="users" className="gap-2"><Users className="w-4 h-4" /> {t('admin_dashboard.users')}</TabsTrigger>
+                <TabsTrigger value="sellers" className="gap-2"><Store className="w-4 h-4" /> {t('admin_dashboard.sellers')}</TabsTrigger>
+                <TabsTrigger value="returns" className="gap-2"><RotateCcw className="w-4 h-4" /> {t('admin_dashboard.returns')}</TabsTrigger>
+                <TabsTrigger value="analytics" className="gap-2"><BarChart3 className="w-4 h-4" /> {t('admin_dashboard.analytics')}</TabsTrigger>
+                <TabsTrigger value="settings" className="gap-2"><Settings className="w-4 h-4" /> {t('admin_dashboard.settings')}</TabsTrigger>
               </TabsList>
             </div>
 
@@ -448,39 +725,39 @@ const AdminDashboardPage = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="bg-primary text-primary-foreground border-none shadow-lg">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-primary-foreground/80">Gesamtumsatz</CardTitle>
+                    <CardTitle className="text-sm font-medium text-primary-foreground/80">{t('admin_dashboard.total_revenue')}</CardTitle>
                     <DollarSign className="w-4 h-4 text-primary-foreground/80" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold">€{stats.totalRevenue.toFixed(2)}</div>
+                    <div className="text-3xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Bestellungen</CardTitle>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{t('admin_dashboard.orders')}</CardTitle>
                     <ShoppingCart className="w-4 h-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold">{stats.totalOrders}</div>
                     <div className="flex gap-2 mt-2 text-xs">
-                      <span className="text-blue-600">{stats.activeOrders} aktiv</span>
-                      <span className="text-yellow-600">{stats.pendingOrders} ausstehend</span>
+                      <span className="text-blue-600">{t('admin_dashboard.active_count', { count: stats.activeOrders })}</span>
+                      <span className="text-yellow-600">{t('admin_dashboard.pending_count', { count: stats.pendingOrders })}</span>
                     </div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Benutzer</CardTitle>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{t('admin_dashboard.users')}</CardTitle>
                     <Users className="w-4 h-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold">{stats.totalUsers}</div>
-                    <p className="text-xs text-muted-foreground mt-1">{stats.totalSellers} davon Verkäufer</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t('admin_dashboard.sellers_count', { count: stats.totalSellers })}</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Produkte</CardTitle>
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{t('admin_dashboard.products')}</CardTitle>
                     <Package className="w-4 h-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
@@ -491,13 +768,13 @@ const AdminDashboardPage = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
-                  <CardHeader><CardTitle>Umsatz der letzten 7 Tage</CardTitle></CardHeader>
+                  <CardHeader><CardTitle>{t('admin_dashboard.revenue_7_days')}</CardTitle></CardHeader>
                   <CardContent className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                         <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} tickFormatter={(val) => `€${val}`} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} tickFormatter={(val) => formatCurrency(val)} />
                         <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                         <Line type="monotone" dataKey="revenue" stroke="#0000FF" strokeWidth={3} dot={{ r: 4, fill: '#0000FF' }} activeDot={{ r: 6 }} />
                       </LineChart>
@@ -505,7 +782,7 @@ const AdminDashboardPage = () => {
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardHeader><CardTitle>Neueste Bestellungen</CardTitle></CardHeader>
+                  <CardHeader><CardTitle>{t('admin_dashboard.latest_orders')}</CardTitle></CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {orders.slice(0, 5).map(order => (
@@ -516,12 +793,12 @@ const AdminDashboardPage = () => {
                             </div>
                             <div>
                               <p className="font-medium text-sm">{order.order_number || order.id.substring(0, 8)}</p>
-                              <p className="text-xs text-muted-foreground">{order.expand?.buyer_id?.name || 'Kunde'}</p>
+                              <p className="text-xs text-muted-foreground">{order.expand?.buyer_id?.name || t('admin_dashboard.customer')}</p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold text-sm">€{order.total_amount?.toFixed(2)}</p>
-                            <Badge variant="outline" className="text-[10px] mt-1">{order.status || 'Neu'}</Badge>
+                            <p className="font-bold text-sm">{formatCurrency(order.total_amount)}</p>
+                            <Badge variant="outline" className="text-[10px] mt-1">{getStatusLabel(order.status || 'pending')}</Badge>
                           </div>
                         </div>
                       ))}
@@ -536,20 +813,20 @@ const AdminDashboardPage = () => {
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <CardTitle>Bestellverwaltung</CardTitle>
+                    <CardTitle>{t('admin_dashboard.order_management')}</CardTitle>
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                       <div className="relative flex-1 sm:w-64">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Suchen..." className="pl-9" value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} />
+                        <Input placeholder={t('admin_dashboard.search_placeholder')} className="pl-9" value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} />
                       </div>
                       <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
-                        <SelectTrigger className="w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
+                        <SelectTrigger className="w-[140px]"><SelectValue placeholder={t('seller.status')} /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">Alle Status</SelectItem>
-                          <SelectItem value="pending">Ausstehend</SelectItem>
-                          <SelectItem value="paid">Bezahlt</SelectItem>
-                          <SelectItem value="shipped">Versendet</SelectItem>
-                          <SelectItem value="delivered">Zugestellt</SelectItem>
+                          <SelectItem value="all">{t('seller.filter_all')}</SelectItem>
+                          <SelectItem value="pending">{t('orders.status_pending')}</SelectItem>
+                          <SelectItem value="paid">{t('success.paid')}</SelectItem>
+                          <SelectItem value="shipped">{t('orders.status_shipped')}</SelectItem>
+                          <SelectItem value="delivered">{t('orders.status_delivered')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -561,11 +838,11 @@ const AdminDashboardPage = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-12"><Checkbox /></TableHead>
-                          <TableHead>Bestell-ID</TableHead>
-                          <TableHead>Kunde</TableHead>
-                          <TableHead>Datum</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Betrag</TableHead>
+                          <TableHead>{t('admin_dashboard.order_id')}</TableHead>
+                          <TableHead>{t('admin_dashboard.customer')}</TableHead>
+                          <TableHead>{t('orders.date')}</TableHead>
+                          <TableHead>{t('seller.status')}</TableHead>
+                          <TableHead className="text-right">{t('verification_success.amount')}</TableHead>
                           <TableHead className="w-[100px]"></TableHead>
                         </TableRow>
                       </TableHeader>
@@ -576,22 +853,22 @@ const AdminDashboardPage = () => {
                             <TableCell className="font-medium">{order.order_number || order.id.substring(0, 8)}</TableCell>
                             <TableCell>
                               <div className="flex flex-col">
-                                <span>{order.expand?.buyer_id?.name || 'Unbekannt'}</span>
+                                <span>{order.expand?.buyer_id?.name || t('admin_dashboard.unknown')}</span>
                                 <span className="text-xs text-muted-foreground">{order.expand?.buyer_id?.email}</span>
                               </div>
                             </TableCell>
-                            <TableCell>{new Date(order.created).toLocaleDateString('de-DE')}</TableCell>
+                            <TableCell>{formatDate(order.created)}</TableCell>
                             <TableCell>
-                              <Badge variant={order.status === 'delivered' ? 'default' : 'outline'}>{order.status || 'pending'}</Badge>
+                              <Badge variant={order.status === 'delivered' ? 'default' : 'outline'}>{getStatusLabel(order.status || 'pending')}</Badge>
                             </TableCell>
-                            <TableCell className="text-right font-medium">€{order.total_amount?.toFixed(2)}</TableCell>
+                            <TableCell className="text-right font-medium">{formatCurrency(order.total_amount)}</TableCell>
                             <TableCell>
                               <Button variant="ghost" size="icon"><MoreVertical className="w-4 h-4" /></Button>
                             </TableCell>
                           </TableRow>
                         ))}
                         {filteredOrders.length === 0 && (
-                          <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Keine Bestellungen gefunden</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">{t('admin_dashboard.no_orders_found')}</TableCell></TableRow>
                         )}
                       </TableBody>
                     </Table>
@@ -605,26 +882,26 @@ const AdminDashboardPage = () => {
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <CardTitle>Produktverwaltung</CardTitle>
+                    <CardTitle>{t('admin_dashboard.product_management')}</CardTitle>
                     <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
                       {selectedProducts.length > 0 && (
                         <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
-                          {selectedProducts.length} Löschen
+                          {t('admin_dashboard.delete_selected', { count: selectedProducts.length })}
                         </Button>
                       )}
                       <Select value={productTypeFilter} onValueChange={setProductTypeFilter}>
-                        <SelectTrigger className="w-[140px]"><SelectValue placeholder="Typ" /></SelectTrigger>
+                        <SelectTrigger className="w-[140px]"><SelectValue placeholder={t('seller.type')} /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">Alle Typen</SelectItem>
-                          <SelectItem value="Article">Artikel</SelectItem>
-                          <SelectItem value="Set">Set</SelectItem>
-                          <SelectItem value="Consumable">Verbrauchsmaterial</SelectItem>
+                          <SelectItem value="all">{t('admin_dashboard.all_types')}</SelectItem>
+                          <SelectItem value="Article">{t('marketplace.type_article')}</SelectItem>
+                          <SelectItem value="Set">{t('marketplace.type_set')}</SelectItem>
+                          <SelectItem value="Consumable">{t('marketplace.type_consumable')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <Select value={productCategoryFilter} onValueChange={setProductCategoryFilter}>
-                        <SelectTrigger className="w-[140px]"><SelectValue placeholder="Kategorie" /></SelectTrigger>
+                        <SelectTrigger className="w-[140px]"><SelectValue placeholder={t('seller.category')} /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">Alle Kategorien</SelectItem>
+                          <SelectItem value="all">{t('admin_dashboard.all_categories')}</SelectItem>
                           <SelectItem value="Paro">Paro</SelectItem>
                           <SelectItem value="Kons">Kons</SelectItem>
                           <SelectItem value="Pro">Pro</SelectItem>
@@ -633,7 +910,7 @@ const AdminDashboardPage = () => {
                       </Select>
                       <div className="relative w-full sm:w-64">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Produkt suchen..." className="pl-9" value={productSearch} onChange={(e) => setProductSearch(e.target.value)} />
+                        <Input placeholder={t('seller.search_placeholder')} className="pl-9" value={productSearch} onChange={(e) => setProductSearch(e.target.value)} />
                       </div>
                     </div>
                   </div>
@@ -646,12 +923,12 @@ const AdminDashboardPage = () => {
                           <TableHead className="w-12">
                             <Checkbox checked={selectedProducts.length === tableProducts.length && tableProducts.length > 0} onCheckedChange={handleSelectAllProducts} />
                           </TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Preis</TableHead>
-                          <TableHead>Typ</TableHead>
-                          <TableHead>Kategorie</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="w-[180px] text-right">Aktionen</TableHead>
+                          <TableHead>{t('shipping.name')}</TableHead>
+                          <TableHead>{t('seller.price')}</TableHead>
+                          <TableHead>{t('seller.type')}</TableHead>
+                          <TableHead>{t('seller.category')}</TableHead>
+                          <TableHead>{t('seller.status')}</TableHead>
+                          <TableHead className="w-[180px] text-right">{t('seller.actions')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -668,7 +945,7 @@ const AdminDashboardPage = () => {
                             </TableRow>
                           ))
                         ) : tableProducts.length === 0 ? (
-                          <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Keine Produkte gefunden</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">{t('marketplace.empty_title')}</TableCell></TableRow>
                         ) : (
                           tableProducts.map(product => (
                             <TableRow key={product.id}>
@@ -676,13 +953,13 @@ const AdminDashboardPage = () => {
                                 <Checkbox checked={selectedProducts.includes(product.id)} onCheckedChange={() => handleBulkSelect(product.id)} />
                               </TableCell>
                               <TableCell className="font-medium max-w-[200px] truncate">{product.name}</TableCell>
-                              <TableCell>€{product.price?.toFixed(2)}</TableCell>
-                              <TableCell><Badge variant="secondary">{product.product_type || 'Article'}</Badge></TableCell>
+                              <TableCell>{formatCurrency(product.price)}</TableCell>
+                              <TableCell><Badge variant="secondary">{getProductTypeLabel(product.product_type || 'Article')}</Badge></TableCell>
                               <TableCell>{product.fachbereich || '-'}</TableCell>
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   <Switch checked={product.status === 'active'} onCheckedChange={() => handleToggleStatus(product.id, product.status)} />
-                                  <span className="text-xs text-muted-foreground">{product.status === 'active' ? 'Aktiv' : 'Inaktiv'}</span>
+                                  <span className="text-xs text-muted-foreground">{product.status === 'active' ? t('seller.status_active') : t('admin_dashboard.status_inactive')}</span>
                                 </div>
                               </TableCell>
                               <TableCell className="text-right">
@@ -705,13 +982,277 @@ const AdminDashboardPage = () => {
 
             {/* USERS */}
             <TabsContent value="users" className="space-y-4">
+              {currentUserRecord ? (
+                <div className="space-y-5">
+                  <div className="flex flex-col gap-4 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0">
+                      <Button variant="outline" className="mb-4 rounded-[8px]" onClick={() => setCurrentUserRecord(null)}>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        {t('admin_dashboard.back_to_users')}
+                      </Button>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h2 className="text-2xl font-semibold leading-tight text-slate-900">
+                          {currentUserRecord.name || t('admin_dashboard.no_name')}
+                        </h2>
+                        <Badge className={getUserRoleBadgeClass(currentUserRecord)} variant={currentUserRecord.is_admin || currentUserRecord.is_seller ? 'default' : 'secondary'}>
+                          {getUserRoleLabel(currentUserRecord)}
+                        </Badge>
+                        <Badge variant="outline" className={getUserStatusBadgeClass(currentUserRecord)}>
+                          {getUserStatusLabel(currentUserRecord)}
+                        </Badge>
+                      </div>
+                      <p className="mt-2 break-all text-sm text-slate-600">{currentUserRecord.email}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {currentUserRecord.is_seller && !currentUserRecord.is_deleted && (
+                        <Button variant="outline" className="rounded-[8px]" onClick={() => handleRemoveSellerRole(currentUserRecord)}>
+                          <Store className="mr-2 h-4 w-4" />
+                          {t('admin_dashboard.user_action_remove_seller')}
+                        </Button>
+                      )}
+                      <Button variant="destructive" className="rounded-[8px]" onClick={() => handleDeleteUser(currentUserRecord)}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {t('admin_dashboard.user_action_delete')}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+                    <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                      <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.account_details')}</h3>
+                      <div className="mt-5 space-y-4 text-sm">
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.account_id')}</p>
+                          <p className="mt-1 break-all font-medium text-slate-900">{currentUserRecord.id}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('profile.user_id')}</p>
+                          <p className="mt-1 break-all font-medium text-slate-900">{currentUserRecord.user_id || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.registered_at')}</p>
+                          <p className="mt-1 font-medium text-slate-900">{formatDate(currentUserRecord.created)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.university')}</p>
+                          <p className="mt-1 font-medium text-slate-900">{currentUserRecord.university || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.seller_username')}</p>
+                          <p className="mt-1 font-medium text-slate-900">{currentUserRecord.seller_username || '-'}</p>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                      <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.user_activity_summary')}</h3>
+                      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.purchase_total')}</p>
+                          <p className="mt-2 text-xl font-semibold text-slate-900">{formatCurrency(selectedUserRecords.purchaseTotal)}</p>
+                          <p className="mt-1 text-xs text-slate-500">{t('admin_dashboard.orders_count', { count: selectedUserRecords.buyingOrders.length })}</p>
+                        </div>
+                        <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.sales_total')}</p>
+                          <p className="mt-2 text-xl font-semibold text-slate-900">{formatCurrency(selectedUserRecords.salesTotal)}</p>
+                          <p className="mt-1 text-xs text-slate-500">{t('admin_dashboard.orders_count', { count: selectedUserRecords.sellingOrders.length })}</p>
+                        </div>
+                        <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.listings')}</p>
+                          <p className="mt-2 text-xl font-semibold text-slate-900">{selectedUserRecords.listings.length}</p>
+                          <p className="mt-1 text-xs text-slate-500">{t('admin_dashboard.active_listings_count', { count: selectedUserRecords.listings.filter((product) => product.status === 'active').length })}</p>
+                        </div>
+                        <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('seller_dashboard.earnings')}</p>
+                          <p className="mt-2 text-xl font-semibold text-slate-900">{formatCurrency(selectedUserRecords.earningsTotal)}</p>
+                          <p className="mt-1 text-xs text-slate-500">{t('admin_dashboard.records_count', { count: selectedUserRecords.earnings.length })}</p>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+
+                  <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.buying_records')}</h3>
+                        <p className="text-sm text-slate-500">{t('admin_dashboard.buying_records_description')}</p>
+                      </div>
+                      <Badge variant="secondary">{selectedUserRecords.buyingOrders.length}</Badge>
+                    </div>
+                    <div className="overflow-hidden rounded-[8px] border border-slate-200">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{t('admin_dashboard.order_id')}</TableHead>
+                            <TableHead>{t('admin_dashboard.products')}</TableHead>
+                            <TableHead>{t('admin_dashboard.registered_at')}</TableHead>
+                            <TableHead>{t('seller.status')}</TableHead>
+                            <TableHead className="text-right">{t('orders.total')}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedUserRecords.buyingOrders.map((order) => (
+                            <TableRow key={order.id}>
+                              <TableCell className="font-medium">{order.order_number || order.id.substring(0, 8)}</TableCell>
+                              <TableCell>{order.expand?.product_id?.name || order.product_id || '-'}</TableCell>
+                              <TableCell>{formatDate(order.created)}</TableCell>
+                              <TableCell><Badge variant="outline">{getStatusLabel(order.status || 'pending')}</Badge></TableCell>
+                              <TableCell className="text-right font-medium">{formatCurrency(order.total_amount)}</TableCell>
+                            </TableRow>
+                          ))}
+                          {selectedUserRecords.buyingOrders.length === 0 && (
+                            <TableRow><TableCell colSpan={5} className="py-10 text-center text-muted-foreground">{t('admin_dashboard.no_buying_records')}</TableCell></TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </section>
+
+                  <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.selling_records')}</h3>
+                        <p className="text-sm text-slate-500">{t('admin_dashboard.selling_records_description')}</p>
+                      </div>
+                      <Badge variant="secondary">{selectedUserRecords.sellingOrders.length}</Badge>
+                    </div>
+                    <div className="overflow-hidden rounded-[8px] border border-slate-200">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{t('admin_dashboard.order_id')}</TableHead>
+                            <TableHead>{t('admin_dashboard.products')}</TableHead>
+                            <TableHead>{t('admin_dashboard.customer')}</TableHead>
+                            <TableHead>{t('seller.status')}</TableHead>
+                            <TableHead className="text-right">{t('orders.total')}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedUserRecords.sellingOrders.map((order) => (
+                            <TableRow key={order.id}>
+                              <TableCell className="font-medium">{order.order_number || order.id.substring(0, 8)}</TableCell>
+                              <TableCell>{order.expand?.product_id?.name || order.product_id || '-'}</TableCell>
+                              <TableCell>{order.expand?.buyer_id?.email || order.buyer_id || '-'}</TableCell>
+                              <TableCell><Badge variant="outline">{getStatusLabel(order.status || 'pending')}</Badge></TableCell>
+                              <TableCell className="text-right font-medium">{formatCurrency(order.total_amount)}</TableCell>
+                            </TableRow>
+                          ))}
+                          {selectedUserRecords.sellingOrders.length === 0 && (
+                            <TableRow><TableCell colSpan={5} className="py-10 text-center text-muted-foreground">{t('admin_dashboard.no_selling_records')}</TableCell></TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </section>
+
+                  <div className="grid gap-5 xl:grid-cols-2">
+                    <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.listings')}</h3>
+                        <Badge variant="secondary">{selectedUserRecords.listings.length}</Badge>
+                      </div>
+                      <div className="overflow-hidden rounded-[8px] border border-slate-200">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>{t('admin_dashboard.products')}</TableHead>
+                              <TableHead>{t('seller.type')}</TableHead>
+                              <TableHead>{t('seller.status')}</TableHead>
+                              <TableHead className="text-right">{t('seller.price')}</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {selectedUserRecords.listings.slice(0, 8).map((product) => (
+                              <TableRow key={product.id}>
+                                <TableCell className="font-medium">{product.name || t('admin_dashboard.unnamed')}</TableCell>
+                                <TableCell>{getProductTypeLabel(product.product_type || 'Article')}</TableCell>
+                                <TableCell><Badge variant="outline" className={getStatusBadgeClass(product.status)}>{getStatusLabel(product.status)}</Badge></TableCell>
+                                <TableCell className="text-right font-medium">{formatCurrency(product.price)}</TableCell>
+                              </TableRow>
+                            ))}
+                            {selectedUserRecords.listings.length === 0 && (
+                              <TableRow><TableCell colSpan={4} className="py-10 text-center text-muted-foreground">{t('admin_dashboard.no_listings')}</TableCell></TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </section>
+
+                    <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.returns')}</h3>
+                        <Badge variant="secondary">{selectedUserRecords.userReturns.length}</Badge>
+                      </div>
+                      <div className="overflow-hidden rounded-[8px] border border-slate-200">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>{t('admin_dashboard.return_id')}</TableHead>
+                              <TableHead>{t('admin_dashboard.reason')}</TableHead>
+                              <TableHead>{t('seller.status')}</TableHead>
+                              <TableHead className="text-right">{t('orders.total')}</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {selectedUserRecords.userReturns.slice(0, 8).map((ret) => (
+                              <TableRow key={ret.id}>
+                                <TableCell className="font-medium">{ret.id.substring(0, 8)}</TableCell>
+                                <TableCell className="max-w-[220px] truncate">{ret.reason || '-'}</TableCell>
+                                <TableCell><Badge variant="outline">{ret.status || '-'}</Badge></TableCell>
+                                <TableCell className="text-right font-medium">{formatCurrency(ret.refund_amount)}</TableCell>
+                              </TableRow>
+                            ))}
+                            {selectedUserRecords.userReturns.length === 0 && (
+                              <TableRow><TableCell colSpan={4} className="py-10 text-center text-muted-foreground">{t('admin_dashboard.no_user_returns')}</TableCell></TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </section>
+                  </div>
+
+                  <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <h3 className="text-base font-semibold text-slate-900">{t('seller_dashboard.earnings_payouts')}</h3>
+                      <Badge variant="secondary">{selectedUserRecords.earnings.length}</Badge>
+                    </div>
+                    <div className="overflow-hidden rounded-[8px] border border-slate-200">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{t('admin_dashboard.order_id')}</TableHead>
+                            <TableHead>{t('admin_dashboard.sales_total')}</TableHead>
+                            <TableHead>{t('admin_dashboard.seller_fee')}</TableHead>
+                            <TableHead>{t('seller.status')}</TableHead>
+                            <TableHead className="text-right">{t('seller_dashboard.available_balance')}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedUserRecords.earnings.map((earning) => (
+                            <TableRow key={earning.id}>
+                              <TableCell className="font-medium">{earning.order_id || '-'}</TableCell>
+                              <TableCell>{formatCurrency(earning.gross_amount)}</TableCell>
+                              <TableCell>{formatCurrency(earning.transaction_fee)}</TableCell>
+                              <TableCell><Badge variant="outline">{earning.status || '-'}</Badge></TableCell>
+                              <TableCell className="text-right font-medium">{formatCurrency(earning.net_amount)}</TableCell>
+                            </TableRow>
+                          ))}
+                          {selectedUserRecords.earnings.length === 0 && (
+                            <TableRow><TableCell colSpan={5} className="py-10 text-center text-muted-foreground">{t('seller_dashboard.no_transactions')}</TableCell></TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </section>
+                </div>
+              ) : (
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <CardTitle>Benutzerverwaltung</CardTitle>
+                    <CardTitle>{t('admin_dashboard.user_management')}</CardTitle>
                     <div className="relative w-full sm:w-72">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="Name oder E-Mail..." className="pl-9" value={userSearch} onChange={(e) => setUserSearch(e.target.value)} />
+                      <Input placeholder={t('admin_dashboard.user_search_placeholder')} className="pl-9" value={userSearch} onChange={(e) => setUserSearch(e.target.value)} />
                     </div>
                   </div>
                 </CardHeader>
@@ -721,40 +1262,86 @@ const AdminDashboardPage = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-12"><Checkbox /></TableHead>
-                          <TableHead>Benutzer</TableHead>
-                          <TableHead>Rolle</TableHead>
-                          <TableHead>Registriert am</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="w-[100px]"></TableHead>
+                          <TableHead>{t('admin_dashboard.users')}</TableHead>
+                          <TableHead>{t('admin_dashboard.role')}</TableHead>
+                          <TableHead>{t('admin_dashboard.registered_at')}</TableHead>
+                          <TableHead>{t('seller.status')}</TableHead>
+                          <TableHead className="w-[72px] text-right">{t('seller.actions')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredUsers.map(user => (
+                        {isUsersLoading ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
+                              {t('admin_dashboard.loading')}
+                            </TableCell>
+                          </TableRow>
+                        ) : tableUsers.map(user => (
                           <TableRow key={user.id}>
                             <TableCell><Checkbox /></TableCell>
                             <TableCell>
                               <div className="flex flex-col">
-                                <span className="font-medium">{user.name || 'Kein Name'}</span>
+                                <span className="font-medium">{user.name || t('admin_dashboard.no_name')}</span>
                                 <span className="text-xs text-muted-foreground">{user.email}</span>
                               </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-1">
-                                {user.is_admin && <Badge className="bg-purple-500">Admin</Badge>}
-                                {user.is_seller && <Badge className="bg-blue-500">Verkäufer</Badge>}
-                                {!user.is_admin && !user.is_seller && <Badge variant="secondary">Käufer</Badge>}
+                                <Badge className={getUserRoleBadgeClass(user)} variant={user.is_admin || user.is_seller ? 'default' : 'secondary'}>
+                                  {getUserRoleLabel(user)}
+                                </Badge>
                               </div>
                             </TableCell>
-                            <TableCell>{new Date(user.created).toLocaleDateString('de-DE')}</TableCell>
-                            <TableCell><Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">Aktiv</Badge></TableCell>
-                            <TableCell><Button variant="ghost" size="icon"><MoreVertical className="w-4 h-4" /></Button></TableCell>
+                            <TableCell>{formatDate(user.created)}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={getUserStatusBadgeClass(user)}>
+                                {getUserStatusLabel(user)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-[8px]">
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48 rounded-[8px] border border-[hsl(var(--border))] bg-white p-1">
+                                  <DropdownMenuItem onClick={() => openUserDetails(user)} className="rounded-md">
+                                    <Eye className="w-4 h-4" />
+                                    {t('admin_dashboard.user_action_view')}
+                                  </DropdownMenuItem>
+                                  {user.is_seller && !user.is_deleted && (
+                                    <DropdownMenuItem onClick={() => handleRemoveSellerRole(user)} className="rounded-md">
+                                      <Store className="w-4 h-4" />
+                                      {t('admin_dashboard.user_action_remove_seller')}
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuSeparator className="bg-slate-100" />
+                                  <DropdownMenuItem
+                                    onClick={() => handleDeleteUser(user)}
+                                    className="rounded-md text-red-600 focus:bg-red-50 focus:text-red-700"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                    {t('admin_dashboard.user_action_delete')}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
                           </TableRow>
                         ))}
+                        {!isUsersLoading && tableUsers.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
+                              {t('admin_dashboard.no_users_found')}
+                            </TableCell>
+                          </TableRow>
+                        )}
                       </TableBody>
                     </Table>
                   </div>
                 </CardContent>
               </Card>
+              )}
             </TabsContent>
 
             {/* SELLERS */}
@@ -762,10 +1349,10 @@ const AdminDashboardPage = () => {
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <CardTitle>Verkäufer & Shops</CardTitle>
+                    <CardTitle>{t('admin_dashboard.sellers_shops')}</CardTitle>
                     <div className="relative w-full sm:w-72">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder="Verkäufer suchen..." className="pl-9" value={sellerSearch} onChange={(e) => setSellerSearch(e.target.value)} />
+                      <Input placeholder={t('admin_dashboard.seller_search_placeholder')} className="pl-9" value={sellerSearch} onChange={(e) => setSellerSearch(e.target.value)} />
                     </div>
                   </div>
                 </CardHeader>
@@ -774,10 +1361,10 @@ const AdminDashboardPage = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Shop / Verkäufer</TableHead>
+                          <TableHead>{t('admin_dashboard.shop_seller')}</TableHead>
                           <TableHead>E-Mail</TableHead>
-                          <TableHead>Produkte</TableHead>
-                          <TableHead>Status</TableHead>
+                          <TableHead>{t('admin_dashboard.products')}</TableHead>
+                          <TableHead>{t('seller.status')}</TableHead>
                           <TableHead className="w-[100px]"></TableHead>
                         </TableRow>
                       </TableHeader>
@@ -786,18 +1373,18 @@ const AdminDashboardPage = () => {
                           const sellerProducts = products.filter(p => p.seller_id === seller.id).length;
                           return (
                             <TableRow key={seller.id}>
-                              <TableCell className="font-medium">{seller.seller_username || seller.name || 'Unbenannt'}</TableCell>
+                              <TableCell className="font-medium">{seller.seller_username || seller.name || t('admin_dashboard.unnamed')}</TableCell>
                               <TableCell>{seller.email}</TableCell>
                               <TableCell>{sellerProducts}</TableCell>
-                              <TableCell><Badge className="bg-green-500">Verifiziert</Badge></TableCell>
+                              <TableCell><Badge className="bg-green-500">{t('popular.verified')}</Badge></TableCell>
                               <TableCell>
-                                <Button variant="ghost" size="sm" className="gap-1"><Eye className="w-4 h-4" /> Profil</Button>
+                                <Button variant="ghost" size="sm" className="gap-1"><Eye className="w-4 h-4" /> {t('nav.profile')}</Button>
                               </TableCell>
                             </TableRow>
                           );
                         })}
                         {filteredSellers.length === 0 && (
-                          <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Keine Verkäufer gefunden</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('admin_dashboard.no_sellers_found')}</TableCell></TableRow>
                         )}
                       </TableBody>
                     </Table>
@@ -810,20 +1397,20 @@ const AdminDashboardPage = () => {
             <TabsContent value="returns" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Retouren & Rückerstattungen</CardTitle>
-                  <CardDescription>Verwalte Rücksendeanfragen und Erstattungen</CardDescription>
+                  <CardTitle>{t('admin_dashboard.returns_refunds')}</CardTitle>
+                  <CardDescription>{t('admin_dashboard.returns_description')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="rounded-md border">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Retouren-ID</TableHead>
-                          <TableHead>Bestellung</TableHead>
-                          <TableHead>Kunde</TableHead>
-                          <TableHead>Grund</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Aktionen</TableHead>
+                          <TableHead>{t('admin_dashboard.return_id')}</TableHead>
+                          <TableHead>{t('admin_dashboard.orders')}</TableHead>
+                          <TableHead>{t('admin_dashboard.customer')}</TableHead>
+                          <TableHead>{t('admin_dashboard.reason')}</TableHead>
+                          <TableHead>{t('seller.status')}</TableHead>
+                          <TableHead className="text-right">{t('seller.actions')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -831,7 +1418,7 @@ const AdminDashboardPage = () => {
                           <TableRow key={ret.id}>
                             <TableCell className="font-medium">{ret.id.substring(0, 8)}</TableCell>
                             <TableCell>{ret.expand?.order_id?.order_number || ret.order_id}</TableCell>
-                            <TableCell>{ret.expand?.buyer_id?.name || 'Kunde'}</TableCell>
+                            <TableCell>{ret.expand?.buyer_id?.name || t('admin_dashboard.customer')}</TableCell>
                             <TableCell className="max-w-[200px] truncate">{ret.reason}</TableCell>
                             <TableCell>
                               <Badge variant="outline" className={ret.status === 'Pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' : ''}>
@@ -840,14 +1427,14 @@ const AdminDashboardPage = () => {
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
-                                <Button size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50">Akzeptieren</Button>
-                                <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">Ablehnen</Button>
+                                <Button size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50">{t('admin_dashboard.accept')}</Button>
+                                <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">{t('admin_dashboard.reject')}</Button>
                               </div>
                             </TableCell>
                           </TableRow>
                         ))}
                         {returns.length === 0 && (
-                          <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground">Keine aktiven Retouren vorhanden</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground">{t('admin_dashboard.no_returns')}</TableCell></TableRow>
                         )}
                       </TableBody>
                     </Table>
@@ -860,7 +1447,7 @@ const AdminDashboardPage = () => {
             <TabsContent value="analytics" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
-                  <CardHeader><CardTitle>Bestellvolumen (7 Tage)</CardTitle></CardHeader>
+                  <CardHeader><CardTitle>{t('admin_dashboard.order_volume_7_days')}</CardTitle></CardHeader>
                   <CardContent className="h-[350px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData}>
@@ -874,7 +1461,7 @@ const AdminDashboardPage = () => {
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardHeader><CardTitle>Top Verkäufer</CardTitle></CardHeader>
+                  <CardHeader><CardTitle>{t('admin_dashboard.top_sellers')}</CardTitle></CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {sellers.slice(0, 5).map((seller, i) => {
@@ -886,10 +1473,10 @@ const AdminDashboardPage = () => {
                               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-medium text-xs">{i + 1}</div>
                               <div>
                                 <p className="font-medium text-sm">{seller.seller_username || seller.name}</p>
-                                <p className="text-xs text-muted-foreground">{sellerProductCount} Produkte</p>
+                                <p className="text-xs text-muted-foreground">{t('admin_dashboard.products_count', { count: sellerProductCount })}</p>
                               </div>
                             </div>
-                            <div className="font-bold text-sm">€{sellerRevenue.toFixed(2)}</div>
+                            <div className="font-bold text-sm">{formatCurrency(sellerRevenue)}</div>
                           </div>
                         );
                       })}
@@ -903,13 +1490,13 @@ const AdminDashboardPage = () => {
             <TabsContent value="settings" className="space-y-6">
               <Card className="max-w-2xl">
                 <CardHeader>
-                  <CardTitle>Plattform Einstellungen</CardTitle>
-                  <CardDescription>Globale Gebühren und Konfigurationen</CardDescription>
+                  <CardTitle>{t('admin_dashboard.platform_settings')}</CardTitle>
+                  <CardDescription>{t('admin_dashboard.platform_settings_description')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
                     <div className="grid gap-2">
-                      <label className="text-sm font-medium">Käufer-Servicegebühr (€)</label>
+                      <label className="text-sm font-medium">{t('admin_dashboard.buyer_service_fee')}</label>
                       <Input
                         type="number"
                         step="0.01"
@@ -918,7 +1505,7 @@ const AdminDashboardPage = () => {
                       />
                     </div>
                     <div className="grid gap-2">
-                      <label className="text-sm font-medium">Standard Versandkosten (€)</label>
+                      <label className="text-sm font-medium">{t('admin_dashboard.default_shipping_fee')}</label>
                       <Input
                         type="number"
                         step="0.01"
@@ -927,7 +1514,7 @@ const AdminDashboardPage = () => {
                       />
                     </div>
                     <div className="grid gap-2">
-                      <label className="text-sm font-medium">Verkäufergebühr (%)</label>
+                      <label className="text-sm font-medium">{t('admin_dashboard.seller_fee')}</label>
                       <Input
                         type="number"
                         step="0.01"
@@ -936,7 +1523,7 @@ const AdminDashboardPage = () => {
                       />
                     </div>
                     <div className="grid gap-2">
-                      <label className="text-sm font-medium">Verifizierungsgebühr (€)</label>
+                      <label className="text-sm font-medium">{t('admin_dashboard.verification_fee')}</label>
                       <Input
                         type="number"
                         step="0.01"
@@ -946,7 +1533,7 @@ const AdminDashboardPage = () => {
                     </div>
                   </div>
                   <Button onClick={handleSaveSettings} className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90">
-                    Einstellungen speichern
+                    {t('admin_dashboard.save_settings')}
                   </Button>
                 </CardContent>
               </Card>
@@ -958,8 +1545,7 @@ const AdminDashboardPage = () => {
 
       {/* Edit Modal */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>Produkt bearbeiten</DialogTitle></DialogHeader>
+        <DialogContent className="overflow-hidden p-0 sm:max-w-[860px]">
           {currentProduct && (
             <form onSubmit={async (e) => {
               e.preventDefault();
@@ -974,44 +1560,148 @@ const AdminDashboardPage = () => {
                   body: JSON.stringify(currentProduct)
                 });
                 if (!res.ok) throw new Error('Update failed');
-                toast.success('Produkt aktualisiert');
+                toast.success(t('seller.update_success'));
                 setEditModalOpen(false);
                 fetchTableProducts();
                 fetchData(true);
               } catch (error) {
-                toast.error('Fehler beim Speichern');
+                toast.error(t('admin_dashboard.save_error'));
               }
-            }} className="space-y-4">
-              <div className="grid gap-2">
-                <Label>Name</Label>
-                <Input value={currentProduct.name || ''} onChange={e => setCurrentProduct({ ...currentProduct, name: e.target.value })} required />
-              </div>
-              <div className="grid gap-2">
-                <Label>Beschreibung</Label>
-                <Textarea value={currentProduct.description || ''} onChange={e => setCurrentProduct({ ...currentProduct, description: e.target.value })} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label>Preis (€)</Label>
-                  <Input type="number" step="0.01" value={currentProduct.price || 0} onChange={e => setCurrentProduct({ ...currentProduct, price: parseFloat(e.target.value) })} required />
+            }} className="grid md:grid-cols-[280px_minmax(0,1fr)]">
+              <div className="border-b bg-[hsl(var(--muted-bg))] md:border-b-0 md:border-r">
+                <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100">
+                  {getProductImageUrl(currentProduct) ? (
+                    <img
+                      src={getProductImageUrl(currentProduct)}
+                      alt={currentProduct.name || t('admin_dashboard.edit_product')}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-6 text-center text-sm font-medium text-muted-foreground">
+                      {t('shop.no_image')}
+                    </div>
+                  )}
                 </div>
-                <div className="grid gap-2">
-                  <Label>Status</Label>
-                  <Select value={currentProduct.status || ''} onValueChange={v => setCurrentProduct({ ...currentProduct, status: v })}>
-                    <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Aktiv</SelectItem>
-                      <SelectItem value="pending_verification">In Prüfung</SelectItem>
-                      <SelectItem value="sold">Verkauft</SelectItem>
-                      <SelectItem value="rejected">Abgelehnt</SelectItem>
-                    </SelectContent>
-                  </Select>
+
+                <div className="space-y-4 p-5">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0000FF]">
+                      {t('admin_dashboard.edit_product')}
+                    </p>
+                    <h3 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
+                      {formatCurrency(currentProduct.price)}
+                    </h3>
+                  </div>
+
+                  <div className="grid gap-3 text-sm">
+                    <div className="rounded-[8px] border border-slate-200 bg-white px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('seller.status')}
+                      </p>
+                      <Badge variant="outline" className={`mt-2 ${getStatusBadgeClass(currentProduct.status)}`}>
+                        {getStatusLabel(currentProduct.status)}
+                      </Badge>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-white px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('seller.category')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">
+                        {formatProductCategories(currentProduct.fachbereich)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-white px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.shop_seller')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">
+                        {currentProduct.seller_username || t('product.anonymous_seller')}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setEditModalOpen(false)}>Abbrechen</Button>
-                <Button type="submit">Speichern</Button>
-              </DialogFooter>
+
+              <div className="p-6 md:p-7">
+                <DialogHeader className="space-y-3 pb-6 text-left">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {currentProduct.product_type && (
+                      <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+                        {getProductTypeLabel(currentProduct.product_type)}
+                      </Badge>
+                    )}
+                    <Badge variant="outline" className={getStatusBadgeClass(currentProduct.status)}>
+                      {getStatusLabel(currentProduct.status)}
+                    </Badge>
+                  </div>
+                  <DialogTitle className="text-2xl font-semibold leading-tight text-slate-900">
+                    {t('admin_dashboard.edit_product')}
+                  </DialogTitle>
+                  <p className="text-sm leading-6 text-slate-600">
+                    {currentProduct.created
+                      ? `${t('admin_dashboard.registered_at')}: ${formatDate(currentProduct.created)}`
+                      : formatProductCategories(currentProduct.fachbereich)}
+                  </p>
+                </DialogHeader>
+
+                <div className="space-y-5">
+                  <div className="grid gap-2">
+                    <Label className="text-sm font-medium text-slate-700">{t('shipping.name')}</Label>
+                    <Input
+                      className="h-11"
+                      value={currentProduct.name || ''}
+                      onChange={e => setCurrentProduct({ ...currentProduct, name: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label className="text-sm font-medium text-slate-700">{t('seller.description')}</Label>
+                    <Textarea
+                      className="min-h-[120px] resize-none"
+                      value={currentProduct.description || ''}
+                      onChange={e => setCurrentProduct({ ...currentProduct, description: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-2">
+                      <Label className="text-sm font-medium text-slate-700">{t('seller.price')}</Label>
+                      <Input
+                        className="h-11"
+                        type="number"
+                        step="0.01"
+                        value={currentProduct.price || 0}
+                        onChange={e => setCurrentProduct({ ...currentProduct, price: parseFloat(e.target.value) })}
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label className="text-sm font-medium text-slate-700">{t('seller.status')}</Label>
+                      <Select value={currentProduct.status || ''} onValueChange={v => setCurrentProduct({ ...currentProduct, status: v })}>
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder={t('seller.status')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">{t('seller.status_active')}</SelectItem>
+                          <SelectItem value="pending_verification">{t('seller.status_pending')}</SelectItem>
+                          <SelectItem value="sold">{t('seller.status_sold')}</SelectItem>
+                          <SelectItem value="rejected">{t('seller.status_rejected')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <DialogFooter className="border-t pt-5">
+                    <Button type="button" variant="outline" onClick={() => setEditModalOpen(false)}>
+                      {t('common.cancel')}
+                    </Button>
+                    <Button type="submit" className="bg-[#0000FF] text-white hover:bg-[#0000CC]">
+                      {t('shipping.save')}
+                    </Button>
+                  </DialogFooter>
+                </div>
+              </div>
             </form>
           )}
         </DialogContent>
@@ -1019,22 +1709,239 @@ const AdminDashboardPage = () => {
 
       {/* View Modal */}
       <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader><DialogTitle>Produktdetails</DialogTitle></DialogHeader>
+        <DialogContent className="max-h-[90vh] overflow-y-auto p-0 sm:max-w-[1040px]">
           {currentProduct && (
-            <div className="space-y-4">
-              <div><h4 className="text-sm font-medium text-muted-foreground">Name</h4><p>{currentProduct.name}</p></div>
-              <div><h4 className="text-sm font-medium text-muted-foreground">Beschreibung</h4><p className="text-sm">{currentProduct.description || '-'}</p></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div><h4 className="text-sm font-medium text-muted-foreground">Preis</h4><p>€{currentProduct.price?.toFixed(2)}</p></div>
-                <div><h4 className="text-sm font-medium text-muted-foreground">Zustand</h4><p>{currentProduct.condition || '-'}</p></div>
-                <div><h4 className="text-sm font-medium text-muted-foreground">Fachbereich</h4><p>{currentProduct.fachbereich || '-'}</p></div>
-                <div><h4 className="text-sm font-medium text-muted-foreground">Status</h4><Badge variant="outline">{currentProduct.status}</Badge></div>
+            <div className="bg-white">
+              <div className="grid lg:grid-cols-[360px_minmax(0,1fr)]">
+                <div className="border-b bg-slate-50 lg:border-b-0 lg:border-r">
+                  <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100">
+                    {getProductImageUrl(currentProduct) ? (
+                      <img
+                        src={getProductImageUrl(currentProduct)}
+                        alt={currentProduct.name || t('admin_dashboard.product_details')}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center px-6 text-center text-sm font-medium text-muted-foreground">
+                        {t('shop.no_image')}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-4 p-5">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-[8px] border border-slate-200 bg-white px-4 py-3">
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                          {t('admin_dashboard.listing_price')}
+                        </p>
+                        <p className="mt-2 text-2xl font-semibold text-slate-900">
+                          {formatCurrency(currentProduct.price)}
+                        </p>
+                      </div>
+                      <div className="rounded-[8px] border border-blue-200 bg-blue-50 px-4 py-3">
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-blue-700">
+                          {t('admin_dashboard.inventory_quantity')}
+                        </p>
+                        <p className="mt-2 text-2xl font-semibold text-blue-900">
+                          {Number(currentProduct.stock_quantity ?? 0)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[8px] border border-slate-200 bg-white p-4">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.seller_details')}
+                      </p>
+                      <div className="mt-3 space-y-2 text-sm">
+                        <p className="font-semibold text-slate-900">{getProductSellerName(currentProduct)}</p>
+                        <p className="break-all text-slate-600">{currentProduct.seller?.email || '-'}</p>
+                        <p className="text-slate-600">{currentProduct.seller?.university || '-'}</p>
+                        <p className="break-all text-xs text-slate-500">{currentProduct.seller?.id || currentProduct.seller_id || '-'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 md:p-7">
+                  <DialogHeader className="space-y-4 text-left">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {currentProduct.product_type && (
+                        <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+                          {getProductTypeLabel(currentProduct.product_type)}
+                        </Badge>
+                      )}
+                      <Badge variant="outline" className={getStatusBadgeClass(currentProduct.status)}>
+                        {getStatusLabel(currentProduct.status)}
+                      </Badge>
+                      {currentProduct.verification_status && (
+                        <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                          {currentProduct.verification_status}
+                        </Badge>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0000FF]">
+                        {t('admin_dashboard.product_overview')}
+                      </p>
+                      <DialogTitle className="mt-2 text-3xl font-semibold leading-tight text-slate-900">
+                        {currentProduct.name || t('admin_dashboard.no_name')}
+                      </DialogTitle>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {currentProduct.id}
+                      </p>
+                    </div>
+                  </DialogHeader>
+
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('seller.category')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">
+                        {formatProductCategories(currentProduct.fachbereich)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('seller.condition')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">{currentProduct.condition || '-'}</p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('seller.type')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">
+                        {getProductTypeLabel(currentProduct.product_type || 'Article')}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('seller.status')}
+                      </p>
+                      <Badge variant="outline" className={`mt-2 ${getStatusBadgeClass(currentProduct.status)}`}>
+                        {getStatusLabel(currentProduct.status)}
+                      </Badge>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.verification_status')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">{currentProduct.verification_status || '-'}</p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.shop_product')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">{currentProduct.shop_product ? t('common.yes') : t('common.no')}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-4">
+                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                      {t('seller.description')}
+                    </p>
+                    <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                      {currentProduct.description || '-'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200 p-6 md:p-7">
+                <div className="grid gap-5 xl:grid-cols-3">
+                  <section className="rounded-[8px] border border-slate-200 p-5">
+                    <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.seller_details')}</h3>
+                    <div className="mt-4 space-y-3 text-sm">
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('shipping.name')}</p>
+                        <p className="mt-1 font-medium text-slate-900">{currentProduct.seller?.name || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.seller_username')}</p>
+                        <p className="mt-1 font-medium text-slate-900">{currentProduct.seller?.seller_username || currentProduct.seller_username || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.seller_email')}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{currentProduct.seller?.email || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.seller_id')}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{currentProduct.seller?.id || currentProduct.seller_id || '-'}</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="rounded-[8px] border border-slate-200 p-5">
+                    <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.product_dates')}</h3>
+                    <div className="mt-4 space-y-3 text-sm">
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.registered_at')}</p>
+                        <p className="mt-1 font-medium text-slate-900">{formatDetailDate(currentProduct.created)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.created_at')}</p>
+                        <p className="mt-1 font-medium text-slate-900">{formatDetailDate(currentProduct.created_at)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.updated_at')}</p>
+                        <p className="mt-1 font-medium text-slate-900">{formatDetailDate(currentProduct.updated || currentProduct.updated_at)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('seller_dashboard.created_at')}</p>
+                        <p className="mt-1 font-medium text-slate-900">{formatDetailDate(currentProduct.seller?.created)}</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="rounded-[8px] border border-slate-200 p-5">
+                    <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.product_identifiers')}</h3>
+                    <div className="mt-4 space-y-3 text-sm">
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.product_id')}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{currentProduct.id}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.collection')}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{currentProduct.collectionName || currentProduct.collectionId || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.image_file')}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{currentProduct.image || '-'}</p>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <section className="mt-5 rounded-[8px] border border-slate-200 p-5">
+                  <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.all_product_data')}</h3>
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    {[
+                      ['product_type', currentProduct.product_type],
+                      ['price', formatCurrency(currentProduct.price)],
+                      ['stock_quantity', currentProduct.stock_quantity ?? 0],
+                      ['condition', currentProduct.condition],
+                      ['fachbereich', currentProduct.fachbereich],
+                      ['status', currentProduct.status],
+                      ['verification_status', currentProduct.verification_status],
+                      ['seller_id', currentProduct.seller_id],
+                      ['seller_username', currentProduct.seller_username],
+                      ['shop_product', currentProduct.shop_product],
+                      ['set_items', currentProduct.set_items],
+                    ].map(([label, value]) => (
+                      <div key={label} className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{label}</p>
+                        <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-sm font-medium text-slate-900">{formatDetailValue(value)}</pre>
+                      </div>
+                    ))}
+                  </div>
+                </section>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
     </>
   );
 };

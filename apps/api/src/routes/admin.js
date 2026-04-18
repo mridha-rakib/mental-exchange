@@ -77,6 +77,203 @@ const queueVerificationEmail = async ({ type, sellerId, productId, productName, 
   });
 };
 
+const OPTIONAL_COLLECTION_MISSING_STATUS = 404;
+
+const escapeFilterValue = (value) =>
+  String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"');
+
+const compactUnique = (values) =>
+  [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))];
+
+const chunkValues = (values, size = 25) => {
+  const chunks = [];
+
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+
+  return chunks;
+};
+
+const buildAnyEqualsFilter = (fields, values) => {
+  const fieldList = Array.isArray(fields) ? fields : [fields];
+  const valueList = compactUnique(Array.isArray(values) ? values : [values]);
+
+  if (fieldList.length === 0 || valueList.length === 0) {
+    return '';
+  }
+
+  return fieldList
+    .flatMap((field) => valueList.map((value) => `${field}="${escapeFilterValue(value)}"`))
+    .join(' || ');
+};
+
+const isMissingCollectionError = (error) =>
+  error?.status === OPTIONAL_COLLECTION_MISSING_STATUS
+  || error?.response?.code === OPTIONAL_COLLECTION_MISSING_STATUS
+  || /collection not found|missing collection|not found/i.test(error?.message || '');
+
+const getRecordsByFields = async (collectionName, fields, values, { optional = false } = {}) => {
+  const valueList = compactUnique(Array.isArray(values) ? values : [values]);
+
+  if (valueList.length === 0) {
+    return [];
+  }
+
+  try {
+    const recordGroups = [];
+
+    for (const valueChunk of chunkValues(valueList)) {
+      const filter = buildAnyEqualsFilter(fields, valueChunk);
+      recordGroups.push(await pb.collection(collectionName).getFullList({
+        filter,
+        $autoCancel: false,
+      }));
+    }
+
+    return dedupeRecords(...recordGroups);
+  } catch (error) {
+    if (optional && isMissingCollectionError(error)) {
+      return [];
+    }
+
+    throw error;
+  }
+};
+
+const dedupeRecords = (...recordGroups) => {
+  const recordsById = new Map();
+
+  for (const records of recordGroups) {
+    for (const record of records || []) {
+      if (record?.id) {
+        recordsById.set(record.id, record);
+      }
+    }
+  }
+
+  return [...recordsById.values()];
+};
+
+const deleteRecords = async (collectionName, records, summary) => {
+  for (const record of records) {
+    try {
+      await pb.collection(collectionName).delete(record.id, { $autoCancel: false });
+      summary[collectionName] = (summary[collectionName] || 0) + 1;
+    } catch (error) {
+      if (!isMissingCollectionError(error)) {
+        throw error;
+      }
+    }
+  }
+};
+
+const metadataContainsAny = (metadata, values) => {
+  const valueSet = new Set(compactUnique(values));
+
+  if (valueSet.size === 0 || !metadata || typeof metadata !== 'object') {
+    return false;
+  }
+
+  return Object.values(metadata).some((value) => {
+    if (Array.isArray(value)) {
+      return value.some((item) => valueSet.has(String(item || '').trim()));
+    }
+
+    return valueSet.has(String(value || '').trim());
+  });
+};
+
+const getAssociatedEmails = async ({ user, productIds, orderIds }) => {
+  let emailRecords = [];
+
+  try {
+    emailRecords = await pb.collection('emails').getFullList({ $autoCancel: false });
+  } catch (error) {
+    if (isMissingCollectionError(error)) {
+      return [];
+    }
+
+    throw error;
+  }
+
+  const associatedValues = compactUnique([
+    user.id,
+    user.email,
+    ...productIds,
+    ...orderIds,
+  ]);
+  const userEmail = String(user.email || '').trim().toLowerCase();
+
+  return emailRecords.filter((emailRecord) => {
+    const recipient = String(emailRecord.recipient || '').trim().toLowerCase();
+
+    return (userEmail && recipient === userEmail)
+      || metadataContainsAny(emailRecord.metadata, associatedValues);
+  });
+};
+
+const hardDeleteUser = async (userId, deletedByAdminId) => {
+  const id = String(userId || '').trim();
+
+  if (!id) {
+    const error = new Error('User ID is required');
+    error.status = 400;
+    throw error;
+  }
+
+  const user = await pb.collection('users').getOne(id, { $autoCancel: false });
+  const products = await getRecordsByFields('products', 'seller_id', id);
+  const productIds = products.map((product) => product.id);
+  const directOrders = await getRecordsByFields('orders', ['buyer_id', 'seller_id'], id);
+  const productOrders = await getRecordsByFields('orders', 'product_id', productIds);
+  const orders = dedupeRecords(directOrders, productOrders);
+  const orderIds = orders.map((order) => order.id);
+  const summary = {};
+
+  const [
+    cartItems,
+    favorites,
+    shippingInfo,
+    productVerifications,
+    returns,
+    sellerEarnings,
+    newsletterSignups,
+    emails,
+  ] = await Promise.all([
+    getRecordsByFields('cart_items', ['user_id', 'product_id'], [id, ...productIds]),
+    getRecordsByFields('favorites', ['user_id', 'product_id'], [id, ...productIds]),
+    getRecordsByFields('shipping_info', 'user_id', id),
+    getRecordsByFields('product_verifications', ['seller_id', 'product_id'], [id, ...productIds]),
+    getRecordsByFields('returns', ['buyer_id', 'seller_id', 'product_id', 'order_id'], [id, ...productIds, ...orderIds]),
+    getRecordsByFields('seller_earnings', ['seller_id', 'order_id'], [id, ...orderIds]),
+    getRecordsByFields('newsletter_signups', 'email', user.email),
+    getAssociatedEmails({ user, productIds, orderIds }),
+  ]);
+
+  await deleteRecords('cart_items', cartItems, summary);
+  await deleteRecords('favorites', favorites, summary);
+  await deleteRecords('shipping_info', shippingInfo, summary);
+  await deleteRecords('product_verifications', productVerifications, summary);
+  await deleteRecords('returns', returns, summary);
+  await deleteRecords('seller_earnings', sellerEarnings, summary);
+  await deleteRecords('newsletter_signups', newsletterSignups, summary);
+  await deleteRecords('emails', emails, summary);
+  await deleteRecords('orders', orders, summary);
+  await deleteRecords('products', products, summary);
+  await pb.collection('users').delete(id, { $autoCancel: false });
+  summary.users = (summary.users || 0) + 1;
+
+  logger.info(`[ADMIN] User hard deleted: ${id} by admin ${deletedByAdminId}. Summary: ${JSON.stringify(summary)}`);
+
+  return {
+    user,
+    summary,
+  };
+};
+
 // GET /admin/products - List all products with filters
 router.get('/products', async (req, res) => {
   const { search, category, status, type } = req.query;
@@ -133,9 +330,26 @@ router.get('/products/:id', async (req, res) => {
   logger.info(`[ADMIN] Get product request - ID: ${id}`);
 
   const product = await pb.collection('products').getOne(id);
+  let seller = null;
+
+  if (product.seller_id) {
+    seller = await pb.collection('users').getOne(product.seller_id, { $autoCancel: false }).catch(() => null);
+  }
 
   logger.info(`[ADMIN] Product retrieved - ID: ${id}`);
-  res.json(product);
+  res.json({
+    ...product,
+    seller: seller ? {
+      id: seller.id,
+      name: seller.name || '',
+      email: seller.email || '',
+      university: seller.university || '',
+      seller_username: seller.seller_username || '',
+      is_seller: seller.is_seller === true,
+      is_admin: seller.is_admin === true,
+      created: seller.created,
+    } : null,
+  });
 });
 
 // POST /admin/products - Create new product
@@ -285,6 +499,67 @@ router.put('/products/:id/delete', async (req, res) => {
 // PRODUCT VERIFICATION ENDPOINTS
 // ============================================================================
 
+// GET /admin/verifications - List products awaiting admin verification
+router.get('/verifications', async (req, res) => {
+  logger.info(`[ADMIN] List pending verifications request - Admin: ${req.auth.id}`);
+
+  const products = await pb.collection('products').getList(1, 100, {
+    filter: 'status="pending_verification"',
+    sort: '-created',
+  });
+
+  const sellerIds = [...new Set(products.items.map((product) => product.seller_id).filter(Boolean))];
+  const sellersById = {};
+
+  if (sellerIds.length > 0) {
+    const sellerFilter = sellerIds.map((sellerId) => `id="${String(sellerId)}"`).join(' || ');
+    const sellers = await pb.collection('users').getFullList({
+      filter: sellerFilter,
+    });
+
+    for (const seller of sellers) {
+      sellersById[seller.id] = {
+        id: seller.id,
+        name: seller.name || '',
+        email: seller.email || '',
+        seller_username: seller.seller_username || '',
+      };
+    }
+  }
+
+  const items = products.items.map((product) => {
+    const seller = sellersById[product.seller_id] || {};
+
+    return {
+      id: product.id,
+      collectionId: product.collectionId,
+      collectionName: product.collectionName,
+      name: product.name || '',
+      description: product.description || '',
+      price: product.price || 0,
+      image: product.image || '',
+      condition: product.condition || '',
+      fachbereich: product.fachbereich || [],
+      product_type: product.product_type || '',
+      seller_id: product.seller_id || '',
+      seller_username: product.seller_username || seller.seller_username || seller.name || '',
+      seller_email: seller.email || '',
+      status: product.status || '',
+      created: product.created,
+      updated: product.updated,
+    };
+  });
+
+  logger.info(`[ADMIN] Fetched ${items.length} products awaiting verification`);
+  res.json({
+    items,
+    total: products.totalItems,
+    page: products.page,
+    perPage: products.perPage,
+    totalPages: products.totalPages,
+  });
+});
+
 // POST /admin/approve-product
 router.post('/approve-product', async (req, res) => {
   const { productId } = req.body;
@@ -305,9 +580,8 @@ router.post('/approve-product', async (req, res) => {
   }
 
   await pb.collection('products').update(productIdStr, {
-    status: 'verified',
-    verified_at: new Date().toISOString(),
-    verified_by: adminId,
+    status: 'active',
+    verification_status: 'approved',
   });
 
   logger.info(`[ADMIN] Product approved - Product: ${productIdStr}, Admin: ${adminId}`);
@@ -331,7 +605,8 @@ router.post('/approve-product', async (req, res) => {
   res.json({
     success: true,
     productId: productIdStr,
-    status: 'verified',
+    status: 'active',
+    verification_status: 'approved',
     message: `Product ${productIdStr} has been approved`,
   });
 });
@@ -356,6 +631,10 @@ router.post('/reject-product', async (req, res) => {
   }
 
   const seller = await pb.collection('users').getOne(product.seller_id);
+
+  await pb.collection('products').update(productIdStr, {
+    verification_status: 'rejected',
+  }).catch(() => null);
 
   await pb.collection('products').delete(productIdStr);
 
@@ -486,19 +765,29 @@ router.get('/users', async (req, res) => {
   });
 });
 
-// Soft Delete User
-router.put('/users/:id/delete', async (req, res) => {
+const handleHardDeleteUser = async (req, res) => {
   const { id } = req.params;
 
   if (!id) {
     return res.status(400).json({ error: 'User ID is required' });
   }
 
-  await pb.collection('users').update(id, { is_deleted: true });
+  const { summary } = await hardDeleteUser(id, req.auth.id);
 
-  logger.info(`[ADMIN] User soft deleted: ${id} by admin ${req.auth.id}`);
-  res.json({ success: true, message: `User ${id} has been deleted` });
-});
+  res.json({
+    success: true,
+    hardDeleted: true,
+    deletedUserId: id,
+    deletedRecords: summary,
+    message: `User ${id} and associated records have been permanently deleted`,
+  });
+};
+
+// Hard Delete User
+router.delete('/users/:id', handleHardDeleteUser);
+
+// Backward compatible user delete route for older clients.
+router.put('/users/:id/delete', handleHardDeleteUser);
 
 // Remove Seller Status from User
 router.put('/users/:id/remove-seller', async (req, res) => {

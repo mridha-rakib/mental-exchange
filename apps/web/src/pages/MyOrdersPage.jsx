@@ -1,138 +1,222 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, Eye, RefreshCw, AlertCircle, Download, MapPin } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient.js';
-import { useAuth } from '@/contexts/AuthContext.jsx';
-import { useTranslation } from '@/contexts/TranslationContext.jsx';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx';
+import {
+  AlertCircle,
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  Download,
+  Eye,
+  MapPin,
+  Package,
+  RefreshCw,
+  ShoppingBag,
+  Truck,
+} from 'lucide-react';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Skeleton } from '@/components/ui/skeleton.jsx';
-import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext.jsx';
+import { useTranslation } from '@/contexts/TranslationContext.jsx';
+import apiServerClient from '@/lib/apiServerClient.js';
+import { getAuthToken } from '@/lib/getAuthToken.js';
+import pb from '@/lib/pocketbaseClient.js';
+
+const primaryActionClass = 'rounded-[8px] bg-[#0000FF] px-4 font-semibold text-white hover:bg-[#0000CC]';
+const secondaryActionClass = 'rounded-[8px] border border-black/15 bg-white px-4 font-semibold text-[#151515] hover:border-[#0000FF]/35 hover:bg-[#f3f3ff]';
+
+const parseAddress = (addressData) => {
+  if (!addressData) return null;
+  if (typeof addressData === 'object') return addressData;
+
+  try {
+    return JSON.parse(addressData);
+  } catch {
+    return null;
+  }
+};
+
+const getImageUrl = (product) => {
+  if (!product?.image) return '';
+
+  try {
+    return pb.files.getUrl(product, product.image);
+  } catch {
+    return '';
+  }
+};
 
 const MyOrdersPage = () => {
   const { currentUser } = useAuth();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchOrders = useCallback(async () => {
-    if (!currentUser) return;
+  const locale = language === 'EN' ? 'en-US' : 'de-DE';
 
-    setLoading(true);
+  const formatCurrency = useCallback((amount) => (
+    new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(Number(amount) || 0)
+  ), [locale]);
+
+  const formatDate = useCallback((date) => {
+    if (!date) return '';
+
+    return new Date(date).toLocaleDateString(locale, {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }, [locale]);
+
+  const getOrderStatusLabel = useCallback((status) => {
+    const key = `orders.status_${status}`;
+    const translated = t(key);
+    return translated === key ? (status || t('orders.status_pending')) : translated;
+  }, [t]);
+
+  const fetchOrders = useCallback(async ({ silent = false } = {}) => {
+    if (!currentUser?.id) {
+      setLoading(false);
+      return;
+    }
+
+    const token = getAuthToken();
+    if (!token) {
+      toast.error(t('auth.session_expired'));
+      navigate('/auth');
+      return;
+    }
+
+    if (silent) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
 
     try {
-      const result = await pb.collection('orders').getList(1, 100, {
-        filter: `buyer_id="${currentUser.id}"`,
-        sort: '-created',
-        $autoCancel: false
+      const response = await apiServerClient.fetch('/orders?limit=100', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      const fetchedOrders = result.items;
-      const productIds = [...new Set(fetchedOrders.map(o => o.product_id).filter(Boolean))];
-
-      let productsMap = {};
-      if (productIds.length > 0) {
-        const productsFilter = productIds.map(id => `id="${id}"`).join(' || ');
-        const productsResult = await pb.collection('products').getFullList({
-          filter: productsFilter,
-          $autoCancel: false
-        });
-
-        productsMap = productsResult.reduce((acc, p) => {
-          acc[p.id] = p;
-          return acc;
-        }, {});
+      if (response.status === 401) {
+        toast.error(t('auth.session_expired'));
+        navigate('/auth');
+        return;
       }
 
-      const enrichedOrders = fetchedOrders.map(order => ({
-        ...order,
-        product: productsMap[order.product_id] || null
-      }));
+      if (!response.ok) {
+        throw new Error(`Orders request failed with status ${response.status}`);
+      }
 
-      setOrders(enrichedOrders);
+      const data = await response.json();
+      setOrders(Array.isArray(data.items) ? data.items : []);
+      setSummary(data.summary || null);
     } catch (err) {
       console.error('Error fetching orders:', err);
       setError(t('orders.load_error'));
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [currentUser, t]);
+  }, [currentUser?.id, navigate, t]);
 
   useEffect(() => {
-    if (!currentUser) return;
-
     fetchOrders();
 
     const onFocus = () => {
-      fetchOrders();
+      fetchOrders({ silent: true });
     };
 
     window.addEventListener('focus', onFocus);
 
-    const intervalId = window.setInterval(() => {
-      fetchOrders();
-    }, 5000);
-
-    pb.collection('orders').subscribe('*', function (e) {
-      if (e.record?.buyer_id === currentUser.id) {
-        fetchOrders();
-      }
-    });
-
     return () => {
       window.removeEventListener('focus', onFocus);
-      window.clearInterval(intervalId);
-      pb.collection('orders').unsubscribe('*');
     };
-  }, [fetchOrders, currentUser]);
+  }, [fetchOrders]);
+
+  const orderStats = useMemo(() => {
+    const fallbackSummary = orders.reduce((acc, order) => {
+      acc.total += 1;
+      if (['paid', 'pending', 'processing', 'shipped'].includes(order.status)) acc.active += 1;
+      if (['delivered', 'completed'].includes(order.status)) acc.completed += 1;
+      return acc;
+    }, {
+      total: 0,
+      active: 0,
+      completed: 0,
+    });
+
+    const source = summary || fallbackSummary;
+
+    return [
+      {
+        label: t('profile.total_orders'),
+        value: source.total || 0,
+        Icon: ShoppingBag,
+      },
+      {
+        label: t('profile.active_orders'),
+        value: source.active || 0,
+        Icon: Truck,
+      },
+      {
+        label: t('profile.completed_orders'),
+        value: source.completed || 0,
+        Icon: CheckCircle2,
+      },
+    ];
+  }, [orders, summary, t]);
 
   const getStatusBadge = (status) => {
-    switch(status) {
+    switch (status) {
       case 'completed':
       case 'delivered':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100 border-green-200">{t('orders.status_delivered')}</Badge>;
+        return <Badge className="rounded-[8px] border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-50">{t('orders.status_delivered')}</Badge>;
       case 'shipped':
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200">{t('orders.status_shipped')}</Badge>;
+        return <Badge className="rounded-[8px] border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-50">{t('orders.status_shipped')}</Badge>;
       case 'processing':
       case 'paid':
-        return <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-300">{t('orders.status_processing')}</Badge>;
+        return <Badge className="rounded-[8px] border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-50">{t('orders.status_processing')}</Badge>;
       default:
-        return <Badge variant="outline">{status || t('orders.status_pending')}</Badge>;
+        return <Badge variant="outline" className="rounded-[8px] bg-white">{getOrderStatusLabel(status)}</Badge>;
     }
   };
 
   const formatAddress = (addressData) => {
-    if (!addressData) return t('orders.no_address');
-    try {
-      const addr = typeof addressData === 'string' ? JSON.parse(addressData) : addressData;
-      return `${addr.name || addr.name1 || ''}, ${addr.street || addr.addressStreet || ''}, ${addr.postalCode || addr.postal_code || addr.zip || ''} ${addr.city || ''}`
-        .replace(/^[,\s]+|[,\s]+$/g, '')
-        .replace(/,\s*,/g, ',');
-    } catch {
-      return t('orders.invalid_address');
-    }
+    const addr = parseAddress(addressData);
+    if (!addr) return t('orders.no_address');
+
+    return `${addr.name || addr.fullName || addr.name1 || ''}, ${addr.street || addr.addressStreet || addr.address || ''}, ${addr.postalCode || addr.postal_code || addr.zip || ''} ${addr.city || ''}`
+      .replace(/^[,\s]+|[,\s]+$/g, '')
+      .replace(/,\s*,/g, ',') || t('orders.no_address');
   };
 
-  const handleDownloadLabel = (e, order) => {
-    e.stopPropagation();
+  const handleDownloadLabel = (event, order) => {
+    event.stopPropagation();
 
-    const pdfBase64 = order.dhl_label_pdf;
-
-    if (pdfBase64) {
+    if (order.dhl_label_pdf) {
       const link = document.createElement('a');
-      link.href = `data:application/pdf;base64,${pdfBase64}`;
+      link.href = `data:application/pdf;base64,${order.dhl_label_pdf}`;
       link.download = `DHL_Label_${order.order_number || order.id}.pdf`;
       link.click();
       return;
     }
 
     if (order.dhl_label_url) {
-      window.open(order.dhl_label_url, '_blank');
+      window.open(order.dhl_label_url, '_blank', 'noopener,noreferrer');
       return;
     }
 
@@ -145,126 +229,198 @@ const MyOrdersPage = () => {
         <title>{t('orders.title')} - Zahnibörse</title>
       </Helmet>
 
-      <main className="flex-1 bg-[hsl(var(--muted-bg))] py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <Package className="w-8 h-8 text-[#0000FF]" />
-              <h1 className="text-3xl font-bold tracking-tight">{t('orders.title')}</h1>
+      <main className="flex-1 bg-[#f6f7f9] py-8 md:py-12">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+          <header className="mb-7 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-[8px] border border-[#0000FF]/20 bg-white text-[#0000FF]">
+                <Package className="h-6 w-6" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight text-[#151515] md:text-4xl">{t('orders.title')}</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#666666] md:text-base">
+                {t('profile.no_orders_body')}
+              </p>
             </div>
-          </div>
 
-          <div className="bg-white rounded-[var(--radius-lg)] shadow-sm border border-[hsl(var(--border))] overflow-hidden">
-            {loading ? (
-              <div className="p-6 space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="flex items-center space-x-4">
-                    <Skeleton className="h-12 w-full" />
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fetchOrders({ silent: orders.length > 0 })}
+                disabled={loading || refreshing}
+                className={`${secondaryActionClass} gap-2`}
+              >
+                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                {t('orders.retry')}
+              </Button>
+              <Link to="/marketplace" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] bg-[#0000FF] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#0000CC]">
+                {t('orders.shop_now')}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </header>
+
+          <section className="mb-6 grid gap-3 sm:grid-cols-3">
+            {orderStats.map(({ label, value, Icon }) => (
+              <div key={label} className="rounded-[8px] border border-black/10 bg-white p-5">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-[8px] bg-[#f1f1ff] text-[#0000FF]">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <p className="text-3xl font-bold text-[#151515]">{value}</p>
+                <p className="mt-1 text-sm font-medium text-[#666666]">{label}</p>
+              </div>
+            ))}
+          </section>
+
+          {loading ? (
+            <div className="space-y-3">
+              {[0, 1, 2].map((item) => (
+                <div key={item} className="rounded-[8px] border border-black/10 bg-white p-4">
+                  <div className="flex gap-4">
+                    <Skeleton className="h-24 w-24 rounded-[8px]" />
+                    <div className="flex-1 space-y-3">
+                      <Skeleton className="h-5 w-2/5" />
+                      <Skeleton className="h-4 w-3/5" />
+                      <Skeleton className="h-4 w-4/5" />
+                    </div>
                   </div>
-                ))}
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <section className="flex min-h-[320px] flex-col items-center justify-center rounded-[8px] border border-red-200 bg-white px-6 py-12 text-center">
+              <AlertCircle className="mb-4 h-12 w-12 text-red-500" />
+              <h2 className="text-2xl font-semibold text-[#151515]">{error}</h2>
+              <Button onClick={() => fetchOrders()} variant="outline" className={`mt-6 gap-2 ${secondaryActionClass}`}>
+                <RefreshCw className="h-4 w-4" />
+                {t('orders.retry')}
+              </Button>
+            </section>
+          ) : orders.length === 0 ? (
+            <section className="flex min-h-[360px] flex-col items-center justify-center rounded-[8px] border border-dashed border-black/20 bg-white px-6 py-14 text-center">
+              <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-[8px] border border-[#0000FF]/20 bg-[#f1f1ff] text-[#0000FF]">
+                <Package className="h-8 w-8" />
               </div>
-            ) : error ? (
-              <div className="p-12 text-center flex flex-col items-center">
-                <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-                <p className="text-red-600 mb-4">{error}</p>
-                <Button onClick={fetchOrders} variant="outline" className="gap-2">
-                  <RefreshCw className="w-4 h-4" /> {t('orders.retry')}
-                </Button>
-              </div>
-            ) : orders.length === 0 ? (
-              <div className="p-12 text-center">
-                <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">{t('orders.empty')}</h3>
-                <Link to="/marketplace">
-                  <Button className="mt-4 bg-[#0000FF] hover:bg-[#0000CC] text-white">
-                    {t('orders.shop_now')}
-                  </Button>
+              <h2 className="text-2xl font-semibold text-[#151515]">{t('orders.empty')}</h2>
+              <p className="mt-3 max-w-md text-sm leading-6 text-[#666666]">
+                {t('profile.no_orders_body')}
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <Link to="/shop" className="inline-flex min-h-11 items-center justify-center rounded-[8px] bg-[#0000FF] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#0000CC]">
+                  {t('popular.go_shop')}
+                </Link>
+                <Link to="/marketplace" className="inline-flex min-h-11 items-center justify-center rounded-[8px] border border-black/15 bg-white px-5 text-sm font-semibold text-[#151515] transition-colors hover:border-[#0000FF]/35 hover:bg-[#f3f3ff]">
+                  {t('cart.go_marketplace')}
                 </Link>
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/30">
-                      <TableHead className="whitespace-nowrap">{t('orders.id')}</TableHead>
-                      <TableHead>{t('orders.product')}</TableHead>
-                      <TableHead>{t('orders.total')}</TableHead>
-                      <TableHead>{t('orders.status')}</TableHead>
-                      <TableHead>{t('orders.tracking_short')}</TableHead>
-                      <TableHead>{t('orders.delivery_address')}</TableHead>
-                      <TableHead className="text-right">{t('orders.actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {orders.map((order) => {
-                      const hasLabel = !!(order.dhl_label_pdf || order.dhl_label_url);
-                      const trackingNumber = order.tracking_number || order.dhl_tracking_number;
+            </section>
+          ) : (
+            <section className="space-y-3">
+              {orders.map((order) => {
+                const product = order.product;
+                const productName = product?.name || t('orders.unknown_product');
+                const productImageUrl = getImageUrl(product);
+                const trackingNumber = order.tracking_number || order.dhl_tracking_number;
+                const hasLabel = order.has_label || order.dhl_label_pdf || order.dhl_label_url;
 
-                      return (
-                        <TableRow
-                          key={order.id}
-                          className="cursor-pointer hover:bg-gray-50 transition-colors group"
-                          onClick={() => navigate(`/order-details/${order.id}`)}
-                        >
-                          <TableCell className="font-medium whitespace-nowrap">
-                            {order.order_number || order.id.substring(0, 8)}
-                            <div className="text-xs text-muted-foreground font-normal mt-1">
-                              {new Date(order.created).toLocaleDateString()}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="font-medium line-clamp-1 max-w-[200px]" title={order.product?.name || order.product_id}>
-                              {order.product?.name || t('orders.unknown_product')}
-                            </div>
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap font-medium">
-                            €{order.total_amount?.toFixed(2) || '0.00'}
-                          </TableCell>
-                          <TableCell>{getStatusBadge(order.status)}</TableCell>
-                          <TableCell>
+                return (
+                  <article
+                    key={order.id}
+                    role="button"
+                    tabIndex={0}
+                    className="group rounded-[8px] border border-black/10 bg-white p-4 transition-colors hover:border-[#0000FF]/30 hover:bg-[#fbfbff]"
+                    onClick={() => navigate(`/order-details/${order.id}`)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        navigate(`/order-details/${order.id}`);
+                      }
+                    }}
+                  >
+                    <div className="grid gap-4 lg:grid-cols-[112px_minmax(0,1fr)_220px] lg:items-center">
+                      <div className="h-28 w-full overflow-hidden rounded-[8px] border border-black/10 bg-[#eef0f3] sm:w-28">
+                        {productImageUrl ? (
+                          <img src={productImageUrl} alt={productName} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[#8a8f98]">
+                            <Package className="h-8 w-8" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                          {getStatusBadge(order.status)}
+                          <span className="inline-flex items-center gap-1.5 rounded-[8px] border border-black/10 bg-white px-2.5 py-1 text-xs font-medium text-[#666666]">
+                            <CalendarDays className="h-3.5 w-3.5" />
+                            {formatDate(order.created)}
+                          </span>
+                        </div>
+
+                        <h2 className="line-clamp-2 text-xl font-semibold leading-tight text-[#151515] transition-colors group-hover:text-[#0000FF]">
+                          {productName}
+                        </h2>
+
+                        <div className="mt-3 grid gap-2 text-sm text-[#666666] md:grid-cols-2">
+                          <p className="min-w-0">
+                            <span className="font-semibold text-[#151515]">{t('orders.id')}:</span>{' '}
+                            <span className="font-mono text-xs">{order.order_number || order.id.substring(0, 8)}</span>
+                          </p>
+                          <p className="min-w-0">
+                            <span className="font-semibold text-[#151515]">{t('orders.tracking_short')}:</span>{' '}
                             {trackingNumber ? (
-                              <span className="font-mono text-xs bg-muted px-2 py-1 rounded border">
-                                {trackingNumber}
-                              </span>
+                              <span className="break-all font-mono text-xs">{trackingNumber}</span>
                             ) : (
-                              <span className="text-muted-foreground text-xs">-</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-start gap-1.5 max-w-[200px]">
-                              <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                              <span className="text-xs text-muted-foreground line-clamp-2" title={formatAddress(order.shipping_address)}>
-                                {formatAddress(order.shipping_address)}
+                              <span className="inline-flex items-center gap-1 text-[#777777]">
+                                <Clock3 className="h-3.5 w-3.5" />
+                                {t('orders.status_pending')}
                               </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right whitespace-nowrap">
-                            <div className="flex items-center justify-end gap-2">
-                              {hasLabel && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="gap-1.5 h-8 text-blue-600 border-blue-200 hover:bg-blue-50"
-                                  onClick={(e) => handleDownloadLabel(e, order)}
-                                >
-                                  <Download className="w-3.5 h-3.5" />
-                                  <span className="hidden xl:inline">Label</span>
-                                </Button>
-                              )}
-                              <Button variant="ghost" size="sm" className="gap-1.5 h-8">
-                                <Eye className="w-4 h-4" />
-                                <span className="hidden sm:inline">{t('orders.view')}</span>
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </div>
+                            )}
+                          </p>
+                        </div>
+
+                        <p className="mt-3 flex gap-2 text-sm leading-5 text-[#666666]">
+                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#0000FF]" />
+                          <span className="line-clamp-2">{formatAddress(order.shipping_address)}</span>
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-3 border-t border-black/10 pt-4 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
+                        <div>
+                          <p className="text-sm font-medium text-[#666666]">{t('orders.total')}</p>
+                          <p className="mt-1 text-2xl font-bold text-[#151515]">{formatCurrency(order.total_amount)}</p>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          {hasLabel && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className={`${secondaryActionClass} gap-2`}
+                              onClick={(event) => handleDownloadLabel(event, order)}
+                            >
+                              <Download className="h-4 w-4" />
+                              Label
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            className={`${primaryActionClass} gap-2`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              navigate(`/order-details/${order.id}`);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                            {t('orders.view')}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </section>
+          )}
         </div>
       </main>
     </>

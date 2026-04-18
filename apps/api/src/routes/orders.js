@@ -10,6 +10,116 @@ const SHIPPING_FEE = 4.99;
 const SERVICE_FEE = 0.99;
 const TRANSACTION_FEE_PERCENT = 0.07; // 7%
 
+const PRODUCT_COLLECTION_BY_TYPE = {
+  marketplace: 'products',
+  shop: 'shop_products',
+};
+
+const clampPaginationNumber = (value, fallback, { min = 1, max = 100 } = {}) => {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
+};
+
+const sanitizeProduct = (product) => {
+  if (!product) return null;
+
+  return {
+    id: product.id,
+    collectionId: product.collectionId,
+    collectionName: product.collectionName,
+    name: product.name || '',
+    price: product.price || 0,
+    image: product.image || '',
+    condition: product.condition || '',
+    product_type: product.product_type || '',
+    fachbereich: product.fachbereich || [],
+    seller_id: product.seller_id || '',
+    seller_username: product.seller_username || '',
+  };
+};
+
+const fetchOrderProduct = async (order) => {
+  if (!order?.product_id) return null;
+
+  const productId = String(order.product_id);
+  const preferredCollection = PRODUCT_COLLECTION_BY_TYPE[order.product_type] || 'products';
+  const fallbackCollection = preferredCollection === 'products' ? 'shop_products' : 'products';
+
+  try {
+    return await pb.collection(preferredCollection).getOne(productId);
+  } catch (preferredError) {
+    logger.warn(`[ORDERS] Product lookup failed in ${preferredCollection} - Product: ${productId}, Error: ${preferredError.message}`);
+  }
+
+  try {
+    return await pb.collection(fallbackCollection).getOne(productId);
+  } catch (fallbackError) {
+    logger.warn(`[ORDERS] Product lookup failed in ${fallbackCollection} - Product: ${productId}, Error: ${fallbackError.message}`);
+    return null;
+  }
+};
+
+/**
+ * GET /orders
+ * List orders for the authenticated buyer with lightweight product data.
+ */
+router.get('/', requireAuth, async (req, res) => {
+  const buyerId = String(req.auth.id);
+  const page = clampPaginationNumber(req.query.page, 1, { min: 1, max: 1000 });
+  const limit = clampPaginationNumber(req.query.limit, 100, { min: 1, max: 100 });
+
+  logger.info(`[ORDERS] List buyer orders request - Buyer: ${buyerId}, Page: ${page}, Limit: ${limit}`);
+
+  const result = await pb.collection('orders').getList(page, limit, {
+    filter: `buyer_id="${buyerId}"`,
+    sort: '-created',
+  });
+
+  const productCache = new Map();
+
+  const items = await Promise.all(result.items.map(async (order) => {
+    const productType = PRODUCT_COLLECTION_BY_TYPE[order.product_type] ? order.product_type : 'marketplace';
+    const cacheKey = `${productType}:${order.product_id || ''}`;
+
+    if (!productCache.has(cacheKey)) {
+      productCache.set(cacheKey, fetchOrderProduct(order));
+    }
+
+    const product = await productCache.get(cacheKey);
+    const trackingNumber = order.tracking_number || order.dhl_tracking_number || '';
+
+    return {
+      ...order,
+      product: sanitizeProduct(product),
+      has_label: !!(order.dhl_label_pdf || order.dhl_label_url),
+      tracking_number: trackingNumber,
+    };
+  }));
+
+  const summary = items.reduce((acc, order) => {
+    acc.total += 1;
+    if (['paid', 'pending', 'processing', 'shipped'].includes(order.status)) acc.active += 1;
+    if (['delivered', 'completed'].includes(order.status)) acc.completed += 1;
+    if (order.tracking_number || order.dhl_tracking_number) acc.tracked += 1;
+    return acc;
+  }, {
+    total: 0,
+    active: 0,
+    completed: 0,
+    tracked: 0,
+  });
+
+  res.json({
+    items,
+    summary,
+    total: result.totalItems,
+    page: result.page,
+    perPage: result.perPage,
+    totalPages: result.totalPages,
+  });
+});
+
 /**
  * POST /orders/create
  * Create new order with pending status

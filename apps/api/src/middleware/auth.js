@@ -17,15 +17,14 @@ const auth = async (req, res, next) => {
 
   const authHeader = req.headers.authorization;
 
-  // Log exact Authorization header value (first 50 chars)
-  const headerPreview = authHeader ? String(authHeader).substring(0, 50) : 'MISSING';
-  logger.info('[AUTH] Authorization header received: ' + headerPreview + (authHeader && authHeader.length > 50 ? '...' : ''));
-
-  // If no auth header, req.auth stays null and continue
+  // Missing Authorization is normal for public routes.
   if (!authHeader) {
-    logger.warn('[AUTH] FAILED: Authorization header is missing');
     return next();
   }
+
+  // Log exact Authorization header value (first 50 chars)
+  const headerPreview = String(authHeader).substring(0, 50);
+  logger.info('[AUTH] Authorization header received: ' + headerPreview + (authHeader.length > 50 ? '...' : ''));
 
   // Extract Bearer token using regex
   const authHeaderStr = String(authHeader).trim();

@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Globe } from 'lucide-react';
 import { toast } from 'sonner';
-import pb from '@/lib/pocketbaseClient.js';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
+import { subscribeToNewsletter } from '@/lib/newsletterApi.js';
 import Logo from './Logo.jsx';
 const Footer = () => {
   const {
@@ -23,10 +23,9 @@ const Footer = () => {
     if (!targetEmail) return;
     setLoading(true);
     try {
-      await pb.collection('newsletter_signups').create({
-        email: targetEmail
-      }, {
-        $autoCancel: false
+      await subscribeToNewsletter({
+        email: targetEmail,
+        fallbackMessage: t('footer.newsletter_error'),
       });
       toast.success(t('footer.newsletter_success'));
       setEmail('');
