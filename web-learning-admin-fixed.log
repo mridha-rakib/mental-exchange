@@ -1,0 +1,76 @@
+
+> web@0.0.0 dev
+> vite --host :: --port 3000 --strictPort
+
+
+  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m902[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.10.11.48:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.21.80.1:[1m3000[22m/[39m
+[2m02:01:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m02:02:04[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m02:02:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m02:22:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m02:36:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m02:39:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m02:40:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m02:41:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m02:41:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m02:42:00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m02:49:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m02:49:52[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m02:52:01[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:18:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:34:11[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:34:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:39:00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:39:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:40:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:40:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:40:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:57:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:57:53[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:57:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:58:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:58:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:58:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:58:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:58:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m03:59:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:02:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:02:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:04:00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:05:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:27:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:27:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:28:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:28:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:28:49[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:29:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:29:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:29:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:30:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:31:01[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:34:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:34:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:34:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:34:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:38:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:38:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:42:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:42:11[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:42:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:42:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:42:49[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:43:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:43:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:43:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:44:06[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:44:31[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:44:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m04:44:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m05:32:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m05:32:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m05:32:42[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m05:32:52[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m

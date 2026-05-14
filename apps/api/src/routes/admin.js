@@ -49,6 +49,134 @@ const buildProductFilter = (search, category, status, type) => {
   return filters.length > 0 ? filters.join(' && ') : '';
 };
 
+const buildShopProductFilter = (search, category) => {
+  const filters = [];
+
+  if (search) {
+    const searchStr = escapeFilterValue(String(search).trim());
+    filters.push(`(name~"${searchStr}" || id~"${searchStr}")`);
+  }
+
+  if (category) {
+    filters.push(`fachbereich="${escapeFilterValue(String(category).trim())}"`);
+  }
+
+  return filters.length > 0 ? filters.join(' && ') : '';
+};
+
+const PLATFORM_SELLER = {
+  id: 'platform',
+  name: 'Zahnibörse',
+  email: 'info@zahniboerse.com',
+  university: 'Official shop',
+  seller_username: 'Zahnibörse',
+  is_seller: true,
+  is_admin: true,
+};
+
+const buildAdminProductSeller = (product, source = 'marketplace', seller = null) => {
+  const productDate = product.created || product.created_at || product.updated || '';
+
+  if (source === 'shop') {
+    return {
+      ...PLATFORM_SELLER,
+      created: productDate,
+    };
+  }
+
+  const resolvedSeller = seller || product.expand?.seller_id || null;
+
+  if (resolvedSeller) {
+    return {
+      id: resolvedSeller.id || product.seller_id || 'unknown',
+      name: resolvedSeller.name || resolvedSeller.seller_username || product.seller_username || 'Unknown seller',
+      email: resolvedSeller.email || 'Not available',
+      university: resolvedSeller.university || 'Not available',
+      seller_username: resolvedSeller.seller_username || product.seller_username || resolvedSeller.name || 'Unknown seller',
+      is_seller: resolvedSeller.is_seller === true,
+      is_admin: resolvedSeller.is_admin === true,
+      created: resolvedSeller.created || productDate,
+    };
+  }
+
+  return {
+    id: product.seller_id || 'unknown',
+    name: product.seller_username || 'Unknown seller',
+    email: 'Not available',
+    university: 'Not available',
+    seller_username: product.seller_username || 'Unknown seller',
+    is_seller: false,
+    is_admin: false,
+    created: productDate,
+  };
+};
+
+const resolveProductVerificationStatus = (product, source) => {
+  if (source === 'shop') return 'approved';
+  if (product.verification_status) return product.verification_status;
+  if (product.status === 'active') return 'approved';
+  if (product.status === 'pending_verification') return 'pending';
+  return 'not_required';
+};
+
+const formatAdminProduct = (product, source = 'marketplace', seller = null) => {
+  const normalizedSeller = buildAdminProductSeller(product, source, seller);
+  const createdAt = product.created_at || product.created || '';
+  const updatedAt = product.updated_at || product.updated || createdAt;
+
+  return {
+    id: product.id,
+    collectionId: product.collectionId,
+    collectionName: product.collectionName,
+    source,
+    name: product.name || '',
+    description: product.description || '',
+    price: product.price || 0,
+    product_type: product.product_type || 'Article',
+    condition: product.condition || 'Not specified',
+    fachbereich: product.fachbereich || [],
+    status: source === 'shop' ? 'active' : product.status || 'draft',
+    verification_status: resolveProductVerificationStatus(product, source),
+    seller_id: normalizedSeller.id,
+    seller_username: normalizedSeller.seller_username,
+    seller_email: normalizedSeller.email,
+    seller: normalizedSeller,
+    stock_quantity: product.stock_quantity || 0,
+    weight_g: product.weight_g || 0,
+    length_mm: product.length_mm || 0,
+    width_mm: product.width_mm || 0,
+    height_mm: product.height_mm || 0,
+    image: product.image || null,
+    shop_product: source === 'shop' ? true : product.shop_product === true,
+    created: product.created || createdAt,
+    created_at: createdAt,
+    updated: product.updated || updatedAt,
+    updated_at: updatedAt,
+    set_items: product.set_items || [],
+  };
+};
+
+const resolveAdminProduct = async (id, preferredSource = null) => {
+  const collections = preferredSource === 'shop'
+    ? ['shop_products', 'products']
+    : preferredSource === 'marketplace'
+      ? ['products', 'shop_products']
+      : ['shop_products', 'products'];
+
+  for (const collectionName of collections) {
+    const product = await pb.collection(collectionName).getOne(id, { $autoCancel: false }).catch(() => null);
+    if (product) {
+      return {
+        product,
+        collectionName,
+        source: collectionName === 'shop_products' ? 'shop' : 'marketplace',
+      };
+    }
+  }
+
+  return null;
+};
+
 const queueVerificationEmail = async ({ type, sellerId, productId, productName, sellerEmail, reason = null }) => {
   const sellerIdStr = String(sellerId).trim();
   const productIdStr = String(productId).trim();
@@ -78,11 +206,304 @@ const queueVerificationEmail = async ({ type, sellerId, productId, productName, 
 };
 
 const OPTIONAL_COLLECTION_MISSING_STATUS = 404;
+const PRODUCT_COLLECTION_BY_TYPE = {
+  marketplace: 'products',
+  shop: 'shop_products',
+};
 
-const escapeFilterValue = (value) =>
-  String(value ?? '')
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"');
+const escapeFilterValue = (value) => String(value ?? '')
+  .replace(/\\/g, '\\\\')
+  .replace(/"/g, '\\"');
+
+const parseParcelNumber = (value) => {
+  if (value === undefined || value === null || value === '') return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed) : undefined;
+};
+
+const parseAddress = (rawAddress) => {
+  if (!rawAddress) return {};
+  if (typeof rawAddress === 'object') return rawAddress;
+
+  try {
+    return JSON.parse(rawAddress);
+  } catch {
+    return {};
+  }
+};
+
+const sanitizeUserSummary = (user) => {
+  if (!user) return null;
+
+  return {
+    id: user.id,
+    name: user.name || '',
+    email: user.email || '',
+    seller_username: user.seller_username || '',
+    university: user.university || '',
+  };
+};
+
+const sanitizeProductSummary = (product) => {
+  if (!product) return null;
+
+  return {
+    id: product.id,
+    collectionId: product.collectionId,
+    collectionName: product.collectionName,
+    name: product.name || '',
+    price: product.price || 0,
+    image: product.image || '',
+    condition: product.condition || '',
+    product_type: product.product_type || '',
+    fachbereich: product.fachbereich || [],
+    seller_id: product.seller_id || '',
+    seller_username: product.seller_username || '',
+    weight_g: product.weight_g || 0,
+  };
+};
+
+const sanitizeAdminOrderRecord = (order) => {
+  if (!order) return null;
+
+  const {
+    dhl_label_pdf,
+    ...safeOrder
+  } = order;
+
+  return safeOrder;
+};
+
+const sanitizeReturnRequest = (returnRequest) => {
+  if (!returnRequest) return null;
+
+  return {
+    id: returnRequest.id,
+    order_id: returnRequest.order_id,
+    status: returnRequest.status || 'Pending',
+    reason: returnRequest.reason || '',
+    details: returnRequest.details || '',
+    admin_notes: returnRequest.admin_notes || '',
+    product_type: returnRequest.product_type || '',
+    return_type: returnRequest.return_type || '',
+    claim_window_expires_at: returnRequest.claim_window_expires_at || '',
+    tracking_number: returnRequest.dhl_tracking_number || '',
+    has_label: !!returnRequest.dhl_label_pdf,
+    label_generated_at: returnRequest.label_generated_at || '',
+    refund_amount: returnRequest.refund_amount || 0,
+    stripe_refund_id: returnRequest.stripe_refund_id || '',
+    refund_status: returnRequest.refund_status || '',
+    refund_processed_at: returnRequest.refund_processed_at || '',
+    refund_failure: returnRequest.refund_failure || '',
+    created: returnRequest.created,
+    updated: returnRequest.updated,
+  };
+};
+
+const fetchOrderProduct = async (order) => {
+  if (!order?.product_id) return null;
+
+  const productId = String(order.product_id);
+  const preferredCollection = PRODUCT_COLLECTION_BY_TYPE[order.product_type] || 'products';
+  const fallbackCollection = preferredCollection === 'products' ? 'shop_products' : 'products';
+
+  try {
+    return await pb.collection(preferredCollection).getOne(productId);
+  } catch (preferredError) {
+    logger.warn(`[ADMIN] Product lookup failed in ${preferredCollection} - Product: ${productId}, Error: ${preferredError.message}`);
+  }
+
+  try {
+    return await pb.collection(fallbackCollection).getOne(productId);
+  } catch (fallbackError) {
+    logger.warn(`[ADMIN] Product lookup failed in ${fallbackCollection} - Product: ${productId}, Error: ${fallbackError.message}`);
+    return null;
+  }
+};
+
+const fetchLatestReturnRequest = async (orderId) => {
+  const items = await pb.collection('returns').getFullList({
+    filter: `order_id="${escapeFilterValue(orderId)}"`,
+    sort: '-created',
+  }).catch(() => []);
+
+  return items[0] || null;
+};
+
+const toDateKey = (date) => date.toISOString().slice(0, 10);
+
+const buildRecentDateBuckets = (days) => {
+  const bucketCount = Math.min(Math.max(Number.parseInt(days, 10) || 7, 1), 31);
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+
+  return [...Array(bucketCount)].map((_, index) => {
+    const date = new Date(today);
+    date.setUTCDate(today.getUTCDate() - (bucketCount - 1 - index));
+    return {
+      date: toDateKey(date),
+      orders: 0,
+      revenue: 0,
+    };
+  });
+};
+
+const buildAdminAnalyticsResponse = async ({ days = 7 } = {}) => {
+  const [
+    orders,
+    users,
+    marketplaceProducts,
+    shopProducts,
+    sellerEarnings,
+  ] = await Promise.all([
+    pb.collection('orders').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }).catch(() => []),
+    pb.collection('users').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }).catch(() => []),
+    pb.collection('products').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }).catch(() => []),
+    pb.collection('shop_products').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }).catch((error) => {
+      if (isMissingCollectionError(error)) {
+        return [];
+      }
+
+      throw error;
+    }),
+    pb.collection('seller_earnings').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }).catch((error) => {
+      if (isMissingCollectionError(error)) {
+        return [];
+      }
+
+      throw error;
+    }),
+  ]);
+
+  const dateBuckets = buildRecentDateBuckets(days);
+  const dateBucketByKey = new Map(dateBuckets.map((bucket) => [bucket.date, bucket]));
+
+  for (const order of orders) {
+    const created = order.created || order.created_at;
+    if (!created) continue;
+
+    const createdDate = new Date(created);
+    if (Number.isNaN(createdDate.getTime())) continue;
+
+    const dateKey = toDateKey(createdDate);
+    const bucket = dateBucketByKey.get(dateKey);
+    if (!bucket) continue;
+
+    bucket.orders += 1;
+
+    if (!['cancelled'].includes(order.status)) {
+      bucket.revenue += Number(order.total_amount) || 0;
+    }
+  }
+
+  const usersById = new Map(users.map((user) => [user.id, user]));
+  const productsBySeller = new Map();
+  const ordersBySeller = new Map();
+  const revenueBySeller = new Map();
+  const earningsBySeller = new Map();
+
+  for (const product of [...marketplaceProducts, ...shopProducts]) {
+    const sellerId = String(product.seller_id || '').trim();
+    if (!sellerId) continue;
+    productsBySeller.set(sellerId, (productsBySeller.get(sellerId) || 0) + 1);
+  }
+
+  for (const order of orders) {
+    const sellerId = String(order.seller_id || '').trim();
+    if (!sellerId) continue;
+
+    ordersBySeller.set(sellerId, (ordersBySeller.get(sellerId) || 0) + 1);
+
+    if (!['cancelled'].includes(order.status)) {
+      revenueBySeller.set(sellerId, (revenueBySeller.get(sellerId) || 0) + (Number(order.total_amount) || 0));
+    }
+  }
+
+  for (const earning of sellerEarnings) {
+    const sellerId = String(earning.seller_id || '').trim();
+    if (!sellerId) continue;
+    earningsBySeller.set(sellerId, (earningsBySeller.get(sellerId) || 0) + (Number(earning.net_amount ?? earning.gross_amount) || 0));
+  }
+
+  const sellerIds = compactUnique([
+    ...users.filter((user) => user.is_seller === true).map((user) => user.id),
+    ...productsBySeller.keys(),
+    ...ordersBySeller.keys(),
+    ...earningsBySeller.keys(),
+  ]);
+
+  const topSellers = sellerIds
+    .map((sellerId) => {
+      const seller = usersById.get(sellerId);
+
+      return {
+        id: sellerId,
+        name: seller?.name || '',
+        email: seller?.email || '',
+        seller_username: seller?.seller_username || '',
+        product_count: productsBySeller.get(sellerId) || 0,
+        order_count: ordersBySeller.get(sellerId) || 0,
+        revenue_total: revenueBySeller.get(sellerId) || 0,
+        earnings_total: earningsBySeller.get(sellerId) || 0,
+      };
+    })
+    .sort((a, b) => (
+      (b.revenue_total - a.revenue_total)
+      || (b.order_count - a.order_count)
+      || (b.product_count - a.product_count)
+      || String(a.seller_username || a.name || a.id).localeCompare(String(b.seller_username || b.name || b.id))
+    ))
+    .slice(0, 5);
+
+  return {
+    orderVolume: dateBuckets,
+    topSellers,
+    summary: {
+      totalOrders: orders.length,
+      totalRevenue: orders.reduce((sum, order) => (
+        order.status === 'cancelled' ? sum : sum + (Number(order.total_amount) || 0)
+      ), 0),
+      totalProducts: marketplaceProducts.length + shopProducts.length,
+      totalSellers: sellerIds.length,
+    },
+    fetchedAt: new Date().toISOString(),
+  };
+};
+
+const buildAdminOrderResponse = async (order) => {
+  const [buyer, seller, product, latestReturnRequest] = await Promise.all([
+    order.buyer_id ? pb.collection('users').getOne(String(order.buyer_id)).catch(() => null) : Promise.resolve(null),
+    order.seller_id ? pb.collection('users').getOne(String(order.seller_id)).catch(() => null) : Promise.resolve(null),
+    fetchOrderProduct(order),
+    fetchLatestReturnRequest(order.id),
+  ]);
+
+  return {
+    ...sanitizeAdminOrderRecord(order),
+    buyer: sanitizeUserSummary(buyer),
+    seller: sanitizeUserSummary(seller),
+    product: sanitizeProductSummary(product),
+    has_label: !!(order.dhl_label_pdf || order.dhl_label_url),
+    tracking_number: order.tracking_number || order.dhl_tracking_number || '',
+    shipping_address_parsed: parseAddress(order.shipping_address),
+    return_request: sanitizeReturnRequest(latestReturnRequest),
+  };
+};
 
 const compactUnique = (values) =>
   [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))];
@@ -274,6 +695,103 @@ const hardDeleteUser = async (userId, deletedByAdminId) => {
   };
 };
 
+// GET /admin/dashboard - Aggregate admin overview data for the dashboard page
+router.get('/dashboard', async (req, res) => {
+  logger.info(`[ADMIN] Dashboard overview request - Admin: ${req.auth.id}`);
+
+  const [
+    orders,
+    marketplaceProducts,
+    shopProducts,
+    users,
+    returns,
+    sellerEarnings,
+    settings,
+  ] = await Promise.all([
+    pb.collection('orders').getFullList({
+      sort: '-created',
+      expand: 'buyer_id,seller_id,product_id',
+      $autoCancel: false,
+    }),
+    pb.collection('products').getFullList({
+      sort: '-created',
+      expand: 'seller_id',
+      $autoCancel: false,
+    }),
+    pb.collection('shop_products').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }).catch((error) => {
+      if (isMissingCollectionError(error)) {
+        return [];
+      }
+
+      throw error;
+    }),
+    pb.collection('users').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }),
+    pb.collection('returns').getFullList({
+      sort: '-created',
+      expand: 'order_id,buyer_id',
+      $autoCancel: false,
+    }).catch((error) => {
+      if (isMissingCollectionError(error)) {
+        return [];
+      }
+
+      throw error;
+    }),
+    pb.collection('seller_earnings').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }).catch((error) => {
+      if (isMissingCollectionError(error)) {
+        return [];
+      }
+
+      throw error;
+    }),
+    pb.collection('admin_settings').getFirstListItem('', {
+      $autoCancel: false,
+    }).catch((error) => {
+      if (isMissingCollectionError(error) || error?.status === 404) {
+        return null;
+      }
+
+      throw error;
+    }),
+  ]);
+
+  const enrichedOrders = await Promise.all(orders.map((order) => buildAdminOrderResponse(order)));
+  const products = [
+    ...marketplaceProducts.map((product) => formatAdminProduct(product, 'marketplace')),
+    ...shopProducts.map((product) => formatAdminProduct(product, 'shop')),
+  ].sort((a, b) => String(b.created || '').localeCompare(String(a.created || '')));
+
+  res.json({
+    orders: enrichedOrders,
+    products,
+    users,
+    returns,
+    sellerEarnings,
+    settings,
+    fetchedAt: new Date().toISOString(),
+  });
+});
+
+// GET /admin/analytics - Dedicated analytics payload for the admin analytics tab
+router.get('/analytics', async (req, res) => {
+  const days = req.query.days || 7;
+
+  logger.info(`[ADMIN] Analytics request - Admin: ${req.auth.id}, Days: ${days}`);
+
+  const analytics = await buildAdminAnalyticsResponse({ days });
+
+  res.json(analytics);
+});
+
 // GET /admin/products - List all products with filters
 router.get('/products', async (req, res) => {
   const { search, category, status, type } = req.query;
@@ -293,29 +811,38 @@ router.get('/products', async (req, res) => {
     throw error;
   }
 
-  const filter = buildProductFilter(search, category, status, type);
+  const marketplaceFilter = buildProductFilter(search, category, status, type);
+  const shouldIncludeShopProducts = !type || type === 'shop';
+  const shopFilter = shouldIncludeShopProducts ? buildShopProductFilter(search, category) : null;
 
-  const products = await pb.collection('products').getList(1, 500, {
-    filter: filter || undefined,
-    sort: '-created',
-    expand: 'seller_id',
-  });
+  const [marketplaceProducts, shopProducts] = await Promise.all([
+    pb.collection('products').getFullList({
+      filter: marketplaceFilter || undefined,
+      sort: '-created',
+      expand: 'seller_id',
+      $autoCancel: false,
+    }),
+    shouldIncludeShopProducts
+      ? pb.collection('shop_products').getFullList({
+          filter: shopFilter || undefined,
+          sort: '-created',
+          $autoCancel: false,
+        }).catch((error) => {
+          if (isMissingCollectionError(error)) {
+            return [];
+          }
 
-  const formattedProducts = products.items.map((product) => ({
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    product_type: product.product_type || 'shop',
-    condition: product.condition,
-    fachbereich: product.fachbereich,
-    status: product.status,
-    seller_id: product.seller_id,
-    seller_username: product.expand?.seller_id?.seller_username || 'Unknown',
-    stock_quantity: product.stock_quantity || 0,
-    image: product.image || null,
-  }));
+          throw error;
+        })
+      : Promise.resolve([]),
+  ]);
 
-  logger.info(`[ADMIN] Fetched ${products.items.length} products`);
+  const formattedProducts = [
+    ...marketplaceProducts.map((product) => formatAdminProduct(product, 'marketplace')),
+    ...shopProducts.map((product) => formatAdminProduct(product, 'shop')),
+  ].sort((a, b) => String(b.created || '').localeCompare(String(a.created || ''))).slice(0, 500);
+
+  logger.info(`[ADMIN] Fetched ${formattedProducts.length} products`);
   res.json(formattedProducts);
 });
 
@@ -329,7 +856,13 @@ router.get('/products/:id', async (req, res) => {
 
   logger.info(`[ADMIN] Get product request - ID: ${id}`);
 
-  const product = await pb.collection('products').getOne(id);
+  const resolved = await resolveAdminProduct(id, req.query.source);
+
+  if (!resolved) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  const { product, source } = resolved;
   let seller = null;
 
   if (product.seller_id) {
@@ -337,28 +870,17 @@ router.get('/products/:id', async (req, res) => {
   }
 
   logger.info(`[ADMIN] Product retrieved - ID: ${id}`);
-  res.json({
-    ...product,
-    seller: seller ? {
-      id: seller.id,
-      name: seller.name || '',
-      email: seller.email || '',
-      university: seller.university || '',
-      seller_username: seller.seller_username || '',
-      is_seller: seller.is_seller === true,
-      is_admin: seller.is_admin === true,
-      created: seller.created,
-    } : null,
-  });
+  res.json(formatAdminProduct(product, source, seller));
 });
 
 // POST /admin/products - Create new product
 router.post('/products', async (req, res) => {
-  const { name, description, price, image, category, condition, stock_quantity, fachbereich, status } = req.body;
+  const { name, description, price, image, category, condition, fachbereich, stock_quantity, weight_g, length_mm, width_mm, height_mm } = req.body;
+  const parcelWeight = parseParcelNumber(weight_g);
 
-  if (!name || !description || price === undefined || !category || !condition || stock_quantity === undefined) {
+  if (!name || price === undefined || !(category || fachbereich) || !condition || !parcelWeight) {
     return res.status(400).json({
-      error: 'Missing required fields: name, description, price, category, condition, stock_quantity',
+      error: 'Missing required fields: name, price, category/fachbereich, condition, weight_g',
     });
   }
 
@@ -366,27 +888,36 @@ router.post('/products', async (req, res) => {
 
   const formData = {
     name,
-    description,
+    description: description || '',
     price: parseFloat(price),
     image: image || null,
-    category,
     condition,
-    stock_quantity: parseInt(stock_quantity, 10),
     fachbereich: fachbereich || category,
-    status: status || 'active',
+    stock_quantity: parseParcelNumber(stock_quantity) ?? 1,
+    weight_g: parcelWeight,
     created_at: new Date().toISOString(),
   };
 
-  const product = await pb.collection('products').create(formData);
+  const parcelDimensions = {
+    length_mm: parseParcelNumber(length_mm),
+    width_mm: parseParcelNumber(width_mm),
+    height_mm: parseParcelNumber(height_mm),
+  };
 
-  logger.info(`[ADMIN] Product created - ID: ${product.id}`);
-  res.json(product);
+  for (const [field, value] of Object.entries(parcelDimensions)) {
+    if (value !== undefined) formData[field] = value;
+  }
+
+  const product = await pb.collection('shop_products').create(formData);
+
+  logger.info(`[ADMIN] Official shop product created - ID: ${product.id}`);
+  res.json(formatAdminProduct(product, 'shop'));
 });
 
 // PUT /admin/products/:id - Update product
 router.put('/products/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, description, price, image, category, condition, stock_quantity, fachbereich, status } = req.body;
+  const { name, description, price, image, category, condition, stock_quantity, fachbereich, status, weight_g, length_mm, width_mm, height_mm } = req.body;
 
   if (!id) {
     return res.status(400).json({ error: 'Product ID is required' });
@@ -401,14 +932,36 @@ router.put('/products/:id', async (req, res) => {
   if (image !== undefined) updateData.image = image;
   if (category !== undefined) updateData.category = category;
   if (condition !== undefined) updateData.condition = condition;
-  if (stock_quantity !== undefined) updateData.stock_quantity = parseInt(stock_quantity, 10);
+  const stockQuantity = parseParcelNumber(stock_quantity);
+  const parcelWeight = parseParcelNumber(weight_g);
+  const parcelLength = parseParcelNumber(length_mm);
+  const parcelWidth = parseParcelNumber(width_mm);
+  const parcelHeight = parseParcelNumber(height_mm);
+
+  if (stock_quantity !== undefined && stockQuantity !== undefined) updateData.stock_quantity = stockQuantity;
+  if (weight_g !== undefined && parcelWeight !== undefined) updateData.weight_g = parcelWeight;
+  if (length_mm !== undefined && parcelLength !== undefined) updateData.length_mm = parcelLength;
+  if (width_mm !== undefined && parcelWidth !== undefined) updateData.width_mm = parcelWidth;
+  if (height_mm !== undefined && parcelHeight !== undefined) updateData.height_mm = parcelHeight;
   if (fachbereich !== undefined) updateData.fachbereich = fachbereich;
   if (status !== undefined) updateData.status = status;
 
-  const product = await pb.collection('products').update(id, updateData);
+  const resolved = await resolveAdminProduct(id, req.query.source || req.body.source);
+
+  if (!resolved) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  if (resolved.source === 'shop') {
+    delete updateData.category;
+    delete updateData.status;
+    delete updateData.product_type;
+  }
+
+  const product = await pb.collection(resolved.collectionName).update(id, updateData);
 
   logger.info(`[ADMIN] Product updated - ID: ${id}`);
-  res.json(product);
+  res.json(formatAdminProduct(product, resolved.source));
 });
 
 // DELETE /admin/products/:id - Delete product
@@ -421,7 +974,13 @@ router.delete('/products/:id', async (req, res) => {
 
   logger.info(`[ADMIN] Delete product request - ID: ${id}`);
 
-  await pb.collection('products').delete(id);
+  const resolved = await resolveAdminProduct(id, req.query.source);
+
+  if (!resolved) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  await pb.collection(resolved.collectionName).delete(id);
 
   logger.info(`[ADMIN] Product deleted - ID: ${id}`);
   res.json({ success: true, message: `Product ${id} deleted successfully` });
@@ -442,10 +1001,21 @@ router.put('/products/:id/stock', async (req, res) => {
 
   logger.info(`[ADMIN] Update stock request - ID: ${id}, Quantity: ${quantity}`);
 
+  const resolved = await resolveAdminProduct(id, req.query.source || req.body.source);
+
+  if (!resolved) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  if (resolved.source === 'shop') {
+    logger.info(`[ADMIN] Stock update skipped for official shop product without stock field - ID: ${id}`);
+    return res.json(formatAdminProduct(resolved.product, resolved.source));
+  }
+
   const product = await pb.collection('products').update(id, { stock_quantity: parseInt(quantity, 10) });
 
   logger.info(`[ADMIN] Product stock updated - ID: ${id}, Quantity: ${quantity}`);
-  res.json(product);
+  res.json(formatAdminProduct(product, resolved.source));
 });
 
 // Backward compatible stock update route for older clients.
@@ -469,10 +1039,24 @@ router.put('/products/:id/status', async (req, res) => {
     });
   }
 
+  const resolved = await resolveAdminProduct(id, req.query.source || req.body.source);
+
+  if (!resolved) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+
+  if (resolved.source === 'shop') {
+    if (status !== 'active') {
+      return res.status(400).json({ error: 'Official shop products do not support marketplace status changes' });
+    }
+
+    return res.json(formatAdminProduct(resolved.product, resolved.source));
+  }
+
   const product = await pb.collection('products').update(id, { status });
 
   logger.info(`[ADMIN] Product status updated - ID: ${id}, Status: ${status}`);
-  res.json(product);
+  res.json(formatAdminProduct(product, resolved.source));
 });
 
 // Soft Delete Product
@@ -696,14 +1280,67 @@ router.get('/orders', async (req, res) => {
     filter: filter || undefined,
     sort: '-created_at',
   });
+  const enrichedOrders = await Promise.all(orders.items.map((order) => buildAdminOrderResponse(order)));
 
   logger.info(`[ADMIN] Fetched ${orders.items.length} orders by admin ${req.auth.id}`);
   res.json({
-    items: orders.items,
+    items: enrichedOrders,
     total: orders.totalItems,
     page: pageNum,
     limit: limitNum,
   });
+});
+
+// Download Order Label PDF
+router.get('/orders/:id/label-pdf', async (req, res) => {
+  const orderId = String(req.params.id || '').trim();
+
+  if (!orderId) {
+    return res.status(400).json({ error: 'Order ID is required' });
+  }
+
+  const order = await pb.collection('orders').getOne(orderId).catch(() => null);
+
+  if (!order) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  if (order.dhl_label_pdf) {
+    const fileName = `DHL_Label_${order.order_number || order.id}.pdf`;
+    const pdfBuffer = Buffer.from(String(order.dhl_label_pdf), 'base64');
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    return res.send(pdfBuffer);
+  }
+
+  if (order.dhl_label_url) {
+    return res.json({
+      label_url: order.dhl_label_url,
+    });
+  }
+
+  return res.status(404).json({ error: 'No DHL label available for this order' });
+});
+
+// Get Order Details
+router.get('/orders/:id', async (req, res) => {
+  const orderId = String(req.params.id || '').trim();
+
+  if (!orderId) {
+    return res.status(400).json({ error: 'Order ID is required' });
+  }
+
+  const order = await pb.collection('orders').getOne(orderId).catch(() => null);
+
+  if (!order) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  const item = await buildAdminOrderResponse(order);
+
+  logger.info(`[ADMIN] Fetched order ${orderId} details by admin ${req.auth.id}`);
+  res.json(item);
 });
 
 // Update Order Status
@@ -721,10 +1358,35 @@ router.put('/orders/:id', async (req, res) => {
     });
   }
 
-  const order = await pb.collection('orders').update(id, { status });
+  const orderId = String(id).trim();
+  const existingOrder = await pb.collection('orders').getOne(orderId).catch(() => null);
 
-  logger.info(`[ADMIN] Order ${id} status updated to ${status} by admin ${req.auth.id}`);
-  res.json(order);
+  if (!existingOrder) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  const order = await pb.collection('orders').update(orderId, { status });
+
+  if (status === 'delivered') {
+    const earnings = await pb.collection('seller_earnings').getFullList({
+      filter: `order_id="${escapeFilterValue(orderId)}"`,
+    }).catch(() => []);
+
+    await Promise.all(
+      earnings
+        .filter((earning) => earning.status !== 'confirmed')
+        .map((earning) => pb.collection('seller_earnings').update(earning.id, { status: 'confirmed' })),
+    );
+  }
+
+  const enrichedOrder = await buildAdminOrderResponse(order);
+
+  logger.info(`[ADMIN] Order ${orderId} status updated to ${status} by admin ${req.auth.id}`);
+  res.json({
+    success: true,
+    message: `Order ${orderId} status updated to ${status}`,
+    order: enrichedOrder,
+  });
 });
 
 // ============================================================================
@@ -801,6 +1463,176 @@ router.put('/users/:id/remove-seller', async (req, res) => {
 
   logger.info(`[ADMIN] Seller status removed for user: ${id} by admin ${req.auth.id}`);
   res.json({ success: true, message: `Seller status removed for user ${id}` });
+});
+
+// Get Sellers with Aggregates
+router.get('/sellers', async (req, res) => {
+  const { search, page = 1, limit = 100 } = req.query;
+
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 100;
+
+  const normalizedSearch = String(search || '').trim().toLowerCase();
+
+  const [
+    allUsers,
+    marketplaceProducts,
+    shopProducts,
+    allOrders,
+    sellerEarnings,
+  ] = await Promise.all([
+    pb.collection('users').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }),
+    pb.collection('products').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }).catch(() => []),
+    pb.collection('shop_products').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }).catch((error) => {
+      if (isMissingCollectionError(error)) {
+        return [];
+      }
+
+      throw error;
+    }),
+    pb.collection('orders').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }).catch(() => []),
+    pb.collection('seller_earnings').getFullList({
+      sort: '-created',
+      $autoCancel: false,
+    }).catch((error) => {
+      if (isMissingCollectionError(error)) {
+        return [];
+      }
+
+      throw error;
+    }),
+  ]);
+
+  const filteredSellers = allUsers.filter((user) => {
+    if (user.is_seller !== true) {
+      return false;
+    }
+
+    if (!normalizedSearch) {
+      return true;
+    }
+
+    const haystack = [
+      user.email,
+      user.name,
+      user.seller_username,
+    ].map((value) => String(value || '').toLowerCase());
+
+    return haystack.some((value) => value.includes(normalizedSearch));
+  });
+
+  const totalItems = filteredSellers.length;
+  const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / limitNum);
+  const startIndex = Math.max(0, (pageNum - 1) * limitNum);
+  const pagedSellers = filteredSellers.slice(startIndex, startIndex + limitNum);
+  const sellerIds = filteredSellers.map((seller) => seller.id);
+  const sellerIdSet = new Set(sellerIds);
+
+  const productCountBySeller = new Map();
+  const activeListingCountBySeller = new Map();
+  const orderCountBySeller = new Map();
+  const deliveredOrderCountBySeller = new Map();
+  const revenueTotalBySeller = new Map();
+  const availableBalanceBySeller = new Map();
+
+  for (const product of [...marketplaceProducts, ...shopProducts]) {
+    const sellerId = String(product.seller_id || '').trim();
+    if (!sellerId) continue;
+
+    productCountBySeller.set(sellerId, (productCountBySeller.get(sellerId) || 0) + 1);
+
+    if (['active', 'verified'].includes(product.status)) {
+      activeListingCountBySeller.set(sellerId, (activeListingCountBySeller.get(sellerId) || 0) + 1);
+    }
+  }
+
+  for (const order of allOrders) {
+    const sellerId = String(order.seller_id || '').trim();
+    if (!sellerId || !sellerIdSet.has(sellerId)) continue;
+
+    orderCountBySeller.set(sellerId, (orderCountBySeller.get(sellerId) || 0) + 1);
+
+    if (['delivered', 'completed'].includes(order.status)) {
+      deliveredOrderCountBySeller.set(sellerId, (deliveredOrderCountBySeller.get(sellerId) || 0) + 1);
+    }
+  }
+
+  for (const earning of sellerEarnings) {
+    const sellerId = String(earning.seller_id || '').trim();
+    if (!sellerId) continue;
+
+    const netAmount = Number(earning.net_amount ?? earning.gross_amount) || 0;
+    revenueTotalBySeller.set(sellerId, (revenueTotalBySeller.get(sellerId) || 0) + netAmount);
+
+    if (earning.status === 'confirmed') {
+      availableBalanceBySeller.set(sellerId, (availableBalanceBySeller.get(sellerId) || 0) + netAmount);
+    }
+  }
+
+  const items = pagedSellers.map((seller) => {
+    const sellerId = seller.id;
+
+    return {
+      id: sellerId,
+      user_id: seller.user_id || '',
+      name: seller.name || '',
+      email: seller.email || '',
+      seller_username: seller.seller_username || '',
+      university: seller.university || '',
+      created: seller.created,
+      is_seller: seller.is_seller === true,
+      is_deleted: seller.is_deleted === true,
+      is_admin: seller.is_admin === true,
+      product_count: productCountBySeller.get(sellerId) || 0,
+      active_listings_count: activeListingCountBySeller.get(sellerId) || 0,
+      order_count: orderCountBySeller.get(sellerId) || 0,
+      delivered_order_count: deliveredOrderCountBySeller.get(sellerId) || 0,
+      revenue_total: revenueTotalBySeller.get(sellerId) || 0,
+      available_balance: availableBalanceBySeller.get(sellerId) || 0,
+      status: seller.is_deleted ? 'deleted' : 'active',
+    };
+  });
+
+  const summary = filteredSellers.reduce((acc, seller) => {
+    const sellerId = seller.id;
+
+    acc.totalSellers += 1;
+    acc.totalListings += productCountBySeller.get(sellerId) || 0;
+    acc.activeListings += activeListingCountBySeller.get(sellerId) || 0;
+    acc.totalOrders += orderCountBySeller.get(sellerId) || 0;
+    acc.availableBalance += availableBalanceBySeller.get(sellerId) || 0;
+    acc.revenueTotal += revenueTotalBySeller.get(sellerId) || 0;
+    return acc;
+  }, {
+    totalSellers: 0,
+    totalListings: 0,
+    activeListings: 0,
+    totalOrders: 0,
+    availableBalance: 0,
+    revenueTotal: 0,
+  });
+
+  logger.info(`[ADMIN] Fetched ${items.length} sellers by admin ${req.auth.id}`);
+  res.json({
+    items,
+    summary,
+    total: totalItems,
+    page: pageNum,
+    limit: limitNum,
+    totalPages,
+  });
 });
 
 // ============================================================================

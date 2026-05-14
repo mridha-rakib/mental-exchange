@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,9 @@
 
 @layer base {
   :root {
+    --project-font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --primary: 240 100% 50%;
+    --primary-foreground: 0 0% 100%;
     --background: 0 0% 100%;
     --foreground: 0 0% 20%;
     --secondary-text: 0 0% 40%;
@@ -21,7 +23,7 @@
   }
 
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--project-font-family);
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     -webkit-font-smoothing: antialiased;
@@ -29,10 +31,26 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Playfair Display', serif;
-    letter-spacing: -0.02em;
+    font-family: var(--project-font-family);
+    letter-spacing: 0;
     text-wrap: balance;
   }
+
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    font-family: var(--project-font-family);
+  }
+}
+
+.font-sans,
+.font-serif,
+.font-mono,
+[class*="font-['Inter']"],
+[class*="font-['Playfair_Display']"] {
+  font-family: var(--project-font-family) !important;
 }
 
 @layer utilities {
@@ -47,6 +65,36 @@
   }
   .shadow-hover {
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  }
+  .learning-shell {
+    @apply bg-[linear-gradient(180deg,#f7f7f7_0%,#ffffff_48%,#ffffff_100%)];
+  }
+  .learning-card {
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+  .learning-subtle-card {
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+    background-color: hsl(var(--muted-bg));
+  }
+  .learning-inline-card {
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+    background-color: #ffffff;
+  }
+  .learning-progress-track {
+    height: 0.5rem;
+    overflow: hidden;
+    border-radius: 9999px;
+    background-color: rgba(226, 232, 240, 0.8);
+  }
+  .learning-progress-fill {
+    height: 100%;
+    border-radius: 9999px;
+    background-color: rgba(0, 0, 255, 0.85);
   }
 }
 

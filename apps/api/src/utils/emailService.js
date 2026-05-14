@@ -169,26 +169,25 @@ export const sendOrderConfirmationToBuyer = async (order, product, buyer) => {
  * @returns {Promise<Object>} Nodemailer response
  * @throws {Error} If email sending fails
  */
-export const sendOrderNotificationToSeller = async (order, product, seller, dhlLabelUrl) => {
+export const sendOrderNotificationToSeller = async (order, product, seller, labelPdfBuffer = null) => {
   const orderNumberStr = String(order.order_number).trim();
   const sellerEmailStr = String(seller.email).trim();
   const sellerNameStr = String(seller.name || 'Seller').trim();
   const productNameStr = String(product.name).trim();
   const productPrice = parseFloat(product.price) || 0;
   const totalAmount = parseFloat(order.total_amount) || 0;
-  const dhlLabelUrlStr = dhlLabelUrl ? String(dhlLabelUrl).trim() : null;
 
   logger.info(`[EMAIL-SERVICE] Sending order notification to seller - Order: ${orderNumberStr}, Seller: ${sellerEmailStr}`);
 
-  const dhlLabelSection = dhlLabelUrlStr
+  const dhlLabelSection = labelPdfBuffer
     ? `
-    <p style="margin-top: 20px;">
-      <a href="${dhlLabelUrlStr}" style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Download DHL Label</a>
+    <p style="margin-top: 20px; color: #2e7d32; background-color: #e8f5e9; padding: 12px; border-radius: 5px;">
+      <strong>DHL label attached:</strong> print the attached PDF and place it on the parcel before drop-off.
     </p>
     `
     : `
     <p style="margin-top: 20px; color: #ff9800; background-color: #fff3cd; padding: 12px; border-radius: 5px;">
-      <strong>Note:</strong> The DHL label will be available shortly. Please check your dashboard in a few minutes.
+      <strong>Note:</strong> The DHL label is not attached yet. Please download it from your seller dashboard.
     </p>
     `;
 
@@ -246,7 +245,16 @@ export const sendOrderNotificationToSeller = async (order, product, seller, dhlL
     </div>
   `;
 
-  return sendEmail(sellerEmailStr, `Product Sold! - Order #${orderNumberStr}`, emailBody);
+  const attachments = [];
+  if (labelPdfBuffer) {
+    attachments.push({
+      filename: `DHL_Label_${orderNumberStr}.pdf`,
+      content: Buffer.isBuffer(labelPdfBuffer) ? labelPdfBuffer : Buffer.from(labelPdfBuffer),
+      contentType: 'application/pdf',
+    });
+  }
+
+  return sendEmail(sellerEmailStr, `Product Sold! - Order #${orderNumberStr}`, emailBody, attachments);
 };
 
 /**
@@ -260,11 +268,15 @@ export const sendOrderNotificationToSeller = async (order, product, seller, dhlL
  * @returns {Promise<Object>} Nodemailer response
  * @throws {Error} If email sending fails
  */
-export const sendTrackingEmailToBuyer = async (order, trackingNumber, dhlLabelUrl) => {
+export const sendTrackingEmailToBuyer = async (order, buyerEmail, trackingNumber, dhlLabelUrl) => {
   const orderNumberStr = String(order.order_number).trim();
-  const buyerEmailStr = String(order.buyer_email || order.buyer_id).trim();
+  const buyerEmailStr = String(buyerEmail || order.buyer_email || '').trim();
   const trackingNumberStr = String(trackingNumber).trim();
   const dhlLabelUrlStr = String(dhlLabelUrl).trim();
+
+  if (!buyerEmailStr) {
+    throw new Error(`Missing buyer email for tracking email on order ${orderNumberStr}`);
+  }
 
   logger.info(`[EMAIL-SERVICE] Sending tracking email to buyer - Order: ${orderNumberStr}, Tracking: ${trackingNumberStr}`);
 

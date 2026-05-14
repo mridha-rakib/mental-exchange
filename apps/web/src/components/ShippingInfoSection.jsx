@@ -21,7 +21,7 @@ const ShippingInfoSection = () => {
     street_address: '',
     city: '',
     postal_code: '',
-    country: t('checkout.country_default'),
+    country: 'DE',
     phone_number: ''
   });
 
@@ -42,7 +42,7 @@ const ShippingInfoSection = () => {
             street_address: info.street_address || '',
             city: info.city || '',
             postal_code: info.postal_code || '',
-            country: info.country || t('checkout.country_default'),
+            country: info.country || 'DE',
             phone_number: info.phone_number || ''
           });
         }
@@ -69,6 +69,7 @@ const ShippingInfoSection = () => {
     try {
       const dataToSave = {
         ...formData,
+        country: formData.country?.trim() || 'DE',
         user_id: currentUser.id
       };
 

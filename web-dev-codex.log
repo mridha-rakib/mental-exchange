@@ -3,19 +3,25 @@
 > vite --host :: --port 3000 --strictPort
 
 
-  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m1107[22m[2m[0m ms[22m
+  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m379[22m[2m[0m ms[22m
 
   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
   [32m➜[39m  [1mNetwork[22m: [36mhttp://10.10.11.48:[1m3000[22m/[39m
-  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.22.80.1:[1m3000[22m/[39m
-[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
-[2m05:46:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AdminDashboardPage.jsx, /src/index.css[22m
-[2m05:46:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AdminDashboardPage.jsx, /src/index.css[22m
-[2m05:47:12[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AdminDashboardPage.jsx, /src/index.css[22m
-[2m05:47:42[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AdminDashboardPage.jsx, /src/index.css[22m
-[2m05:49:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AdminDashboardPage.jsx, /src/index.css[22m
-[2m05:56:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AdminDashboardPage.jsx, /src/index.css[22m
-[2m05:56:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/AdminDashboardPage.jsx, /src/index.css[22m
-[2m05:56:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/contexts/TranslationContext.jsx[22m
-[2m05:56:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [33mhmr invalidate [39m[2m/src/contexts/TranslationContext.jsx[22m Could not Fast Refresh ("useTranslation" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
-[2m05:56:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.jsx, /src/pages/HomePage.jsx, /src/pages/FavoritesPage.jsx, /src/pages/ProductDetailPage.jsx, /src/components/Footer.jsx, /src/pages/CartPage.jsx, /src/pages/AboutPage.jsx, /src/pages/SuccessPage.jsx, /src/pages/FaqPage.jsx, /src/pages/ProductVerificationAdminPage.jsx, /src/pages/MyOrdersPage.jsx, /src/pages/VerificationSuccess.jsx, /src/pages/CheckoutPage.jsx, /src/pages/OrderDetailsPage.jsx, /src/pages/SellerInfoPage.jsx, /src/pages/VerificationCancelPage.jsx, /src/pages/ContactPage.jsx, /src/pages/HilfePage.jsx, /src/pages/AuthPage.jsx, /src/pages/CheckoutCancelPage.jsx, /src/pages/SellerDashboard.jsx, /src/pages/MarketplacePage.jsx, /src/components/Header.jsx, /src/pages/ShopPage.jsx, /src/pages/SellerProductsPage.jsx, /src/pages/ProfilePage.jsx, /src/pages/NewProductForm.jsx, /src/pages/AdminDashboardPage.jsx, /src/components/InfoBannersSection.jsx, /src/components/Logo.jsx, /src/components/CustomerReviewsSection.jsx, /src/components/SellerActivationFlow.jsx, /src/components/AdminProductUploadModal.jsx, /src/components/FilterSection.jsx, /src/components/PopularProductsSection.jsx, /src/components/ShippingInfoSection.jsx, /src/components/MarketplaceProductCard.jsx, /src/components/ImageUploadField.jsx[22m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.20.112.1:[1m3000[22m/[39m
+[2m01:25:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/PopularProductsSection.jsx[22m
+[2m01:25:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/PopularProductsSection.jsx[22m
+[2m01:25:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ProductDetailPage.jsx, /src/index.css[22m
+[2m01:25:35[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ProductDetailPage.jsx, /src/index.css[22m
+[2m02:10:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ShopPage.jsx, /src/index.css[22m
+[2m02:15:53[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ProfilePage.jsx, /src/index.css[22m
+[2m02:20:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/SellerRoute.jsx, /src/index.css[22m
+[2m02:20:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ProfilePage.jsx, /src/index.css[22m
+[2m02:20:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/NewProductForm.jsx, /src/index.css[22m
+[2m02:20:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/NewProductForm.jsx, /src/index.css[22m
+[2m02:27:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/NewProductForm.jsx, /src/index.css[22m
+[2m02:27:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/MarketplaceProductCard.jsx[22m
+[2m02:29:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ShopPage.jsx, /src/index.css[22m
+[2m02:39:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/MarketplaceProductCard.jsx[22m
+[2m02:39:53[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ProductDetailPage.jsx, /src/index.css[22m
+[2m02:41:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/FavoritesPage.jsx, /src/index.css[22m
+[2m02:43:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ProductDetailPage.jsx, /src/index.css[22m

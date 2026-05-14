@@ -21,6 +21,7 @@ const ProductUploadForm = () => {
     description: '',
     price: '',
     condition: '',
+    weight_g: '',
     product_type: 'Article',
   });
 
@@ -41,6 +42,12 @@ const ProductUploadForm = () => {
       return;
     }
 
+    const parcelWeight = Number(formData.weight_g);
+    if (!Number.isFinite(parcelWeight) || parcelWeight <= 0) {
+      toast.error('Bitte gib ein gueltiges Versandgewicht an.');
+      return;
+    }
+
     setLoading(true);
     try {
       const data = new FormData();
@@ -48,6 +55,7 @@ const ProductUploadForm = () => {
       data.append('description', formData.description);
       data.append('price', formData.price);
       data.append('condition', formData.condition);
+      data.append('weight_g', String(Math.round(parcelWeight)));
       data.append('product_type', formData.product_type);
       data.append('seller_id', currentUser.id);
       data.append('seller_username', currentUser.seller_username || currentUser.name);
@@ -130,6 +138,11 @@ const ProductUploadForm = () => {
                       <SelectItem value="Befriedigend">Befriedigend</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="weight_g">{'Versandgewicht (g) *'}</Label>
+                  <Input id="weight_g" name="weight_g" type="number" min="1" step="1" value={formData.weight_g} onChange={handleChange} required />
                 </div>
               </div>
 

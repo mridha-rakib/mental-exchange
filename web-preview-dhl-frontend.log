@@ -1,0 +1,7 @@
+
+> web@0.0.0 start
+> vite preview --outDir ../../dist/apps/web --host :: --port 3000 --strictPort
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.10.11.48:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.21.80.1:[1m3000[22m/[39m

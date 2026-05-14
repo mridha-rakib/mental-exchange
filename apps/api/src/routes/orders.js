@@ -21,6 +21,16 @@ const clampPaginationNumber = (value, fallback, { min = 1, max = 100 } = {}) => 
   return Math.min(Math.max(parsed, min), max);
 };
 
+const getProductImageUrl = (product) => {
+  if (!product?.image) return '';
+
+  try {
+    return pb.files.getUrl(product, product.image, { thumb: '300x300' });
+  } catch {
+    return '';
+  }
+};
+
 const sanitizeProduct = (product) => {
   if (!product) return null;
 
@@ -36,6 +46,38 @@ const sanitizeProduct = (product) => {
     fachbereich: product.fachbereich || [],
     seller_id: product.seller_id || '',
     seller_username: product.seller_username || '',
+    image_url: getProductImageUrl(product),
+  };
+};
+
+const sanitizeOrderForList = (order) => {
+  const {
+    dhl_label_pdf,
+    ...safeOrder
+  } = order;
+
+  return safeOrder;
+};
+
+const sanitizeReturnRequest = (returnRequest) => {
+  if (!returnRequest) return null;
+
+  return {
+    id: returnRequest.id,
+    order_id: returnRequest.order_id,
+    status: returnRequest.status || 'Pending',
+    reason: returnRequest.reason || '',
+    details: returnRequest.details || '',
+    admin_notes: returnRequest.admin_notes || '',
+    product_type: returnRequest.product_type || '',
+    return_type: returnRequest.return_type || '',
+    claim_window_expires_at: returnRequest.claim_window_expires_at || '',
+    tracking_number: returnRequest.dhl_tracking_number || '',
+    has_label: !!returnRequest.dhl_label_pdf,
+    label_generated_at: returnRequest.label_generated_at || '',
+    refund_amount: returnRequest.refund_amount || 0,
+    created: returnRequest.created,
+    updated: returnRequest.updated,
   };
 };
 
@@ -58,6 +100,40 @@ const fetchOrderProduct = async (order) => {
     logger.warn(`[ORDERS] Product lookup failed in ${fallbackCollection} - Product: ${productId}, Error: ${fallbackError.message}`);
     return null;
   }
+};
+
+const fetchLatestReturnRequest = async (orderId) => {
+  const items = await pb.collection('returns').getFullList({
+    filter: `order_id="${String(orderId).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`,
+    sort: '-created',
+  }).catch(() => []);
+
+  return items[0] || null;
+};
+
+const sanitizeReview = (review) => {
+  if (!review) return null;
+
+  return {
+    id: review.id,
+    orderId: review.order_id || '',
+    rating: Number(review.rating || 0),
+    body: review.body || '',
+    displayName: review.display_name || '',
+    status: review.status || 'pending',
+    isFeatured: review.is_featured === true,
+    created: review.created,
+    updated: review.updated,
+  };
+};
+
+const fetchOrderReview = async (orderId, userId) => {
+  const safeOrderId = String(orderId || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  const safeUserId = String(userId || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+
+  return pb.collection('customer_reviews')
+    .getFirstListItem(`order_id="${safeOrderId}" && user_id="${safeUserId}"`)
+    .catch(() => null);
 };
 
 /**
@@ -89,12 +165,12 @@ router.get('/', requireAuth, async (req, res) => {
     const product = await productCache.get(cacheKey);
     const trackingNumber = order.tracking_number || order.dhl_tracking_number || '';
 
-    return {
+    return sanitizeOrderForList({
       ...order,
       product: sanitizeProduct(product),
       has_label: !!(order.dhl_label_pdf || order.dhl_label_url),
       tracking_number: trackingNumber,
-    };
+    });
   }));
 
   const summary = items.reduce((acc, order) => {
@@ -118,6 +194,96 @@ router.get('/', requireAuth, async (req, res) => {
     perPage: result.perPage,
     totalPages: result.totalPages,
   });
+});
+
+/**
+ * GET /orders/:orderId
+ * Retrieve a single order with product and latest return request details.
+ */
+router.get('/:orderId', requireAuth, async (req, res) => {
+  const orderId = String(req.params.orderId || '').trim();
+
+  if (!orderId) {
+    return res.status(400).json({ error: 'orderId is required' });
+  }
+
+  const order = await pb.collection('orders').getOne(orderId).catch(() => null);
+
+  if (!order) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  if (
+    order.buyer_id !== req.auth.id &&
+    order.seller_id !== req.auth.id &&
+    !req.auth.is_admin
+  ) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  const product = await fetchOrderProduct(order);
+  const latestReturnRequest = await fetchLatestReturnRequest(order.id);
+  const review = order.buyer_id === req.auth.id || req.auth.is_admin
+    ? await fetchOrderReview(order.id, order.buyer_id)
+    : null;
+  const trackingNumber = order.tracking_number || order.dhl_tracking_number || '';
+  const normalizedStatus = String(order.status || '').toLowerCase();
+  const canReview = order.buyer_id === req.auth.id && ['delivered', 'completed'].includes(normalizedStatus) && !review;
+
+  res.json({
+    ...order,
+    product: sanitizeProduct(product),
+    has_label: !!(order.dhl_label_pdf || order.dhl_label_url),
+    tracking_number: trackingNumber,
+    return_request: sanitizeReturnRequest(latestReturnRequest),
+    review: sanitizeReview(review),
+    can_review: canReview,
+  });
+});
+
+/**
+ * GET /orders/:orderId/label-pdf
+ * Download the shipping label for an order the authenticated user can access.
+ */
+router.get('/:orderId/label-pdf', requireAuth, async (req, res) => {
+  const orderId = String(req.params.orderId || '').trim();
+
+  if (!orderId) {
+    return res.status(400).json({ error: 'orderId is required' });
+  }
+
+  const order = await pb.collection('orders').getOne(orderId).catch(() => null);
+
+  if (!order) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  if (
+    order.buyer_id !== req.auth.id &&
+    order.seller_id !== req.auth.id &&
+    !req.auth.is_admin
+  ) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  if (order.dhl_label_pdf) {
+    const labelBuffer = Buffer.from(order.dhl_label_pdf, 'base64');
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="DHL_Label_${order.order_number || order.id}.pdf"`,
+    );
+    return res.send(labelBuffer);
+  }
+
+  if (order.dhl_label_url) {
+    return res.json({
+      label_url: order.dhl_label_url,
+    });
+  }
+
+  return res.status(404).json({ error: 'No label available for this order' });
 });
 
 /**

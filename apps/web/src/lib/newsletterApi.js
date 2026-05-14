@@ -1,10 +1,7 @@
 import apiServerClient from '@/lib/apiServerClient.js';
 
-const getNewsletterErrorMessage = async (response, fallbackMessage) => {
-  const data = await response.json().catch(() => null);
-
-  return data?.message || data?.error?.message || data?.error || fallbackMessage;
-};
+const isAlreadySubscribedResponse = (data) =>
+  typeof data?.message === 'string' && data.message.toLowerCase().includes('already subscribed');
 
 export const subscribeToNewsletter = async ({ email, fallbackMessage }) => {
   const response = await apiServerClient.fetch('/email/newsletter', {
@@ -21,7 +18,7 @@ export const subscribeToNewsletter = async ({ email, fallbackMessage }) => {
     throw new Error(data?.message || data?.error?.message || data?.error || fallbackMessage);
   }
 
-  if (data?.success === false) {
+  if (data?.success === false && !isAlreadySubscribedResponse(data)) {
     throw new Error(data?.message || fallbackMessage);
   }
 

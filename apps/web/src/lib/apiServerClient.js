@@ -2,10 +2,6 @@ const API_PROXY_URL = '/hcgi/api';
 const API_DIRECT_URL = import.meta.env.VITE_API_SERVER_URL || 'http://127.0.0.1:3001';
 
 const isDevProxyFallbackEligible = () => {
-  if (!import.meta.env.DEV) {
-    return false;
-  }
-
   const hostname = window.location.hostname;
   return hostname === 'localhost' || hostname === '127.0.0.1';
 };

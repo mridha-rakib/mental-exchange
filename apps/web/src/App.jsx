@@ -16,7 +16,17 @@ import Footer from './components/Footer.jsx';
 import HomePage from './pages/HomePage.jsx';
 import ShopPage from './pages/ShopPage.jsx';
 import MarketplacePage from './pages/MarketplacePage.jsx';
+import LearningLandingPage from './pages/LearningLandingPage.jsx';
+import LearningPackageSelectorPage from './pages/LearningPackageSelectorPage.jsx';
+import LearningPackagePage from './pages/LearningPackagePage.jsx';
+import LearningCheckoutPage from './pages/LearningCheckoutPage.jsx';
+import LearningDashboardPage from './pages/LearningDashboardPage.jsx';
+import LearningModulePage from './pages/LearningModulePage.jsx';
+import LearningLessonPage from './pages/LearningLessonPage.jsx';
+import LearningSubscriptionPage from './pages/LearningSubscriptionPage.jsx';
+import LearningAdminPage from './pages/LearningAdminPage.jsx';
 import ProductDetailPage from './pages/ProductDetailPage.jsx';
+import ReviewsPage from './pages/ReviewsPage.jsx';
 import CartPage from './pages/CartPage.jsx';
 import CheckoutPage from './pages/CheckoutPage.jsx';
 import SuccessPage from './pages/SuccessPage.jsx';
@@ -61,7 +71,17 @@ function App() {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/shop" element={<ShopPage />} />
                     <Route path="/marketplace" element={<MarketplacePage />} />
+                    <Route path="/learning" element={<LearningLandingPage />} />
+                    <Route path="/learning/abo" element={<LearningPackageSelectorPage />} />
+                    <Route path="/learning/packages" element={<LearningPackageSelectorPage />} />
+                    <Route path="/learning/packages/:slug" element={<LearningPackagePage />} />
+                    <Route path="/learning/subscribe/:slug" element={<LearningCheckoutPage />} />
+                    <Route path="/learning/topics/:packageSlug/:topicSlug" element={<LearningModulePage />} />
+                    <Route path="/learning/topics/:packageSlug/:topicSlug/subtopics/:subtopicSlug" element={<LearningLessonPage />} />
+                    <Route path="/learning/modules/:moduleId" element={<LearningModulePage />} />
+                    <Route path="/learning/lessons/:lessonId" element={<LearningLessonPage />} />
                     <Route path="/product/:id" element={<ProductDetailPage />} />
+                    <Route path="/reviews" element={<ReviewsPage />} />
                     <Route path="/auth" element={<AuthPage />} />
                     
                     {/* Static Pages */}
@@ -102,6 +122,17 @@ function App() {
                     <Route path="/profile" element={
                       <ProtectedRoute>
                         <ProfilePage />
+                      </ProtectedRoute>
+                    } />
+
+                    <Route path="/learning/dashboard" element={
+                      <ProtectedRoute>
+                        <LearningDashboardPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/learning/subscription" element={
+                      <ProtectedRoute>
+                        <LearningSubscriptionPage />
                       </ProtectedRoute>
                     } />
                     
@@ -170,6 +201,12 @@ function App() {
                         <div className="max-w-7xl mx-auto px-4 py-8 w-full">
                           <ProductVerificationAdminPage />
                         </div>
+                      </AdminRoute>
+                    } />
+
+                    <Route path="/admin/learning" element={
+                      <AdminRoute>
+                        <LearningAdminPage />
                       </AdminRoute>
                     } />
                   </Routes>

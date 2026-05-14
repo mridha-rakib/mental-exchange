@@ -1,0 +1,288 @@
+[2m01:31:13[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /learning/packages[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m01:31:13[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:11:08[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:11:08[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:11:09[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:11:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/products/records?page=1&perPage=50&filter=status%3D%22active%22&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:11:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:11:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:11:31[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:11:36[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:11:39[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:11:52[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/products/records?page=1&perPage=50&filter=status%3D%22active%22&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:12[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:12[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:17[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:20[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:22[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:26[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:28[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:31[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:34[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:38[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:40[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:43[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:47[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:50[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:53[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:55[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:12:59[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:04[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:07[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/products/records?page=1&perPage=50&filter=status%3D%22active%22&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:13[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:17[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:19[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:22[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:25[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:28[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:32[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:34[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:38[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:41[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:43[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:46[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:49[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:53[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:55[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:13:58[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:01[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:04[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:07[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/products/records?page=1&perPage=50&filter=status%3D%22active%22&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:13[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:16[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:19[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:22[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:25[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:27[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/products/records?page=1&perPage=50&filter=status%3D%22active%22&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:27[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:27[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/products/records?page=1&perPage=50&filter=status%3D%22active%22&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:28[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:29[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/products/records?page=1&perPage=50&filter=status%3D%22active%22&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:30[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:32[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:34[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/products/records?page=1&perPage=50&filter=status%3D%22active%22&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:35[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:38[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/products/records?page=1&perPage=50&filter=status%3D%22active%22&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:38[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:14:52[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:15:16[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/products/records?page=1&perPage=50&filter=status%3D%22active%22&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:15:22[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:15:52[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:17:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:18:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:19:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:19:22[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /marketplace/products?page=1&perPage=50&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:19:22[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:20:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:23:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:23:51[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:23:51[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /marketplace/products?page=1&perPage=50&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:24:09[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /favorites/toggle[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:24:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /favorites/toggle[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:24:12[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /favorites/toggle[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:24:15[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /favorites/toggle[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:24:21[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:24:51[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:25:21[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:25:51[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m19:26:21[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)

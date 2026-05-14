@@ -1,0 +1,219 @@
+[2m00:28:17[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /reviews?featured=false&limit=3&page=1[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:28:17[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /shop/products?perPage=4&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:28:17[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /learning/packages[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:28:17[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/cart_items/records?page=1&perPage=500&skipTotal=1&filter=user_id%20%3D%20%22gi1r7haxydr1cyh%22[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:28:17[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:28:48[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:29:18[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:29:48[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:30:18[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:30:48[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:31:18[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:31:48[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:32:33[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:33:27[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /learning/packages[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:33:27[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /shop/products?perPage=4&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:33:27[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:33:27[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/cart_items/records?page=1&perPage=500&skipTotal=1&filter=user_id%20%3D%20%22gi1r7haxydr1cyh%22[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:33:27[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /reviews?featured=false&limit=3&page=1[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:33:30[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /shop/products?perPage=4&sort=-created[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:33:30[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /reviews?featured=false&limit=3&page=1[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:33:30[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /learning/packages[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:33:30[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:33:30[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/cart_items/records?page=1&perPage=500&skipTotal=1&filter=user_id%20%3D%20%22gi1r7haxydr1cyh%22[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:34:01[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:34:31[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:35:01[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:35:31[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:36:01[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:36:31[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:37:33[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:38:33[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:39:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:39:19[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /learning/packages[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:39:30[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:39:39[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /learning/packages[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:39:39[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:40:01[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:40:09[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:40:31[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:40:39[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:41:09[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:41:21[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /learning/packages[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:41:21[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:41:21[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/cart_items/records?page=1&perPage=500&skipTotal=1&filter=user_id%20%3D%20%22gi1r7haxydr1cyh%22[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:41:21[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /learning/packages[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:41:21[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:41:52[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:41:52[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:42:22[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:42:22[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:42:52[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:42:52[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:43:22[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:43:22[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:43:52[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:43:52[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:44:22[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:44:22[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:45:11[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:45:33[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:45:33[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:46:33[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:46:33[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:46:59[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /learning/packages[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:46:59[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:46:59[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/cart_items/records?page=1&perPage=500&skipTotal=1&filter=user_id%20%3D%20%22n26x9nq6xos9g63%22[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:47:29[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:47:33[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:47:33[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:47:59[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:48:09[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/users/auth-with-password[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:48:10[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/collections/users/auth-with-password[39m
+Error: connect ECONNREFUSED 127.0.0.1:8090
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)
+[2m00:48:29[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /settings/fees[39m
+Error: connect ECONNREFUSED 127.0.0.1:3001
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1645:16)

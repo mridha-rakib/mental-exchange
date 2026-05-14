@@ -1,0 +1,29 @@
+[INFO] Connecting to PocketBase at http://127.0.0.1:8090
+[INFO] [CHECKOUT] Configuration loaded from environment variables
+[INFO] [CHECKOUT] Frontend URL: http://localhost:3000
+[INFO] [DHL-SERVICE] DHL Configuration loaded from environment variables
+[INFO] [DHL-SERVICE] Token URL: https://api-eu.dhl.com/parcel/de/account/auth/ropc/v1/token
+[INFO] [DHL-SERVICE] Shipping URL: https://api-eu.dhl.com/parcel/de/shipping/v2/orders
+[INFO] [DHL-SERVICE] Warehouse: Patrick Tchoquessi, Angelika-machinek-Straße 12, 60486 Frankfurt, DE
+[INFO] [MAIN] Registering Stripe webhook handler
+[INFO] [MAIN] Registering auth middleware BEFORE routes
+[INFO] [MAIN] Mounting routes
+[INFO] [ROUTES] Registering /checkout routes
+[INFO] [ROUTES] Registering /dhl-labels routes
+[INFO] [ROUTES] Registering /favorites routes
+[INFO] [ROUTES] Registering /admin routes
+[INFO] [ROUTES] Registering /email routes
+[INFO] [ROUTES] Registering /verification routes
+[INFO] [ROUTES] Registering /orders routes
+[INFO] [ROUTES] Registering /returns routes
+[INFO] [ROUTES] Registering /search routes
+[INFO] [ROUTES] Registering /settings routes
+[INFO] [ROUTES] Registering /seller routes
+[INFO] [ROUTES] Registering /learning routes
+[INFO] [ROUTES] Stripe webhook is registered in main.js with express.raw() middleware
+[INFO] [ROUTES] All routes registered successfully
+[INFO] 🚀 API Server running on http://localhost:3999
+[INFO] PocketBase client initialized successfully
+::ffff:127.0.0.1 - - [28/Apr/2026:00:25:31 +0000] "GET /learning/packages/zahni-masterclass HTTP/1.1" 200 5613 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:25:31 +0000] "GET /learning/lessons/tupqigwu58qogej HTTP/1.1" 200 5491 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:25:31 +0000] "GET /learning/lessons/fbvcgcih215i5za HTTP/1.1" 403 74 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"

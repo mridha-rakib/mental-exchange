@@ -1,0 +1,779 @@
+
+> api@0.0.0 dev
+> node src/main.js
+
+[INFO] Connecting to PocketBase at http://127.0.0.1:8090
+[INFO] [CHECKOUT] Configuration loaded from environment variables
+[INFO] [CHECKOUT] Frontend URL: http://localhost:3000
+[INFO] [DHL-SERVICE] DHL Configuration loaded from environment variables
+[INFO] [DHL-SERVICE] Token URL: https://api-eu.dhl.com/parcel/de/account/auth/ropc/v1/token
+[INFO] [DHL-SERVICE] Shipping URL: https://api-eu.dhl.com/parcel/de/shipping/v2/orders
+[INFO] [DHL-SERVICE] Warehouse: Patrick Tchoquessi, Angelika-machinek-Straße 12, 60486 Frankfurt, DE
+[INFO] [MAIN] Registering Stripe webhook handler
+[INFO] [MAIN] Registering auth middleware BEFORE routes
+[INFO] [MAIN] Mounting routes
+[INFO] [ROUTES] Registering /checkout routes
+[INFO] [ROUTES] Registering /dhl-labels routes
+[INFO] [ROUTES] Registering /tracking routes
+[INFO] [ROUTES] Registering /favorites routes
+[INFO] [ROUTES] Registering /admin routes
+[INFO] [ROUTES] Registering /email routes
+[INFO] [ROUTES] Registering /verification routes
+[INFO] [ROUTES] Registering /orders routes
+[INFO] [ROUTES] Registering /returns routes
+[INFO] [ROUTES] Registering /search routes
+[INFO] [ROUTES] Registering /settings routes
+[INFO] [ROUTES] Registering /seller routes
+[INFO] [ROUTES] Registering /learning routes
+[INFO] [ROUTES] Registering /marketplace routes
+[INFO] [ROUTES] Registering /shop routes
+[INFO] [ROUTES] Registering /reviews routes
+[INFO] [ROUTES] Stripe webhook is registered in main.js with express.raw() middleware
+[INFO] [ROUTES] All routes registered successfully
+[INFO] 🚀 API Server running on http://localhost:3001
+[INFO] PocketBase client initialized successfully
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:02:54 +0000] "GET /learning/admin/content HTTP/1.1" 200 14647 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:03:05 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:03:14 +0000] "GET /learning/admin/content HTTP/1.1" 200 14647 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:03:35 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:03:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:03:39 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:03:39 +0000] "GET /learning/admin/content HTTP/1.1" 200 14647 "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:04:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:04:40 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:05:10 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:05:40 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:06:10 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:06:40 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:07:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:08:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:09:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:10:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:10:41 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:11:10 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:11:40 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:12:10 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:13:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:14:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:15:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:15:49 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:16:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [05/May/2026:20:16:27 +0000] "GET /admin/dashboard HTTP/1.1" 200 43419 "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:16:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:17:10 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:17:40 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:18:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:19:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:20:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:21:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:22:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:23:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [HEALTH CHECK] Health check request - Timestamp: 2026-05-05T20:23:32.129Z
+::ffff:127.0.0.1 - - [05/May/2026:20:23:32 +0000] "GET /health HTTP/1.1" 200 54 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:24:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:24:38 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:24:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:24:43 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:25:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:25:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:26:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:26:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:27:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:27:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:28:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:28:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:29:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:29:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:30:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:30:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:31:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:31:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:32:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:32:40 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:33:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:33:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:33:45 +0000] "GET /learning/packages/zahni-masterclass HTTP/1.1" 304 - "http://localhost:3000/learning/packages/zahni-masterclass" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:33:50 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:34:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:34:40 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:35:10 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:35:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:36:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:36:21 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:36:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:37:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:37:40 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:38:10 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:39:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:39:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:39:44 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:39:54 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:40:04 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:40:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [05/May/2026:20:40:29 +0000] "GET /admin/dashboard HTTP/1.1" 200 43419 "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:40:33 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:40:36 +0000] "GET /learning/packages/zahni-masterclass HTTP/1.1" 304 - "http://localhost:3000/learning/packages/zahni-masterclass" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:40:38 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:40:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:41:10 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:41:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:41:22 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:41:22 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:41:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:42:00 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:42:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:42:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:43:23 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:43:53 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:44:23 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:45:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:46:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:46:23 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:46:53 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:47:36 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:47:36 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:47:36 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:47:36 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:47:36 +0000] "GET /learning/packages HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:47:46 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:48:06 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:48:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:48:36 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:49:06 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:49:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:49:36 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:49:52 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:49:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:49:52 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:49:53 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:49:53 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:49:53 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:50:07 +0000] "GET /learning/packages/zahni-masterclass HTTP/1.1" 304 - "http://localhost:3000/learning/packages/zahni-masterclass" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:50:11 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:50:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:50:24 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:50:24 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:50:24 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [05/May/2026:20:50:24 +0000] "GET /learning/packages HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:50:29 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:50:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:50:54 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:51:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:51:24 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:51:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:51:54 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:52:01 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [05/May/2026:20:52:02 +0000] "GET /learning/admin/content HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:52:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:52:24 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:52:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:52:54 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:53:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:53:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:54:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:54:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:54:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:55:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:55:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:55:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:56:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:56:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:56:53 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:57:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:58:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:58:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:59:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:20:59:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:00:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:00:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:01:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:01:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:02:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:02:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:03:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:03:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:04:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:04:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:05:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:05:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:06:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:06:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:07:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:07:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:08:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [05/May/2026:21:08:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"

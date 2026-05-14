@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import pb from '@/lib/pocketbaseClient.js';
+import apiServerClient from '@/lib/apiServerClient.js';
+import { getAuthToken } from '@/lib/getAuthToken.js';
 import { useAuth } from './AuthContext.jsx';
 
 const FavoritesContext = createContext();
@@ -18,29 +19,32 @@ export const FavoritesProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   const loadFavorites = useCallback(async () => {
-    if (!currentUser) return;
+    const token = getAuthToken();
+
+    if (!currentUser || !token) {
+      setFavorites([]);
+      return [];
+    }
 
     setLoading(true);
     try {
-      const items = await pb.collection('favorites').getFullList({
-        filter: `user_id = "${currentUser.id}"`,
-        $autoCancel: false
+      const response = await apiServerClient.fetch('/favorites?perPage=100', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      const itemsWithProducts = await Promise.all(
-        items.map(async (item) => {
-          try {
-            const product = await pb.collection('products').getOne(item.product_id, { $autoCancel: false });
-            return { ...item, product };
-          } catch (err) {
-            return null;
-          }
-        })
-      );
+      if (!response.ok) {
+        throw new Error('Failed to load favorites');
+      }
 
-      setFavorites(itemsWithProducts.filter(item => item !== null));
+      const data = await response.json();
+      const items = Array.isArray(data.items) ? data.items.filter((item) => item.product) : [];
+      setFavorites(items);
+      return items;
     } catch (error) {
       console.error('Failed to load favorites:', error);
+      return [];
     } finally {
       setLoading(false);
     }
@@ -55,8 +59,12 @@ export const FavoritesProvider = ({ children }) => {
     }
   }, [currentUser, loadFavorites]);
 
-  const addToFavorites = async (productId) => {
-    if (!currentUser) {
+  const addToFavorites = async (productOrId) => {
+    const productId = typeof productOrId === 'object' ? productOrId.id : productOrId;
+    const product = typeof productOrId === 'object' ? productOrId : null;
+    const token = getAuthToken();
+
+    if (!currentUser || !token) {
       throw new Error('Must be logged in to add favorites');
     }
 
@@ -64,12 +72,38 @@ export const FavoritesProvider = ({ children }) => {
       const existing = favorites.find(fav => fav.product_id === productId);
       if (existing) return;
 
-      await pb.collection('favorites').create({
-        user_id: currentUser.id,
-        product_id: productId
-      }, { $autoCancel: false });
+      const response = await apiServerClient.fetch('/favorites', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productId }),
+      });
 
-      await loadFavorites();
+      if (!response.ok) {
+        throw new Error('Failed to add favorite');
+      }
+
+      const data = await response.json().catch(() => ({}));
+      const favorite = data.favorite || {};
+
+      setFavorites((prev) => {
+        if (prev.some((item) => item.product_id === productId)) {
+          return prev;
+        }
+
+        return [
+          {
+            id: favorite.id || data.favorite_id || productId,
+            user_id: favorite.user_id || currentUser.id,
+            product_id: favorite.product_id || productId,
+            product: favorite.product || product,
+            created_at: favorite.created_at || new Date().toISOString(),
+          },
+          ...prev,
+        ];
+      });
     } catch (error) {
       console.error('Failed to add to favorites:', error);
       throw error;
@@ -77,12 +111,28 @@ export const FavoritesProvider = ({ children }) => {
   };
 
   const removeFromFavorites = async (productId) => {
+    const token = getAuthToken();
+
+    if (!token) {
+      throw new Error('Must be logged in to remove favorites');
+    }
+
     try {
       const favorite = favorites.find(fav => fav.product_id === productId);
       if (!favorite) return;
 
-      await pb.collection('favorites').delete(favorite.id, { $autoCancel: false });
-      await loadFavorites();
+      const response = await apiServerClient.fetch(`/favorites/product/${encodeURIComponent(productId)}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok && response.status !== 404) {
+        throw new Error('Failed to remove favorite');
+      }
+
+      setFavorites((prev) => prev.filter((item) => item.product_id !== productId));
     } catch (error) {
       console.error('Failed to remove from favorites:', error);
       throw error;

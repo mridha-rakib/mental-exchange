@@ -1,0 +1,448 @@
+
+> monorepo@0.0.0 predev
+> node scripts/check-dev-ports.mjs 3000 3001 8090
+
+[check-dev-ports] Required dev ports are free: 3000, 3001, 8090
+
+> monorepo@0.0.0 dev
+> concurrently --kill-others --raw "npm run dev --prefix apps/pocketbase" "node scripts/wait-for-port.mjs 127.0.0.1 8090 30000 && npm run dev --prefix apps/api" "node scripts/wait-for-port.mjs 127.0.0.1 8090 30000 && node scripts/wait-for-port.mjs 127.0.0.1 3001 30000 && npm run dev --prefix apps/web"
+
+
+> pocketbase-app@0.0.0 dev
+> npm run migrations:up --silent && node scripts/run-pocketbase.mjs serve --http=127.0.0.1:8090 --dir=./pb_data_local --migrationsDir=./pb_migrations --hooksDir=./pb_hooks --encryptionEnv=PB_ENCRYPTION_KEY --hooksWatch=false
+
+No new migrations to apply.
+2026/04/28 05:48:22 Server started at http://127.0.0.1:8090
+├─ REST API:  http://127.0.0.1:8090/api/
+└─ Dashboard: http://127.0.0.1:8090/_/
+[wait-for-port] 127.0.0.1:8090 is ready
+[wait-for-port] 127.0.0.1:8090 is ready
+
+> api@0.0.0 dev
+> node src/main.js
+
+[INFO] Connecting to PocketBase at http://127.0.0.1:8090
+[INFO] [CHECKOUT] Configuration loaded from environment variables
+[INFO] [CHECKOUT] Frontend URL: http://localhost:3000
+[INFO] [DHL-SERVICE] DHL Configuration loaded from environment variables
+[INFO] [DHL-SERVICE] Token URL: https://api-eu.dhl.com/parcel/de/account/auth/ropc/v1/token
+[INFO] [DHL-SERVICE] Shipping URL: https://api-eu.dhl.com/parcel/de/shipping/v2/orders
+[INFO] [DHL-SERVICE] Warehouse: Patrick Tchoquessi, Angelika-machinek-Straße 12, 60486 Frankfurt, DE
+[INFO] [MAIN] Registering Stripe webhook handler
+[INFO] [MAIN] Registering auth middleware BEFORE routes
+[INFO] [MAIN] Mounting routes
+[INFO] [ROUTES] Registering /checkout routes
+[INFO] [ROUTES] Registering /dhl-labels routes
+[INFO] [ROUTES] Registering /favorites routes
+[INFO] [ROUTES] Registering /admin routes
+[INFO] [ROUTES] Registering /email routes
+[INFO] [ROUTES] Registering /verification routes
+[INFO] [ROUTES] Registering /orders routes
+[INFO] [ROUTES] Registering /returns routes
+[INFO] [ROUTES] Registering /search routes
+[INFO] [ROUTES] Registering /settings routes
+[INFO] [ROUTES] Registering /seller routes
+[INFO] [ROUTES] Registering /learning routes
+[INFO] [ROUTES] Stripe webhook is registered in main.js with express.raw() middleware
+[INFO] [ROUTES] All routes registered successfully
+[INFO] 🚀 API Server running on http://localhost:3001
+[INFO] PocketBase client initialized successfully
+[wait-for-port] 127.0.0.1:3001 is ready
+
+> web@0.0.0 dev
+> vite --host :: --port 3000 --strictPort
+
+
+  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m507[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.10.11.48:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.18.224.1:[1m3000[22m/[39m
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:48:24 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:48:51 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [27/Apr/2026:23:48:55 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [27/Apr/2026:23:48:55 +0000] "GET /learning/packages HTTP/1.1" 200 2692 "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:49:21 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [27/Apr/2026:23:49:25 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:49:51 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:50:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:50:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:51:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:51:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:52:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:52:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m05:53:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/MarketplacePage.jsx, /src/index.css[22m
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:53:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m05:53:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/FilterSection.jsx[22m
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:54:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m05:54:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/MarketplaceProductCard.jsx[22m
+[2m05:55:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/MarketplaceProductCard.jsx[22m
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:55:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [27/Apr/2026:23:55:22 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [27/Apr/2026:23:55:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:56:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m05:56:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/Header.jsx, /src/index.css[22m
+::ffff:127.0.0.1 - - [27/Apr/2026:23:56:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [27/Apr/2026:23:56:36 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:57:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:57:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:57:54 +0000] "GET /learning/packages HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:58:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:58:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:59:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m05:59:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/MarketplacePage.jsx, /src/index.css[22m
+::ffff:127.0.0.1 - - [27/Apr/2026:23:59:41 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [27/Apr/2026:23:59:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:00:11 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:00:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m06:00:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/MarketplacePage.jsx, /src/index.css[22m
+::ffff:127.0.0.1 - - [28/Apr/2026:00:00:41 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:00:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:00:51 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:01:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:01:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m06:01:52[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/MarketplacePage.jsx, /src/index.css[22m
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:02:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:02:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller/new-product" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:03:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:03:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:04:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:05:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m06:05:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ShopPage.jsx, /src/index.css[22m
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:05:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m06:05:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/pages/ShopPage.jsx[22m
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:05:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m06:06:00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/Header.jsx, /src/index.css[22m
+::ffff:127.0.0.1 - - [28/Apr/2026:00:06:21 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:06:25 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:06:51 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:06:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:07:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:07:25 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:07:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:08:25 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:08:46 +0000] "GET /learning/packages HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:08:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:09:25 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:09:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:10:25 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m06:10:31[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/components/MarketplaceProductCard.jsx[22m
+::ffff:127.0.0.1 - - [28/Apr/2026:00:10:46 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:10:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/product/bi2a2nw4p84l9nt" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:11:19 +0000] "GET /learning/packages HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:11:25 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:11:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:12:25 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:12:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:13:05 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:13:05 +0000] "GET /learning/packages HTTP/1.1" 200 2692 "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:13:25 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:13:35 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:13:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:14:25 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:14:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:15:25 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:15:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m06:15:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m06:15:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningCheckoutPage.jsx, /src/index.css[22m
+[2m06:15:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningDashboardPage.jsx, /src/index.css[22m
+[2m06:15:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningLandingPage.jsx, /src/index.css[22m
+[2m06:15:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningLessonPage.jsx, /src/index.css[22m
+[2m06:15:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningModulePage.jsx, /src/index.css[22m
+[2m06:15:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningPackagePage.jsx, /src/index.css[22m
+[2m06:15:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningSubscriptionPage.jsx, /src/index.css[22m
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:15:58 +0000] "GET /learning/packages HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m06:16:19[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m06:16:28[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningLandingPage.jsx, /src/index.css[22m
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:16:28 +0000] "GET /learning/packages HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m06:16:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningAdminPage.jsx, /src/index.css[22m
+[2m06:16:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningCheckoutPage.jsx, /src/index.css[22m
+[2m06:16:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningDashboardPage.jsx, /src/index.css[22m
+[2m06:16:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningLessonPage.jsx, /src/index.css[22m
+[2m06:16:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningModulePage.jsx, /src/index.css[22m
+[2m06:16:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningPackagePage.jsx, /src/index.css[22m
+[2m06:16:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningSubscriptionPage.jsx, /src/index.css[22m
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:17:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[2m06:17:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/LearningLessonPage.jsx, /src/index.css[22m
+::ffff:127.0.0.1 - - [28/Apr/2026:00:17:40 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:17:40 +0000] "GET /learning/packages HTTP/1.1" 200 2692 "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:18:10 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:18:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:19:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:20:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:21:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:22:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:23:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:23:38 +0000] "GET /learning/packages HTTP/1.1" 200 2692 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+::ffff:127.0.0.1 - - [28/Apr/2026:00:23:45 +0000] "GET /learning/packages/zahni-masterclass HTTP/1.1" 200 6358 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+[WARN] [AUTH] Unauthorized access attempt - no valid authentication
+[ERROR] Unauthorized: Authentication required Error: Unauthorized: Authentication required
+    at requireAuth (file:///C:/Users/rakib_2zl331p/project/patrick_t/apps/api/src/middleware/auth.js:86:19)
+    at Layer.handleRequest (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:295:15
+    at param (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:600:14)
+    at param (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:610:14)
+    at processParams (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:664:3)
+::ffff:127.0.0.1 - - [28/Apr/2026:00:23:55 +0000] "GET /learning/modules/342dy4f6nbkmclb HTTP/1.1" 401 1245 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+[WARN] [AUTH] Unauthorized access attempt - no valid authentication
+[ERROR] Unauthorized: Authentication required Error: Unauthorized: Authentication required
+    at requireAuth (file:///C:/Users/rakib_2zl331p/project/patrick_t/apps/api/src/middleware/auth.js:86:19)
+    at Layer.handleRequest (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:295:15
+    at param (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:600:14)
+    at param (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:610:14)
+    at processParams (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:664:3)
+::ffff:127.0.0.1 - - [28/Apr/2026:00:23:55 +0000] "GET /learning/lessons/tupqigwu58qogej HTTP/1.1" 401 1245 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+[WARN] [AUTH] Unauthorized access attempt - no valid authentication
+[ERROR] Unauthorized: Authentication required Error: Unauthorized: Authentication required
+    at requireAuth (file:///C:/Users/rakib_2zl331p/project/patrick_t/apps/api/src/middleware/auth.js:86:19)
+    at Layer.handleRequest (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:295:15
+    at param (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:600:14)
+    at param (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:610:14)
+    at processParams (C:\Users\rakib_2zl331p\project\patrick_t\node_modules\router\index.js:664:3)
+::ffff:127.0.0.1 - - [28/Apr/2026:00:23:55 +0000] "GET /learning/modules/8bbj6r2wop9id7g HTTP/1.1" 401 1245 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:24:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:25:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:26:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:27:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:28:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:29:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:30:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:31:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:32:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [28/Apr/2026:00:33:14 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"

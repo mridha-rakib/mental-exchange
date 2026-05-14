@@ -1,5 +1,4 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import './loadEnv.js';
 import Pocketbase from 'pocketbase';
 import logger from './logger.js';
 

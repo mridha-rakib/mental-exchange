@@ -1,0 +1,816 @@
+
+> monorepo@0.0.0 predev
+> node scripts/check-dev-ports.mjs 3000 3001 8090
+
+[check-dev-ports] Required dev ports are free: 3000, 3001, 8090
+
+> monorepo@0.0.0 dev
+> concurrently --kill-others --raw "npm run dev --prefix apps/pocketbase" "node scripts/wait-for-port.mjs 127.0.0.1 8090 30000 && npm run dev --prefix apps/api" "node scripts/wait-for-port.mjs 127.0.0.1 8090 30000 && node scripts/wait-for-port.mjs 127.0.0.1 3001 30000 && npm run dev --prefix apps/web"
+
+
+> pocketbase-app@0.0.0 dev
+> npm run migrations:up --silent && node scripts/run-pocketbase.mjs serve --http=127.0.0.1:8090 --dir=./pb_data_local --migrationsDir=./pb_migrations --hooksDir=./pb_hooks --encryptionEnv=PB_ENCRYPTION_KEY --hooksWatch=false
+
+No new migrations to apply.
+2026/05/03 06:27:15 Server started at http://127.0.0.1:8090
+├─ REST API:  http://127.0.0.1:8090/api/
+└─ Dashboard: http://127.0.0.1:8090/_/
+[wait-for-port] 127.0.0.1:8090 is ready
+[wait-for-port] 127.0.0.1:8090 is ready
+
+> api@0.0.0 dev
+> node src/main.js
+
+[INFO] Connecting to PocketBase at http://127.0.0.1:8090
+[INFO] [CHECKOUT] Configuration loaded from environment variables
+[INFO] [CHECKOUT] Frontend URL: http://localhost:3000
+[INFO] [DHL-SERVICE] DHL Configuration loaded from environment variables
+[INFO] [DHL-SERVICE] Token URL: https://api-eu.dhl.com/parcel/de/account/auth/ropc/v1/token
+[INFO] [DHL-SERVICE] Shipping URL: https://api-eu.dhl.com/parcel/de/shipping/v2/orders
+[INFO] [DHL-SERVICE] Warehouse: Patrick Tchoquessi, Angelika-machinek-Straße 12, 60486 Frankfurt, DE
+[INFO] [MAIN] Registering Stripe webhook handler
+[INFO] [MAIN] Registering auth middleware BEFORE routes
+[INFO] [MAIN] Mounting routes
+[INFO] [ROUTES] Registering /checkout routes
+[INFO] [ROUTES] Registering /dhl-labels routes
+[INFO] [ROUTES] Registering /tracking routes
+[INFO] [ROUTES] Registering /favorites routes
+[INFO] [ROUTES] Registering /admin routes
+[INFO] [ROUTES] Registering /email routes
+[INFO] [ROUTES] Registering /verification routes
+[INFO] [ROUTES] Registering /orders routes
+[INFO] [ROUTES] Registering /returns routes
+[INFO] [ROUTES] Registering /search routes
+[INFO] [ROUTES] Registering /settings routes
+[INFO] [ROUTES] Registering /seller routes
+[INFO] [ROUTES] Registering /learning routes
+[INFO] [ROUTES] Registering /marketplace routes
+[INFO] [ROUTES] Registering /shop routes
+[INFO] [ROUTES] Registering /reviews routes
+[INFO] [ROUTES] Stripe webhook is registered in main.js with express.raw() middleware
+[INFO] [ROUTES] All routes registered successfully
+[INFO] 🚀 API Server running on http://localhost:3001
+[INFO] PocketBase client initialized successfully
+[wait-for-port] 127.0.0.1:3001 is ready
+
+> web@0.0.0 dev
+> vite --host :: --port 3000 --strictPort
+
+
+  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m973[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.10.11.48:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.20.112.1:[1m3000[22m/[39m
+::ffff:127.0.0.1 - - [03/May/2026:00:27:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:27:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:27:26 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:27:29 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:27:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:27:35 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:27:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:27:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:27:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:27:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [HEALTH CHECK] Health check request - Timestamp: 2026-05-03T00:27:47.167Z
+::1 - - [03/May/2026:00:27:47 +0000] "GET /health HTTP/1.1" 200 54 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+::ffff:127.0.0.1 - - [03/May/2026:00:27:48 +0000] "GET /reviews?featured=true&limit=6 HTTP/1.1" 200 12 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:27:48 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 200 630 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:27:48 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:27:48 +0000] "GET /learning/packages HTTP/1.1" 200 3019 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:27:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:27:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:28:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:28:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:28:27 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:28:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:28:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:28:36 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:28:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:28:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:28:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:28:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:28:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:28:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:29:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:29:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:29:28 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:29:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:29:32 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:29:37 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:29:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:29:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:29:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:29:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:29:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:29:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:30:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:30:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:30:29 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:30:32 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:30:33 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:30:38 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:30:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:30:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:30:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:30:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:30:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:30:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [03/May/2026:00:30:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:30:55 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [03/May/2026:00:30:55 +0000] "GET /admin/dashboard HTTP/1.1" 200 36285 "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:31:03 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:31:03 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:31:03 +0000] "GET /reviews?featured=true&limit=6 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:31:03 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:31:03 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:31:03 +0000] "GET /learning/packages HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:31:07 +0000] "GET /shop/products?page=1&perPage=100&sort=-created HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:31:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:31:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:31:26 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Create session request received - Timestamp: 2026-05-03T00:31:29.849Z
+[INFO] [CHECKOUT] Request body keys: buyer_id, buyer_name, buyer_email, shipping_address, cart_items
+[INFO] [CHECKOUT] STEP 1: Validating required fields...
+[INFO] [CHECKOUT] All required fields present
+[INFO] [CHECKOUT] Buyer details - ID: n26x9nq6xos9g63, Name: Rakib Mahmud Mridha, Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] STEP 2: Normalizing cart items...
+[INFO] [CHECKOUT] Normalizing 1 cart items
+[INFO] [CHECKOUT] Normalizing cart item 1 - Keys: collectionId, collectionName, created, id, product_id, product_type, quantity, updated, user_id, product
+[INFO] [CHECKOUT] Extracting from nested product object at index 1
+[INFO] [CHECKOUT] Cart item normalized successfully at index 1 - Product: n0k9v2tl3kn1y3x, Price: €34, Quantity: 1
+[INFO] [CHECKOUT] All 1 cart items normalized successfully
+[INFO] [CHECKOUT] Cart items normalized successfully - Count: 1
+[INFO] [CHECKOUT] STEP 3: Building Stripe line items...
+[INFO] [CHECKOUT] Processing line item 1/1 - Product: n0k9v2tl3kn1y3x, Name: admin p-4, Price: €34.00, Quantity: 1, Total: €34.00
+[INFO] [CHECKOUT] Calculating totals - Subtotal: EUR 34.00, Shipping: EUR 4.99, Service: EUR 1.99, Total: EUR 40.98
+[INFO] [CHECKOUT] Stripe line items built - Count: 3
+[INFO] [CHECKOUT] STEP 4: Preparing metadata...
+[INFO] [CHECKOUT] Metadata prepared - Keys: buyer_id, buyer_name, buyer_email, shipping_address, cart_item_ids, type, shipping_fee, service_fee, transaction_fee_percentage
+[INFO] [CHECKOUT] Metadata object: {
+  "buyer_id": "n26x9nq6xos9g63",
+  "buyer_name": "Rakib Mahmud Mridha",
+  "buyer_email": "rakibmahmudmridha28@gmail.com",
+  "shipping_address": "{\"name\":\"Rakib Mahmud Mridha\",\"email\":\"rakibmahmudmridha28@gmail.com\",\"street\":\"84 Road No 4, Shyamoli, Bangladesh\",\"city\":\"Dhaka\",\"postal_code\":\"1564\",\"country\":\"DE\"}",
+  "cart_item_ids": "qgyh84y440x1ies",
+  "type": "marketplace_order",
+  "shipping_fee": "4.99",
+  "service_fee": "1.99",
+  "transaction_fee_percentage": "7"
+}
+[INFO] [CHECKOUT] STEP 5: Validating metadata field sizes...
+[INFO] [CHECKOUT] Metadata field 'buyer_id' - Length: 15 characters
+[INFO] [CHECKOUT] Metadata field 'buyer_name' - Length: 19 characters
+[INFO] [CHECKOUT] Metadata field 'buyer_email' - Length: 29 characters
+[INFO] [CHECKOUT] Metadata field 'shipping_address' - Length: 167 characters
+[INFO] [CHECKOUT] Metadata field 'cart_item_ids' - Length: 15 characters
+[INFO] [CHECKOUT] Metadata field 'type' - Length: 17 characters
+[INFO] [CHECKOUT] Metadata field 'shipping_fee' - Length: 4 characters
+[INFO] [CHECKOUT] Metadata field 'service_fee' - Length: 4 characters
+[INFO] [CHECKOUT] Metadata field 'transaction_fee_percentage' - Length: 1 characters
+[INFO] [CHECKOUT] All metadata fields validated - All under 500 characters
+[INFO] [CHECKOUT] STEP 6: Creating Stripe checkout session...
+[INFO] [CHECKOUT] Stripe session parameters - Items: 3, Total: €40.98, Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:31:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [CHECKOUT] Stripe checkout session created successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Session URL: https://checkout.stripe.com/c/pay/cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWnFgdnFaMDRRPEFfa0NgV1RHSH9pbjJLYHdsT2kzMHRGXHxEbWNBbzZrV3R1VWxpRldjfD00fU9GaWtiU0dObVVoVE5JUn92ZFZLXDBmMX10QEowRkpTYzJVak5XQ041NUswVEJGUFY9JyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPydocGlxbFpscWBoJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl
+[INFO] [CHECKOUT] Payment Status: unpaid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Checkout session creation completed successfully
+[INFO] [CHECKOUT] Session: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Buyer: n26x9nq6xos9g63
+[INFO] [CHECKOUT] Items: 1
+[INFO] [CHECKOUT] Total: €40.98
+::ffff:127.0.0.1 - - [03/May/2026:00:31:31 +0000] "POST /checkout/create-session HTTP/1.1" 200 577 "http://localhost:3000/checkout" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:31:33 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:31:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:31:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:31:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:31:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [WEBHOOK] Ignoring event type: charge.succeeded
+::1 - - [03/May/2026:00:31:50 +0000] "POST /stripe/webhook HTTP/1.1" 200 17 "-" "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+[INFO] [WEBHOOK] Ignoring event type: payment_intent.created
+::1 - - [03/May/2026:00:31:50 +0000] "POST /stripe/webhook HTTP/1.1" 200 17 "-" "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+[INFO] [ORDER-HANDLER] Order handler started - Timestamp: 2026-05-03T00:31:50.575Z
+[INFO] [ORDER-HANDLER] Buyer: n26x9nq6xos9g63
+[INFO] [ORDER-HANDLER] Seller: platform
+[INFO] [ORDER-HANDLER] Product: n0k9v2tl3kn1y3x
+[INFO] [ORDER-HANDLER] Product type: shop
+[INFO] [ORDER-HANDLER] Quantity: 1
+[INFO] [ORDER-HANDLER] Payment Intent: pi_3TSnwoFeRQBMzlk70rl9T43G
+[INFO] [ORDER-HANDLER] Product fetched - admin p-4
+[WARN] [ORDER-HANDLER] Order create collided with existing record - PaymentIntent: pi_3TSnwoFeRQBMzlk70rl9T43G, Product: n0k9v2tl3kn1y3x, Existing order: e4ty13omesqoi3k
+[INFO] [ORDER-HANDLER] Starting DHL label generation - Order: e4ty13omesqoi3k, Shipper country: DE, Recipient country: DE
+[INFO] [DHL-SERVICE] generateLabel() called - Order: ORD-1777768310579-BCQ83QO
+[INFO] [DHL-SERVICE] Order data summary: {"id":"e4ty13omesqoi3k","order_number":"ORD-1777768310579-BCQ83QO","hasShipper":true,"hasRecipient":true,"hasParcel":true}
+[INFO] [DHL-SERVICE] STEP 1: Validating shipper and recipient addresses...
+[INFO] [DHL-SERVICE] Validating shipper address...
+[INFO] [DHL-SERVICE] shipper address fields - Name: OK, Street: OK, PostalCode: OK, City: OK, Country: OK
+[INFO] [DHL-SERVICE] shipper address validation passed - Name: Patrick Tchoquessi, City: Frankfurt, Country: DE
+[INFO] [DHL-SERVICE] Validating recipient address...
+[INFO] [DHL-SERVICE] recipient address fields - Name: OK, Street: OK, PostalCode: OK, City: OK, Country: OK
+[INFO] [DHL-SERVICE] recipient address validation passed - Name: Rakib Mahmud Mridha, City: Dhaka, Country: DE
+[INFO] [DHL-SERVICE] Shipper validated - Name: Patrick Tchoquessi, City: Frankfurt
+[INFO] [DHL-SERVICE] Recipient validated - Name: Rakib Mahmud Mridha, City: Dhaka
+[INFO] [DHL-SERVICE] STEP 2: Getting valid OAuth2 access token...
+[INFO] [DHL-SERVICE] getValidToken() called
+[INFO] [DHL-SERVICE] Token cache check - No cached token available
+[INFO] [DHL-SERVICE] Cached token invalid or missing - fetching new token from DHL
+[ERROR] [DHL-SERVICE] Missing DHL OAuth2 credentials in environment variables
+[WARN] [ORDER-HANDLER] DHL label generation failed: DHL OAuth2 credentials not configured: TOKEN_URL, API_KEY, API_SECRET, USERNAME, PASSWORD
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+::1 - - [03/May/2026:00:31:50 +0000] "POST /stripe/webhook HTTP/1.1" 200 17 "-" "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [03/May/2026:00:31:50 +0000] "GET /admin/dashboard HTTP/1.1" 200 38184 "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [03/May/2026:00:31:50 +0000] "GET /admin/dashboard HTTP/1.1" 200 38184 "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [03/May/2026:00:31:50 +0000] "GET /admin/dashboard HTTP/1.1" 200 38184 "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [03/May/2026:00:31:50 +0000] "GET /admin/dashboard HTTP/1.1" 200 38184 "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [03/May/2026:00:31:50 +0000] "GET /admin/dashboard HTTP/1.1" 200 38184 "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [03/May/2026:00:31:50 +0000] "GET /admin/dashboard HTTP/1.1" 200 38184 "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[WARN] [WEBHOOK] Missing cart items while processing PI pi_3TSnwoFeRQBMzlk70rl9T43G: qgyh84y440x1ies
+[INFO] [WEBHOOK] Cart items already removed and orders already exist for PI pi_3TSnwoFeRQBMzlk70rl9T43G; treating duplicate event as processed
+::1 - - [03/May/2026:00:31:50 +0000] "POST /stripe/webhook HTTP/1.1" 200 17 "-" "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+::ffff:127.0.0.1 - - [03/May/2026:00:31:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:31:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-03T00:31:52.729Z
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:31:52 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "http://localhost:3000/success?session_id=cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:31:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/success?session_id=cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TSnwoFeRQBMzlk70rl9T43G
+::ffff:127.0.0.1 - - [03/May/2026:00:31:53 +0000] "GET /checkout/session/cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ HTTP/1.1" 200 679 "http://localhost:3000/success?session_id=cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-03T00:31:53.087Z
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TSnwoFeRQBMzlk70rl9T43G
+::ffff:127.0.0.1 - - [03/May/2026:00:31:53 +0000] "GET /checkout/session/cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ HTTP/1.1" 304 - "http://localhost:3000/success?session_id=cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-03T00:31:53.456Z
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TSnwoFeRQBMzlk70rl9T43G
+::ffff:127.0.0.1 - - [03/May/2026:00:31:53 +0000] "GET /checkout/session/cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ HTTP/1.1" 304 - "http://localhost:3000/success?session_id=cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-03T00:31:53.810Z
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TSnwoFeRQBMzlk70rl9T43G
+::ffff:127.0.0.1 - - [03/May/2026:00:31:54 +0000] "GET /checkout/session/cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ HTTP/1.1" 304 - "http://localhost:3000/success?session_id=cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-03T00:31:54.152Z
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TSnwoFeRQBMzlk70rl9T43G
+::ffff:127.0.0.1 - - [03/May/2026:00:31:54 +0000] "GET /checkout/session/cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ HTTP/1.1" 304 - "http://localhost:3000/success?session_id=cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-03T00:31:54.502Z
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [03/May/2026:00:31:55 +0000] "GET /orders?limit=100 HTTP/1.1" 200 13134 "http://localhost:3000/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TSnwoFeRQBMzlk70rl9T43G
+::ffff:127.0.0.1 - - [03/May/2026:00:31:55 +0000] "GET /checkout/session/cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ HTTP/1.1" 304 - "http://localhost:3000/success?session_id=cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-03T00:31:55.267Z
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TSnwoFeRQBMzlk70rl9T43G
+::ffff:127.0.0.1 - - [03/May/2026:00:31:56 +0000] "GET /checkout/session/cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ HTTP/1.1" 304 - "http://localhost:3000/success?session_id=cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-03T00:31:56.031Z
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:31:56 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TSnwoFeRQBMzlk70rl9T43G
+::ffff:127.0.0.1 - - [03/May/2026:00:31:56 +0000] "GET /checkout/session/cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ HTTP/1.1" 304 - "http://localhost:3000/success?session_id=cs_test_b17YfYmYxv3PJXR7yzK9N9uRDlzspT03oMFn5rH9QPiMmKndFAE5aShfqQ" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [03/May/2026:00:32:05 +0000] "GET /orders?limit=100 HTTP/1.1" 304 - "http://localhost:3000/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:32:07 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [03/May/2026:00:32:08 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:32:08 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [03/May/2026:00:32:08 +0000] "GET /admin/dashboard HTTP/1.1" 200 38184 "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [03/May/2026:00:32:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:32:16 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [03/May/2026:00:32:16 +0000] "GET /admin/dashboard HTTP/1.1" 200 38184 "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:32:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:32:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:32:23 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:32:26 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:32:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:32:34 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Fetched order e4ty13omesqoi3k details by admin gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [03/May/2026:00:32:34 +0000] "GET /admin/orders/e4ty13omesqoi3k HTTP/1.1" 200 1898 "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:32:40 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:32:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:32:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:32:46 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:32:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:32:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:32:53 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:32:56 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:33:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:33:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:33:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:33:23 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:33:26 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:33:32 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:33:35 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:33:41 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:33:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:33:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:33:46 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:33:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:33:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:33:53 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:33:56 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:34:16 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:34:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:34:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:34:23 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:34:26 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:34:33 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:34:36 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:34:42 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/marketplace" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:34:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:34:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://evict-spender-unaware.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [03/May/2026:00:34:46 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:34:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [03/May/2026:00:34:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [03/May/2026:00:34:53 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"

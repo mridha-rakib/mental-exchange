@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { AlertCircle, ArrowLeft, Heart, PackageCheck, ShieldCheck, ShoppingCart, Sparkles } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Heart, ShieldCheck, ShoppingCart, Star } from 'lucide-react';
 import pb from '@/lib/pocketbaseClient.js';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useCart } from '@/contexts/CartContext.jsx';
 import { useFavorites } from '@/contexts/FavoritesContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
 import { Button } from '@/components/ui/button.jsx';
-import { Badge } from '@/components/ui/badge.jsx';
+import { Label } from '@/components/ui/label.jsx';
+import { Textarea } from '@/components/ui/textarea.jsx';
 import { toast } from 'sonner';
+import { createCustomerReview, getProductReviewEligibility, listProductReviews } from '@/lib/reviewsApi.js';
+import { getAuthToken } from '@/lib/getAuthToken.js';
 
 const subjectKeys = {
   Kons: 'marketplace.subject_kons',
@@ -17,6 +20,28 @@ const subjectKeys = {
   KFO: 'marketplace.subject_kfo',
   Paro: 'marketplace.subject_paro',
 };
+
+const subjectShortLabels = {
+  Kons: 'Kons',
+  Pro: 'Pro',
+  KFO: 'KFO',
+  Paro: 'Paro',
+};
+
+const conditionKeys = {
+  Neu: 'marketplace.condition_new',
+  New: 'marketplace.condition_new',
+  'Wie neu': 'marketplace.condition_like_new',
+  'Like new': 'marketplace.condition_like_new',
+  Gut: 'marketplace.condition_good',
+  Good: 'marketplace.condition_good',
+  Befriedigend: 'marketplace.condition_satisfactory',
+  Satisfactory: 'marketplace.condition_satisfactory',
+};
+
+const sellerInitial = (name = '') => name.trim().slice(0, 1).toUpperCase() || '?';
+const REVIEW_MIN_LENGTH = 10;
+const REVIEW_MAX_LENGTH = 1200;
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -29,16 +54,37 @@ const ProductDetailPage = () => {
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const productSource = searchParams.get('type') === 'shop' ? 'shop' : 'marketplace';
+  const [productReviews, setProductReviews] = useState([]);
+  const [reviewSummary, setReviewSummary] = useState({ count: 0, averageRating: 0 });
+  const [reviewEligibility, setReviewEligibility] = useState({ canReview: false, orderId: '', review: null });
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewBody, setReviewBody] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const requestedProductSource = searchParams.get('type') === 'shop' ? 'shop' : 'marketplace';
+  const [resolvedProductSource, setResolvedProductSource] = useState(requestedProductSource);
 
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
+      setProduct(null);
 
       try {
-        const collectionName = productSource === 'shop' ? 'shop_products' : 'products';
-        const record = await pb.collection(collectionName).getOne(id, { $autoCancel: false });
+        const preferredCollection = requestedProductSource === 'shop' ? 'shop_products' : 'products';
+        const fallbackCollection = requestedProductSource === 'shop' ? 'products' : 'shop_products';
+        const fallbackSource = requestedProductSource === 'shop' ? 'marketplace' : 'shop';
+
+        let record = null;
+        let source = requestedProductSource;
+
+        try {
+          record = await pb.collection(preferredCollection).getOne(id, { $autoCancel: false });
+        } catch {
+          record = await pb.collection(fallbackCollection).getOne(id, { $autoCancel: false });
+          source = fallbackSource;
+        }
+
         setProduct(record);
+        setResolvedProductSource(source);
       } catch (error) {
         console.error('Error fetching product:', error);
         toast.error(t('product.load_error'));
@@ -48,7 +94,48 @@ const ProductDetailPage = () => {
     };
 
     fetchProduct();
-  }, [id, productSource, t]);
+  }, [id, requestedProductSource, t]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const productType = resolvedProductSource === 'shop' ? 'shop' : 'marketplace';
+
+    if (!product?.id) return undefined;
+
+    listProductReviews({ productId: product.id, productType, limit: 10 })
+      .then((result) => {
+        if (!isMounted) return;
+        setProductReviews(result.items);
+        setReviewSummary(result.summary || { count: 0, averageRating: 0 });
+      })
+      .catch((error) => {
+        console.error('Error fetching product reviews:', error);
+        if (!isMounted) return;
+        setProductReviews([]);
+        setReviewSummary({ count: 0, averageRating: 0 });
+      });
+
+    const token = getAuthToken();
+    if (token) {
+      getProductReviewEligibility({ token, productId: product.id, productType })
+        .then((result) => {
+          if (isMounted) {
+            setReviewEligibility(result);
+          }
+        })
+        .catch(() => {
+          if (isMounted) {
+            setReviewEligibility({ canReview: false, orderId: '', review: null });
+          }
+        });
+    } else {
+      setReviewEligibility({ canReview: false, orderId: '', review: null });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [product?.id, resolvedProductSource, currentUser?.id]);
 
   const formatPrice = (price) =>
     new Intl.NumberFormat(language === 'DE' ? 'de-DE' : 'en-US', {
@@ -58,7 +145,7 @@ const ProductDetailPage = () => {
 
   if (loading) {
     return (
-      <main className="flex min-h-[70vh] flex-1 items-center justify-center bg-[linear-gradient(180deg,#f7f5ef_0%,#ffffff_100%)]">
+      <main className="flex min-h-[70vh] flex-1 items-center justify-center bg-white">
         <div className="text-sm font-medium text-slate-500">{t('common.loading')}</div>
       </main>
     );
@@ -66,16 +153,16 @@ const ProductDetailPage = () => {
 
   if (!product) {
     return (
-      <main className="flex min-h-[70vh] flex-1 items-center justify-center bg-[linear-gradient(180deg,#f7f5ef_0%,#ffffff_100%)]">
+      <main className="flex min-h-[70vh] flex-1 items-center justify-center bg-white">
         <div className="text-sm font-medium text-slate-500">{t('product.not_found')}</div>
       </main>
     );
   }
 
-  const isShopProduct = productSource === 'shop';
+  const isShopProduct = resolvedProductSource === 'shop';
   const isSold = !isShopProduct && product.status === 'sold';
   const isPending = product.status === 'pending_verification';
-  const isFav = !isShopProduct && isFavorite(product.id);
+  const isFav = isFavorite(product.id);
   const subjectAreas = Array.isArray(product.fachbereich)
     ? product.fachbereich.filter(Boolean)
     : product.fachbereich
@@ -83,10 +170,9 @@ const ProductDetailPage = () => {
       : [];
 
   const sellerLabel = isShopProduct ? t('product.shop_seller') : (product.seller_username || t('product.anonymous_seller'));
+  const conditionLabel = product.condition ? t(conditionKeys[product.condition]) || product.condition : null;
 
   const handleFavoriteToggle = async () => {
-    if (isShopProduct) return;
-
     if (!currentUser) {
       toast.error(t('auth.login_required_favorites'));
       navigate('/auth');
@@ -98,7 +184,7 @@ const ProductDetailPage = () => {
         await removeFromFavorites(product.id);
         toast.success(t('common.remove_favorite'));
       } else {
-        await addToFavorites(product.id);
+        await addToFavorites({ ...product, source: isShopProduct ? 'shop' : 'marketplace' });
         toast.success(t('product.added_to_favorites'));
       }
     } catch (error) {
@@ -112,25 +198,99 @@ const ProductDetailPage = () => {
     toast.success(t('product.added_to_cart'));
   };
 
+  const reviewCopy = language === 'EN'
+    ? {
+      title: 'Product reviews',
+      empty: 'No product reviews yet.',
+      verified: 'Verified buyer',
+      formIntro: 'You bought this product. Share your experience with other users.',
+      rating: 'Rating',
+      body: 'Review',
+      placeholder: 'What should other buyers know about this product?',
+      lengthHint: 'Enter at least 10 characters.',
+      submit: 'Submit review',
+      submitting: 'Submitting...',
+      submitted: 'Thanks. Your product review is now published.',
+      notEligible: 'Reviews can be submitted after a delivered purchase.',
+      yourReview: 'Your review',
+    }
+    : {
+      title: 'Produktbewertungen',
+      empty: 'Noch keine Produktbewertungen vorhanden.',
+      verified: 'Verifizierter Kaeufer',
+      formIntro: 'Du hast dieses Produkt gekauft. Teile deine Erfahrung mit anderen Nutzern.',
+      rating: 'Bewertung',
+      body: 'Bewertung',
+      placeholder: 'Was sollten andere Kaeufer ueber dieses Produkt wissen?',
+      lengthHint: 'Bitte gib mindestens 10 Zeichen ein.',
+      submit: 'Bewertung senden',
+      submitting: 'Wird gesendet...',
+      submitted: 'Danke. Deine Produktbewertung ist jetzt veroeffentlicht.',
+      notEligible: 'Bewertungen koennen nach einem zugestellten Kauf abgegeben werden.',
+      yourReview: 'Deine Bewertung',
+    };
+
+  const handleSubmitProductReview = async (event) => {
+    event.preventDefault();
+
+    const token = getAuthToken();
+    if (!token || !reviewEligibility?.orderId) {
+      toast.error(t('auth.session_expired'));
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      const result = await createCustomerReview({
+        token,
+        orderId: reviewEligibility.orderId,
+        rating: reviewRating,
+        body: reviewBody,
+      });
+
+      setReviewEligibility((current) => ({
+        ...current,
+        canReview: false,
+        review: result.review,
+      }));
+      setProductReviews((current) => [result.review, ...current.filter((review) => review.id !== result.review.id)]);
+      setReviewSummary((current) => {
+        const nextCount = Number(current.count || 0) + 1;
+        const nextAverage = ((Number(current.averageRating || 0) * Number(current.count || 0)) + Number(result.review.rating || 0)) / nextCount;
+        return {
+          count: nextCount,
+          averageRating: Number(nextAverage.toFixed(1)),
+        };
+      });
+      setReviewBody('');
+      toast.success(reviewCopy.submitted);
+    } catch (error) {
+      console.error('Product review submit failed:', error);
+      toast.error(error.message || t('checkout.session_error'));
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   return (
     <>
       <Helmet>
         <title>{product.name} - Zahniboerse</title>
       </Helmet>
 
-      <main className="flex-1 bg-[linear-gradient(180deg,#f7f5ef_0%,#fcfbf8_24%,#ffffff_100%)] py-8 md:py-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 bg-white py-8 md:py-12">
+        <div className="mx-auto max-w-[1210px] px-4 sm:px-6 lg:px-8 xl:px-0">
           <button
             onClick={() => navigate(-1)}
-            className="mb-8 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-[#0000FF]"
+            className="mb-8 inline-flex items-center gap-2 text-base font-medium text-[#666666] transition-colors hover:text-[#0000FF]"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft className="h-5 w-5" />
             {t('product.back')}
           </button>
 
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_420px] xl:gap-10">
-            <section className="overflow-hidden rounded-[32px] border border-black/5 bg-white">
-              <div className="relative aspect-square overflow-hidden bg-[#f6f1e8]">
+          <div className="grid gap-9 lg:grid-cols-[minmax(0,584px)_minmax(0,584px)] lg:items-start xl:gap-12">
+            <section className="overflow-hidden rounded-[12px] border border-[#d8d8d8] bg-white">
+              <div className="relative aspect-square overflow-hidden bg-[#f7f7f7]">
                 {product.image ? (
                   <img src={pb.files.getUrl(product, product.image)} alt={product.name} className="h-full w-full object-cover" />
                 ) : (
@@ -138,18 +298,6 @@ const ProductDetailPage = () => {
                     {t('product.no_image')}
                   </div>
                 )}
-
-                <div className="absolute left-5 top-5 flex flex-wrap gap-2">
-                  <Badge className="rounded-full bg-white/92 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-700 shadow-none">
-                    {isShopProduct ? t('popular.official') : t('nav.marketplace')}
-                  </Badge>
-
-                  {product.condition && (
-                    <Badge className="rounded-full bg-[#0000FF]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#0000FF] shadow-none">
-                      {product.condition}
-                    </Badge>
-                  )}
-                </div>
 
                 {isSold && (
                   <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/74 backdrop-blur-[2px]">
@@ -161,46 +309,38 @@ const ProductDetailPage = () => {
               </div>
             </section>
 
-            <section className="flex flex-col gap-5">
-              <div className="rounded-[32px] border border-black/5 bg-white p-6 md:p-7">
+            <section className="flex min-h-full flex-col pb-1 lg:min-h-[584px]">
+              <div>
                 <div className="flex flex-wrap gap-2">
+                  {conditionLabel && (
+                    <span className="rounded-full border border-black/10 bg-white px-3 py-1 text-sm font-medium leading-5 text-[#151515]">
+                      {conditionLabel}
+                    </span>
+                  )}
                   {subjectAreas.map((subject) => (
                     <span
                       key={`${product.id}-${subject}`}
-                      className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600"
+                      className="rounded-full bg-[#eef5ff] px-3 py-1 text-sm font-semibold leading-5 text-[#0000FF]"
                     >
-                      {t(subjectKeys[subject] || 'marketplace.subject_paro')}
+                      {subjectShortLabels[subject] || t(subjectKeys[subject] || 'marketplace.subject_paro')}
                     </span>
                   ))}
                 </div>
 
-                <h1 className="mt-5 text-3xl font-bold leading-tight text-slate-900 md:text-5xl">
+                <h1 className="mt-6 text-4xl font-semibold leading-tight text-[#181818] md:text-[40px]">
                   {product.name}
                 </h1>
 
-                <div className="mt-5 flex flex-wrap items-end gap-x-6 gap-y-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                      {isShopProduct ? t('popular.verified') : t('marketplace.condition')}
-                    </p>
-                    <p className="mt-1 text-3xl font-semibold text-slate-900 md:text-4xl">
-                      {formatPrice(product.price)}
-                    </p>
-                  </div>
+                <p className="mt-4 text-4xl font-bold leading-none text-[#0000FF]">
+                  {formatPrice(product.price)}
+                </p>
 
-                  <div className="rounded-full bg-[#0000FF]/8 px-4 py-2 text-sm font-medium text-[#0000FF]">
-                    {sellerLabel}
-                  </div>
-                </div>
-
-                <div className="mt-6 rounded-[24px] bg-slate-50 p-5">
-                  <p className="text-sm leading-7 text-slate-600">
-                    {product.description || t('product.no_description')}
-                  </p>
-                </div>
+                <p className="mt-10 text-base leading-7 text-[#555555]">
+                  {product.description || t('product.no_description')}
+                </p>
 
                 {isPending && (
-                  <div className="mt-6 flex items-start gap-3 rounded-[24px] border border-amber-200 bg-amber-50 p-4 text-amber-900">
+                  <div className="mt-8 flex items-start gap-3 rounded-[12px] border border-amber-200 bg-amber-50 p-4 text-amber-900">
                     <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
                     <p className="text-sm leading-6">
                       <strong>{t('product.pending_title')}</strong> {t('product.pending_note')}
@@ -208,73 +348,146 @@ const ProductDetailPage = () => {
                   </div>
                 )}
 
-                <div className="mt-6 flex gap-3">
-                  <Button
-                    size="lg"
-                    className="h-12 flex-1 rounded-full bg-[#0000FF] text-base text-white shadow-none hover:bg-[#0000CC]"
-                    disabled={isSold || isPending}
-                    onClick={handleAddToCart}
-                  >
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    {isPending ? t('product.pending') : t('product.add_to_cart')}
-                  </Button>
-
-                  {!isShopProduct && (
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className={`h-12 w-12 rounded-full border-black/10 p-0 shadow-none ${
-                        isFav ? 'border-red-200 bg-red-50 text-red-500' : 'bg-white text-slate-600'
-                      }`}
-                      onClick={handleFavoriteToggle}
-                    >
-                      <Heart className={isFav ? 'fill-current' : ''} />
-                    </Button>
-                  )}
+                <div className="mt-8 flex items-center gap-4 rounded-[12px] border border-[#d8d8d8] bg-[#fbfbfb] p-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#e6f0ff] text-lg font-semibold text-[#0000FF]">
+                    {sellerInitial(sellerLabel)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-semibold text-[#151515]">{sellerLabel}</p>
+                    <p className="mt-1 flex items-center gap-1 text-sm text-[#555555]">
+                      <Star className="h-4 w-4 fill-[#f5b400] text-[#f5b400]" />
+                      {reviewSummary.count > 0
+                        ? `${reviewSummary.averageRating} (${reviewSummary.count})`
+                        : isShopProduct ? t('popular.verified') : t('product.no_reviews')}
+                    </p>
+                  </div>
+                  <ShieldCheck className="ml-auto h-5 w-5 shrink-0 text-emerald-500" />
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-                <div className="rounded-[28px] border border-black/5 bg-white p-5">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-full bg-[#0000FF]/8 p-2 text-[#0000FF]">
-                      <ShieldCheck className="size-4" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-semibold text-slate-900">{t('info.secure_title')}</h2>
-                      <p className="mt-1 text-sm leading-6 text-slate-600">{t('info.secure_body')}</p>
-                    </div>
-                  </div>
-                </div>
+              <div className="mt-8 flex gap-4">
+                <Button
+                  size="lg"
+                  className="h-14 flex-1 rounded-[6px] bg-[#0000FF] text-base font-semibold text-white shadow-none hover:bg-[#0000CC]"
+                  disabled={isSold || isPending}
+                  onClick={handleAddToCart}
+                >
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  {isPending ? t('product.pending') : t('product.add_to_cart')}
+                </Button>
 
-                <div className="rounded-[28px] border border-black/5 bg-white p-5">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-full bg-[#0000FF]/8 p-2 text-[#0000FF]">
-                      <PackageCheck className="size-4" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-semibold text-slate-900">{t('cart.shipping')}</h2>
-                      <p className="mt-1 text-sm leading-6 text-slate-600">{t('info.simple_body')}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-[28px] border border-black/5 bg-white p-5">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-full bg-[#0000FF]/8 p-2 text-[#0000FF]">
-                      <Sparkles className="size-4" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-semibold text-slate-900">{t('popular.verified')}</h2>
-                      <p className="mt-1 text-sm leading-6 text-slate-600">
-                        {isShopProduct ? t('shop.subtitle') : t('product.rating_summary')}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className={`h-14 w-14 rounded-[6px] border-[#333333] p-0 shadow-none ${
+                    isFav ? 'bg-red-50 text-red-500' : 'bg-white text-[#151515]'
+                  }`}
+                  onClick={handleFavoriteToggle}
+                  aria-label={isFav ? t('common.remove_favorite') : t('common.favorite_added')}
+                >
+                  <Heart className={isFav ? 'fill-current' : ''} />
+                </Button>
               </div>
             </section>
           </div>
+
+          <section className="mt-12 rounded-[12px] border border-[#d8d8d8] bg-white p-6 md:p-8">
+            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold text-[#181818]">{reviewCopy.title}</h2>
+                <p className="mt-2 flex items-center gap-2 text-sm text-[#555555]">
+                  <Star className="h-4 w-4 fill-[#f5b400] text-[#f5b400]" />
+                  {reviewSummary.count > 0
+                    ? `${reviewSummary.averageRating} / 5 (${reviewSummary.count})`
+                    : reviewCopy.empty}
+                </p>
+              </div>
+            </div>
+
+            {reviewEligibility?.review ? (
+              <div className="mt-6 rounded-[8px] border border-blue-100 bg-blue-50 p-4">
+                <p className="text-sm font-semibold text-[#1f3b73]">{reviewCopy.yourReview}</p>
+                <div className="mt-3 flex items-center gap-1">
+                  {[...Array(5)].map((_, index) => (
+                    <Star
+                      key={index}
+                      className={`h-4 w-4 ${index < Number(reviewEligibility.review.rating || 0) ? 'fill-[#0000FF] text-[#0000FF]' : 'fill-slate-200 text-slate-200'}`}
+                    />
+                  ))}
+                </div>
+                <p className="mt-3 text-sm leading-6 text-[#1f3b73]">{reviewEligibility.review.body}</p>
+              </div>
+            ) : reviewEligibility?.canReview ? (
+              <form className="mt-6 rounded-[8px] border border-blue-100 bg-blue-50 p-4" onSubmit={handleSubmitProductReview}>
+                <p className="text-sm leading-6 text-[#1f3b73]">{reviewCopy.formIntro}</p>
+                <div className="mt-4">
+                  <Label className="mb-2 block">{reviewCopy.rating}</Label>
+                  <div className="flex items-center gap-1" role="radiogroup" aria-label={reviewCopy.rating}>
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        role="radio"
+                        aria-checked={reviewRating === value}
+                        className="rounded-md p-1 text-[#0000FF] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0000FF]"
+                        onClick={() => setReviewRating(value)}
+                      >
+                        <Star className={`h-6 w-6 ${value <= reviewRating ? 'fill-[#0000FF]' : 'fill-slate-200 text-slate-200'}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <Label htmlFor="product-review-body" className="mb-2 block">{reviewCopy.body}</Label>
+                  <Textarea
+                    id="product-review-body"
+                    required
+                    minLength={REVIEW_MIN_LENGTH}
+                    maxLength={REVIEW_MAX_LENGTH}
+                    rows={4}
+                    value={reviewBody}
+                    onChange={(event) => setReviewBody(event.target.value)}
+                    placeholder={reviewCopy.placeholder}
+                  />
+                  <p className={`mt-2 text-xs ${reviewBody.trim().length > 0 && reviewBody.trim().length < REVIEW_MIN_LENGTH ? 'text-amber-700' : 'text-[#666666]'}`}>
+                    {reviewCopy.lengthHint} ({reviewBody.trim().length}/{REVIEW_MIN_LENGTH})
+                  </p>
+                </div>
+                <Button type="submit" disabled={submittingReview || reviewBody.trim().length < REVIEW_MIN_LENGTH} className="mt-4 bg-[#0000FF] hover:bg-[#0000CC] disabled:cursor-not-allowed disabled:opacity-60">
+                  {submittingReview ? reviewCopy.submitting : reviewCopy.submit}
+                </Button>
+              </form>
+            ) : currentUser ? (
+              <p className="mt-6 rounded-[8px] border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-[#555555]">{reviewCopy.notEligible}</p>
+            ) : null}
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              {productReviews.length > 0 ? productReviews.map((review) => (
+                <article key={review.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, index) => (
+                      <Star
+                        key={index}
+                        className={`h-4 w-4 ${index < Number(review.rating || 0) ? 'fill-[#0000FF] text-[#0000FF]' : 'fill-slate-200 text-slate-200'}`}
+                      />
+                    ))}
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-[#151515]">"{String(review.body || '').replace(/^"+|"+$/g, '')}"</p>
+                  <div className="mt-4 flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[rgba(0,0,255,0.1)] text-sm font-bold text-[#0000FF]">
+                      {review.initials || '?'}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#151515]">{review.displayName}</p>
+                      <p className="text-xs text-[#666666]">{reviewCopy.verified}</p>
+                    </div>
+                  </div>
+                </article>
+              )) : (
+                <p className="text-sm leading-6 text-[#555555]">{reviewCopy.empty}</p>
+              )}
+            </div>
+          </section>
         </div>
       </main>
     </>

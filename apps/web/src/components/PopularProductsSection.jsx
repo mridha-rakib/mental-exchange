@@ -1,34 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, ShieldCheck, Layers, PackageSearch, Heart } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient.js';
+import { Link } from 'react-router-dom';
+import { ShoppingCart, ShieldCheck, PackageSearch } from 'lucide-react';
 import apiServerClient from '@/lib/apiServerClient.js';
-import { useAuth } from '@/contexts/AuthContext.jsx';
-import { useFavorites } from '@/contexts/FavoritesContext.jsx';
+import { useCart } from '@/contexts/CartContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
-import { getAuthToken } from '@/lib/getAuthToken.js';
 import { toast } from 'sonner';
 const PopularProductsSection = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const {
-    currentUser
-  } = useAuth();
-  const {
-    isFavorite,
-    loadFavorites
-  } = useFavorites();
+  const { addToCart } = useCart();
   const { t } = useTranslation();
-  const navigate = useNavigate();
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const result = await pb.collection('products').getList(1, 4, {
-          filter: 'shop_product=true && status="active"',
-          sort: '-created',
-          $autoCancel: false
-        });
-        setProducts(result.items);
+        const response = await apiServerClient.fetch('/shop/products?perPage=4&sort=-created');
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch official shop products');
+        }
+
+        const result = await response.json();
+        setProducts(Array.isArray(result.items) ? result.items : []);
       } catch (error) {
         console.error('Error fetching popular products:', error);
       } finally {
@@ -37,39 +29,11 @@ const PopularProductsSection = () => {
     };
     fetchProducts();
   }, []);
-  const handleToggleFavorite = async (e, productId) => {
+  const handleAddToCart = async (e, product) => {
     e.preventDefault();
     e.stopPropagation();
-    const token = getAuthToken();
-    if (!token || !currentUser) {
-      toast.error(t('auth.login_required_favorites'));
-      navigate('/auth');
-      return;
-    }
-    try {
-      const response = await apiServerClient.fetch('/favorites/toggle', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          productId
-        })
-      });
-      if (response.status === 401) {
-        toast.error(t('auth.session_expired'));
-        navigate('/auth');
-        return;
-      }
-      if (!response.ok) throw new Error('Toggle failed');
-      await loadFavorites();
-      const isFav = isFavorite(productId);
-      toast.success(!isFav ? t('common.favorite_added') : t('common.remove_favorite'));
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      toast.error(t('common.favorites_update_error'));
-    }
+    await addToCart(product, 1, 'shop');
+    toast.success(t('product.added_to_cart'));
   };
   return <section className="bg-white py-16 md:py-24 lg:py-32 px-4 md:px-6 lg:px-8">
       <div className="max-w-[1280px] mx-auto">
@@ -95,11 +59,10 @@ const PopularProductsSection = () => {
             {[...Array(4)].map((_, i) => <div key={i} className="animate-pulse bg-[hsl(var(--muted))] rounded-[8px] aspect-[3/4]"></div>)}
           </div> : products.length > 0 ? <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {products.map(product => {
-          const isFav = isFavorite(product.id);
-          return <Link to={`/product/${product.id}`} key={product.id} className="flex flex-col h-full bg-white border border-[rgba(224,224,224,0.5)] rounded-[8px] overflow-hidden hover:shadow-hover transition-smooth group relative">
+          return <Link to={`/product/${product.id}?type=shop`} key={product.id} className="flex flex-col h-full bg-white border border-[rgba(224,224,224,0.5)] rounded-[8px] overflow-hidden hover:shadow-hover transition-smooth group relative">
                   {/* Image Area */}
                   <div className="relative aspect-square overflow-hidden bg-[rgba(247,247,247,0.2)]">
-                    {product.image ? <img src={pb.files.getUrl(product, product.image)} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center text-[hsl(var(--secondary))]">
+                    {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center text-[hsl(var(--secondary))]">
                         {t('product.no_image')}
                       </div>}
                     
@@ -107,17 +70,10 @@ const PopularProductsSection = () => {
                     <div className="absolute top-2 left-2 bg-[hsl(var(--primary))] text-white text-[10px] md:text-[12px] font-medium px-2 py-1 rounded-[6px] shadow-sm z-10">
                       {t('popular.official')}
                     </div>
-                    
-                    <button onClick={e => handleToggleFavorite(e, product.id)} className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm hover:bg-white transition-colors z-10" aria-label={isFav ? t('common.remove_favorite') : t('common.favorite_added')}>
-                      <Heart size={16} className={isFav ? "fill-[#0000FF] text-[#0000FF]" : "text-gray-500"} />
-                    </button>
 
                     {product.condition === 'Neu' || product.condition === 'Wie neu' ? <div className="absolute bottom-2 right-2 bg-[hsl(var(--accent))] text-white p-1.5 rounded-full shadow-sm z-10" title={t('popular.verified')}>
                         <ShieldCheck size={12} />
                       </div> : null}
-                    {product.product_type === 'Set' && <div className="absolute bottom-2 left-2 bg-[#A855F7] text-white p-1.5 rounded-full shadow-sm z-10" title="Set">
-                        <Layers size={12} />
-                      </div>}
                   </div>
 
                   {/* Content */}
@@ -137,12 +93,7 @@ const PopularProductsSection = () => {
 
                   {/* Footer / Action */}
                   <div className="p-4 pt-0">
-                    <button onClick={e => {
-                e.preventDefault();
-                e.stopPropagation();
-                // Add to cart logic would go here
-                toast.success(t('product.added_to_cart'));
-              }} className="w-full flex items-center justify-center gap-2 bg-[hsl(var(--primary))] text-white text-[14px] font-medium py-2.5 rounded-[8px] hover:bg-[#0000CC] active:scale-[0.98] transition-smooth shadow-button">
+                    <button onClick={e => handleAddToCart(e, product)} className="w-full flex items-center justify-center gap-2 bg-[hsl(var(--primary))] text-white text-[14px] font-medium py-2.5 rounded-[8px] hover:bg-[#0000CC] active:scale-[0.98] transition-smooth shadow-button">
                       <ShoppingCart size={16} />
                       <span className="hidden sm:inline">{t('product.add_to_cart')}</span>
                       <span className="sm:hidden">{t('popular.buy')}</span>
@@ -161,8 +112,8 @@ const PopularProductsSection = () => {
             <p className="text-[hsl(var(--secondary))] max-w-[448px] mb-6">
               {t('popular.empty_body')}
             </p>
-            <Link to="/shop" className="inline-flex items-center justify-center border border-[hsl(var(--border))] bg-white text-[hsl(var(--foreground))] font-medium px-6 py-2.5 rounded-[8px] hover:bg-[hsl(var(--muted))] transition-smooth">
-              {t('popular.go_shop')}
+            <Link to="/marketplace" className="inline-flex items-center justify-center border border-[hsl(var(--border))] bg-white text-[hsl(var(--foreground))] font-medium px-6 py-2.5 rounded-[8px] hover:bg-[hsl(var(--muted))] transition-smooth">
+              {t('popular.go_marketplace')}
             </Link>
           </div>)}
 

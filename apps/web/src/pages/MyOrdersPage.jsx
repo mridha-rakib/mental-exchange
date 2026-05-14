@@ -19,11 +19,17 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Skeleton } from '@/components/ui/skeleton.jsx';
+import AccountLayout from '@/components/AccountLayout.jsx';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
 import apiServerClient from '@/lib/apiServerClient.js';
 import { getAuthToken } from '@/lib/getAuthToken.js';
-import pb from '@/lib/pocketbaseClient.js';
+import {
+  getOrderLabelIssue,
+  getOrderLabelText,
+  getOrderTrackingNumber,
+  hasOrderLabel,
+} from '@/lib/dhlLabelUi.js';
 
 const primaryActionClass = 'rounded-[8px] bg-[#0000FF] px-4 font-semibold text-white hover:bg-[#0000CC]';
 const secondaryActionClass = 'rounded-[8px] border border-black/15 bg-white px-4 font-semibold text-[#151515] hover:border-[#0000FF]/35 hover:bg-[#f3f3ff]';
@@ -40,13 +46,7 @@ const parseAddress = (addressData) => {
 };
 
 const getImageUrl = (product) => {
-  if (!product?.image) return '';
-
-  try {
-    return pb.files.getUrl(product, product.image);
-  } catch {
-    return '';
-  }
+  return product?.image_url || '';
 };
 
 const MyOrdersPage = () => {
@@ -57,6 +57,7 @@ const MyOrdersPage = () => {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [downloadingLabelId, setDownloadingLabelId] = useState(null);
   const [error, setError] = useState(null);
 
   const locale = language === 'EN' ? 'en-US' : 'de-DE';
@@ -204,8 +205,15 @@ const MyOrdersPage = () => {
       .replace(/,\s*,/g, ',') || t('orders.no_address');
   };
 
-  const handleDownloadLabel = (event, order) => {
+  const handleDownloadLabel = async (event, order) => {
     event.stopPropagation();
+
+    const token = getAuthToken();
+    if (!token) {
+      toast.error(t('auth.session_expired'));
+      navigate('/auth');
+      return;
+    }
 
     if (order.dhl_label_pdf) {
       const link = document.createElement('a');
@@ -220,7 +228,44 @@ const MyOrdersPage = () => {
       return;
     }
 
-    toast.error(t('orders.no_label'));
+    setDownloadingLabelId(order.id);
+    try {
+      const response = await apiServerClient.fetch(`/orders/${order.id}/label-pdf`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Label request failed with status ${response.status}`);
+      }
+
+      const contentType = response.headers.get('Content-Type') || '';
+
+      if (contentType.includes('application/json')) {
+        const data = await response.json();
+        if (data.label_url) {
+          window.open(data.label_url, '_blank', 'noopener,noreferrer');
+          return;
+        }
+      } else {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `DHL_Label_${order.order_number || order.id}.pdf`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        return;
+      }
+
+      toast.error(t('orders.no_label'));
+    } catch (err) {
+      console.error('Error downloading order label:', err);
+      toast.error(t('orders.no_label'));
+    } finally {
+      setDownloadingLabelId(null);
+    }
   };
 
   return (
@@ -229,8 +274,8 @@ const MyOrdersPage = () => {
         <title>{t('orders.title')} - Zahnibörse</title>
       </Helmet>
 
-      <main className="flex-1 bg-[#f6f7f9] py-8 md:py-12">
-        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+      <AccountLayout activeKey="orders" contentClassName="max-w-6xl">
+        <div className="w-full">
           <header className="mb-7 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-[8px] border border-[#0000FF]/20 bg-white text-[#0000FF]">
@@ -320,8 +365,8 @@ const MyOrdersPage = () => {
                 const product = order.product;
                 const productName = product?.name || t('orders.unknown_product');
                 const productImageUrl = getImageUrl(product);
-                const trackingNumber = order.tracking_number || order.dhl_tracking_number;
-                const hasLabel = order.has_label || order.dhl_label_pdf || order.dhl_label_url;
+                const trackingNumber = getOrderTrackingNumber(order);
+                const orderHasLabel = hasOrderLabel(order);
 
                 return (
                   <article
@@ -373,7 +418,7 @@ const MyOrdersPage = () => {
                             ) : (
                               <span className="inline-flex items-center gap-1 text-[#777777]">
                                 <Clock3 className="h-3.5 w-3.5" />
-                                {t('orders.status_pending')}
+                                <span title={getOrderLabelIssue(order)}>{getOrderLabelText(order, language)}</span>
                               </span>
                             )}
                           </p>
@@ -391,14 +436,15 @@ const MyOrdersPage = () => {
                           <p className="mt-1 text-2xl font-bold text-[#151515]">{formatCurrency(order.total_amount)}</p>
                         </div>
                         <div className="flex flex-col gap-2">
-                          {hasLabel && (
+                          {orderHasLabel && (
                             <Button
                               type="button"
                               variant="outline"
                               className={`${secondaryActionClass} gap-2`}
                               onClick={(event) => handleDownloadLabel(event, order)}
+                              disabled={downloadingLabelId === order.id}
                             >
-                              <Download className="h-4 w-4" />
+                              <Download className={`h-4 w-4 ${downloadingLabelId === order.id ? 'animate-pulse' : ''}`} />
                               Label
                             </Button>
                           )}
@@ -422,7 +468,7 @@ const MyOrdersPage = () => {
             </section>
           )}
         </div>
-      </main>
+      </AccountLayout>
     </>
   );
 };

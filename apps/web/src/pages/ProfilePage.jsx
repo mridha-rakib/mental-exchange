@@ -3,12 +3,12 @@ import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
-  BadgeCheck,
   Camera,
   CircleUserRound,
   GraduationCap,
   KeyRound,
   Mail,
+  MapPin,
   PackageCheck,
   Pencil,
   Phone,
@@ -28,6 +28,7 @@ import { Label } from '@/components/ui/label.jsx';
 import { Switch } from '@/components/ui/switch.jsx';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.jsx';
 import ShippingInfoSection from '@/components/ShippingInfoSection.jsx';
+import AccountLayout from '@/components/AccountLayout.jsx';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
 import pb from '@/lib/pocketbaseClient.js';
@@ -46,8 +47,13 @@ const getInitials = (name = '', email = '') => {
 const primaryActionClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#0000FF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0000CC] disabled:pointer-events-none disabled:opacity-60';
 const secondaryActionClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-black/15 bg-white px-5 py-2.5 text-sm font-semibold text-[#151515] transition-colors hover:border-[#0000FF]/35 hover:bg-[#f3f3ff] disabled:pointer-events-none disabled:opacity-60';
 const inverseActionClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/30 bg-transparent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-[#0000FF]';
-const heroAvatarFrameClass = 'relative flex h-28 w-28 shrink-0 items-center justify-center rounded-[4px] p-0 shadow-[0_22px_44px_-28px_rgba(15,23,42,0.22)]';
+const heroAvatarFrameClass = 'relative flex h-36 w-36 shrink-0 items-center justify-center rounded-[8px] p-0 shadow-[0_22px_44px_-28px_rgba(15,23,42,0.22)]';
 const managerAvatarFrameClass = 'relative flex h-24 w-24 shrink-0 items-center justify-center rounded-[18px] bg-[linear-gradient(180deg,#ffffff_0%,#f6f8fc_100%)] p-1.5 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.32)] ring-1 ring-black/6';
+const profileStatToneClasses = [
+  'border-blue-100 bg-blue-50/55 text-[#0000FF]',
+  'border-emerald-100 bg-emerald-50/60 text-emerald-600',
+  'border-violet-100 bg-violet-50/60 text-violet-600'
+];
 
 const ProfilePage = () => {
   const { currentUser, isSeller, isAdmin, refreshUser } = useAuth();
@@ -297,7 +303,7 @@ const ProfilePage = () => {
   };
 
   const renderAvatarManager = () => (
-    <div className="mb-6 rounded-[24px] border border-black/8 bg-[linear-gradient(180deg,#ffffff_0%,#fbfbf8_100%)] p-5 shadow-[0_18px_36px_-30px_rgba(15,23,42,0.26)]">
+    <div className="mb-6 rounded-[24px] border border-black/8 bg-[linear-gradient(180deg,#ffffff_0%,#f7f7f7_100%)] p-5 shadow-[0_18px_36px_-30px_rgba(15,23,42,0.26)]">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className={managerAvatarFrameClass}>
@@ -443,41 +449,41 @@ const ProfilePage = () => {
           <title>{t('profile.admin_title')} - Zahnibörse</title>
         </Helmet>
 
-        <main className="flex-1 overflow-hidden bg-[#f4f5f8] py-8 md:py-12">
-          <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <section className="overflow-hidden rounded-[32px] border border-black/10 bg-slate-950 text-white">
+        <AccountLayout activeKey="profile" contentClassName="max-w-6xl">
+          <div>
+            <section className="overflow-hidden rounded-[32px] border border-black/10 bg-white text-[#151515]">
               <div className="grid gap-8 p-6 md:p-10 lg:grid-cols-[1fr_360px] lg:items-center">
                 <div>
-                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-blue-200">
+                  <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-[#0000FF]">
                     {t('profile.admin_eyebrow')}
                   </p>
                   <h1 className="text-4xl font-bold leading-tight md:text-5xl">
                     {currentUser?.name || t('profile.admin_title')}
                   </h1>
-                  <p className="mt-4 max-w-2xl text-sm leading-6 text-white/68 md:text-base">
+                  <p className="mt-4 max-w-2xl text-sm leading-6 text-[#4f4f4f] md:text-base">
                     {t('profile.admin_subtitle')}
                   </p>
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                    <Link to="/admin" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#0000FF] transition-colors hover:bg-blue-50">
+                    <Link to="/admin" className={primaryActionClass}>
                       {t('nav.admin')}
                       <ArrowRight className="h-4 w-4" />
                     </Link>
-                    <Link to="/admin/verifications" className={inverseActionClass}>
+                    <Link to="/admin/verifications" className={secondaryActionClass}>
                       {t('profile.admin_verifications')}
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
                 </div>
 
-                <div className="rounded-[28px] border border-white/12 bg-white/[0.06] p-5">
+                <div className="rounded-[28px] border border-black/10 bg-[#f7f7f7] p-5">
                   <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-[#0000FF]">
                     <ShieldCheck className="h-8 w-8" />
                   </div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/52">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#777777]">
                     {t('profile.admin_role')}
                   </p>
                   <p className="mt-2 text-2xl font-semibold">{t('profile.admin_access')}</p>
-                  <p className="mt-3 text-sm leading-6 text-white/62">
+                  <p className="mt-3 text-sm leading-6 text-[#555555]">
                     {t('profile.admin_access_body')}
                   </p>
                 </div>
@@ -536,7 +542,7 @@ const ProfilePage = () => {
                   ) : (
                     <div className="grid gap-3">
                       {accountItems.map(({ label, value, Icon, mono }) => (
-                        <div key={label} className="flex gap-4 rounded-[22px] border border-black/10 bg-[#fbfbf8] p-4">
+                        <div key={label} className="flex gap-4 rounded-[22px] border border-black/10 bg-[#f7f7f7] p-4">
                           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#0000FF]/15 bg-[#f1f1ff] text-[#0000FF]">
                             <Icon className="h-5 w-5" />
                           </div>
@@ -562,12 +568,15 @@ const ProfilePage = () => {
                   <p className="mt-2 text-sm leading-6 text-[#666666]">
                     {t('profile.admin_workspace_body')}
                   </p>
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  <div className="mt-6 grid gap-3 sm:grid-cols-3">
                     <Link to="/admin" className={primaryActionClass}>
                       {t('profile.admin_open_dashboard')}
                     </Link>
                     <Link to="/admin/verifications" className={secondaryActionClass}>
                       {t('profile.admin_review_products')}
+                    </Link>
+                    <Link to="/seller/new-product" className={secondaryActionClass}>
+                      {t('marketplace.sell_now')}
                     </Link>
                   </div>
                 </section>
@@ -624,7 +633,7 @@ const ProfilePage = () => {
                   )}
                 </section>
 
-                <section className="rounded-[28px] border border-black/10 bg-[#fffaf0] p-6">
+                <section className="rounded-[28px] border border-black/10 bg-white p-6">
                   <h2 className="text-xl font-semibold">{t('profile.admin_no_orders_title')}</h2>
                   <p className="mt-2 text-sm leading-6 text-[#686868]">
                     {t('profile.admin_no_orders_body')}
@@ -633,7 +642,7 @@ const ProfilePage = () => {
               </div>
             </section>
           </div>
-        </main>
+        </AccountLayout>
       </>
     );
   }
@@ -644,15 +653,12 @@ const ProfilePage = () => {
         <title>{t('profile.title')} - Zahnibörse</title>
       </Helmet>
 
-      <main className="flex-1 overflow-hidden bg-[#f8f4ec] bg-[radial-gradient(circle_at_1px_1px,rgba(0,0,0,0.08)_1px,transparent_0)] bg-[size:26px_26px] py-8 md:py-12">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <section className="mb-5 overflow-hidden rounded-[32px] border border-black/12 bg-white">
-            <div className="grid lg:grid-cols-[1.15fr_0.85fr]">
-              <div className="border-b border-black/10 p-6 md:p-8 lg:border-b-0 lg:border-r lg:p-10">
-                <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-[#0000FF]">
-                  {t('profile.account_eyebrow')}
-                </p>
-                <div className="flex flex-col gap-6 md:flex-row md:items-center">
+      <AccountLayout activeKey="profile">
+        <div>
+          <section className="mb-5 grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.9fr)]">
+            <div className="overflow-hidden rounded-[8px] border border-black/10 bg-white p-6 shadow-[0_18px_44px_-36px_rgba(15,23,42,0.28)] md:p-8">
+              <div className="flex flex-col gap-7 md:flex-row md:items-center">
+                <div className="relative w-fit">
                   <button
                     type="button"
                     className={`${heroAvatarFrameClass} ${avatarPreviewUrl ? 'cursor-zoom-in focus:outline-none focus:ring-2 focus:ring-[#0000FF]/20' : 'cursor-default'}`}
@@ -663,76 +669,101 @@ const ProfilePage = () => {
                     }}
                     aria-label={avatarPreviewUrl ? t('profile.photo_title') : currentUser?.name || currentUser?.email || t('profile.title')}
                   >
-                    <Avatar className="h-full w-full rounded-[4px] bg-white">
+                    <Avatar className="h-full w-full rounded-[8px] bg-white">
                       <AvatarImage src={avatarUrl} alt={currentUser?.name || currentUser?.email || t('profile.title')} />
-                      <AvatarFallback className="rounded-[4px] bg-[#0000FF] text-3xl font-bold text-white">
+                      <AvatarFallback className="rounded-[8px] bg-[#0000FF] text-3xl font-bold text-white">
                         {getInitials(currentUser?.name, currentUser?.email)}
                       </AvatarFallback>
                     </Avatar>
                   </button>
-                  <div className="min-w-0">
-                    <div className="mb-4 flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0000FF]/20 bg-[#f1f1ff] px-3 py-1 text-xs font-semibold text-[#0000FF]">
-                        <ShieldCheck className="h-3.5 w-3.5" />
-                        {t('profile.student_account')}
+                  <span className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full border border-white bg-white text-[#0000FF] shadow-sm">
+                    <Camera className="h-4 w-4" />
+                  </span>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
+                    {isSeller && (
+                      <span className="inline-flex min-h-9 items-center gap-2 rounded-[8px] border border-[#0000FF]/12 bg-[#f1f4ff] px-3.5 py-1.5 text-xs font-semibold text-[#0000FF]">
+                        <ShieldCheck className="h-4 w-4" />
+                        {t('profile.seller_verified')}
                       </span>
-                      {isSeller && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-700/20 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                          <BadgeCheck className="h-3.5 w-3.5" />
-                          {t('profile.seller_verified')}
-                        </span>
-                      )}
-                    </div>
-                    <h1 className="truncate text-4xl font-bold leading-tight text-[#111111] md:text-5xl">
-                      {currentUser?.name || t('profile.title')}
-                    </h1>
-                    <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5f5f5f] md:text-base">
-                      {t('profile.subtitle')}
-                    </p>
+                    )}
                   </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col justify-between bg-[#101010] p-6 text-white md:p-8">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/55">
-                    {t('profile.seller_status')}
+                  <h1 className="text-3xl font-bold leading-tight text-[#111111] md:text-4xl">
+                    {currentUser?.name || t('profile.title')}
+                  </h1>
+                  <p className="mt-3 max-w-xl text-sm leading-6 text-[#5f5f5f]">
+                    {t('profile.subtitle')}
                   </p>
-                  <div className="mt-5 flex items-center justify-between gap-4 rounded-[24px] border border-white/14 bg-white/[0.06] p-4">
-                    <div>
-                      <Label htmlFor="seller-mode" className="cursor-pointer text-base font-semibold">
-                        {t('profile.seller_mode')}
-                      </Label>
-                      <p className="mt-1 text-sm text-white/62">
-                        {isSeller ? t('profile.seller_active_hint') : t('profile.seller_inactive_hint')}
-                      </p>
-                    </div>
-                    <Switch
-                      id="seller-mode"
-                      checked={isSeller}
-                      onCheckedChange={handleSellerToggle}
-                      disabled={isTogglingSeller}
-                      aria-label={t('profile.seller_mode')}
-                    />
+                  <div className="mt-5 flex flex-wrap gap-x-7 gap-y-3 text-sm text-[#666666]">
+                    <span className="inline-flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      {currentUser?.email || t('profile.not_provided')}
+                    </span>
+                    <span className="inline-flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      {currentUser?.university || t('profile.not_provided')}
+                    </span>
                   </div>
-                </div>
-
-                <div className="mt-8 grid grid-cols-3 gap-3">
-                  {profileStats.map(({ label, value, Icon }) => (
-                    <div key={label} className="rounded-[22px] border border-white/14 bg-white/[0.05] p-4">
-                      <Icon className="mb-3 h-4 w-4 text-white/62" />
-                      <p className="text-2xl font-bold">{value}</p>
-                      <p className="mt-1 text-xs leading-4 text-white/55">{label}</p>
-                    </div>
-                  ))}
+                  <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                    <button type="button" className={primaryActionClass} onClick={() => setIsEditingAccount(true)}>
+                      <Pencil className="h-4 w-4" />
+                      {t('profile.edit_profile')}
+                    </button>
+                    <Link to={isSeller ? '/seller-products' : '/seller-info'} className={secondaryActionClass}>
+                      <Store className="h-4 w-4" />
+                      {t('profile.view_public_store')}
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <aside className="rounded-[8px] border border-black/10 bg-white p-6 shadow-[0_18px_44px_-36px_rgba(15,23,42,0.28)] md:p-8">
+              <h2 className="text-base font-bold text-[#151515]">
+                {t('profile.seller_status')}
+              </h2>
+              <div className="mt-5 flex items-start justify-between gap-5 rounded-[8px] border border-black/10 bg-white p-4 shadow-sm">
+                <div>
+                  <Label htmlFor="seller-mode" className="cursor-pointer text-base font-semibold text-[#151515]">
+                    {t('profile.seller_mode')}
+                  </Label>
+                  <p className="mt-2 max-w-[250px] text-sm leading-6 text-[#666666]">
+                    {isSeller ? t('profile.seller_active_hint') : t('profile.seller_inactive_hint')}
+                  </p>
+                </div>
+                <Switch
+                  id="seller-mode"
+                  checked={isSeller}
+                  onCheckedChange={handleSellerToggle}
+                  disabled={isTogglingSeller}
+                  aria-label={t('profile.seller_mode')}
+                  className="mt-1 shrink-0"
+                />
+              </div>
+
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-3">
+                {profileStats.map(({ label, value, Icon }, index) => (
+                  <div key={label} className={`rounded-[8px] border p-4 ${profileStatToneClasses[index] || profileStatToneClasses[0]}`}>
+                    <div className="mb-6 flex h-8 w-8 items-center justify-center rounded-[8px] bg-white/75">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <p className="text-2xl font-bold text-[#111111]">{value}</p>
+                    <p className="mt-1 text-xs leading-4 text-[#565656]">{label}</p>
+                    <Link to={index === 1 ? '/seller-products' : '/my-orders'} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[#0000FF]">
+                      {index === 1 ? t('profile.manage') : index === 2 ? t('profile.view_reports') : t('profile.view_all')}
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </aside>
           </section>
 
-          <section className="mb-5 rounded-[28px] border border-black/12 bg-[#fffaf0] p-4 md:p-5">
+          <section className="mb-5 rounded-[28px] border border-black/12 bg-white p-4 md:p-5">
             <div className="flex flex-col gap-4 md:flex-row md:items-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7a5a00]">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#777777]">
                 {t('profile.flow_title')}
               </p>
               <div className="grid flex-1 gap-2 md:grid-cols-3">
@@ -801,7 +832,7 @@ const ProfilePage = () => {
                   ) : (
                     <div className="grid gap-3">
                       {accountItems.map(({ label, value, Icon, mono }) => (
-                        <div key={label} className="flex gap-4 rounded-[22px] border border-black/10 bg-[#fbfbf8] p-4">
+                        <div key={label} className="flex gap-4 rounded-[22px] border border-black/10 bg-[#f7f7f7] p-4">
                           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#0000FF]/15 bg-[#f1f1ff] text-[#0000FF]">
                             <Icon className="h-5 w-5" />
                           </div>
@@ -878,7 +909,7 @@ const ProfilePage = () => {
                       </div>
                     </form>
                   ) : (
-                    <div className="flex gap-4 rounded-[22px] border border-black/10 bg-[#fbfbf8] p-4">
+                    <div className="flex gap-4 rounded-[22px] border border-black/10 bg-[#f7f7f7] p-4">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#0000FF]/15 bg-[#f1f1ff] text-[#0000FF]">
                         <KeyRound className="h-5 w-5" />
                       </div>
@@ -949,7 +980,7 @@ const ProfilePage = () => {
                   ) : orders.length > 0 ? (
                     <div className="space-y-3">
                       {orders.slice(0, 4).map(order => (
-                        <div key={order.id} className="rounded-[22px] border border-black/10 bg-[#fbfbf8] p-4 transition-colors hover:border-[#0000FF]/35 hover:bg-white">
+                        <div key={order.id} className="rounded-[22px] border border-black/10 bg-[#f7f7f7] p-4 transition-colors hover:border-[#0000FF]/35 hover:bg-white">
                           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-[#151515]">
@@ -975,7 +1006,7 @@ const ProfilePage = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[26px] border border-dashed border-black/18 bg-[#faf7ef] px-6 py-10 text-center">
+                    <div className="flex min-h-[320px] flex-col items-center justify-center rounded-[26px] border border-dashed border-black/18 bg-[#f7f7f7] px-6 py-10 text-center">
                       <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#0000FF]/15 bg-white text-[#0000FF]">
                         <ShoppingBag className="h-7 w-7" />
                       </div>
@@ -992,29 +1023,28 @@ const ProfilePage = () => {
                 </div>
               </section>
 
-              <section className="rounded-[28px] border border-black/12 bg-[#151515] text-white">
+              <section className="rounded-[28px] border border-black/12 bg-white text-[#151515]">
                 <div className="grid gap-5 p-6 md:grid-cols-[auto_1fr_auto] md:items-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/18 bg-white/[0.06] text-white">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#0000FF]/15 bg-[#f1f1ff] text-[#0000FF]">
                     <ShieldCheck className="h-6 w-6" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-semibold">{t('profile.safe_account_title')}</h2>
-                    <p className="mt-2 text-sm leading-6 text-white/68">{t('profile.safe_account_body')}</p>
+                    <p className="mt-2 text-sm leading-6 text-[#686868]">{t('profile.safe_account_body')}</p>
                   </div>
-                  <Link to="/hilfe" className={inverseActionClass}>{t('profile.get_help')}</Link>
+                  <Link to="/hilfe" className={secondaryActionClass}>{t('profile.get_help')}</Link>
                 </div>
               </section>
             </section>
           </div>
         </div>
-      </main>
+      </AccountLayout>
 
       <Dialog open={isAvatarPreviewOpen} onOpenChange={setIsAvatarPreviewOpen}>
         <DialogContent className="w-[92vw] max-w-3xl overflow-hidden border border-black/8 bg-white p-0">
           <DialogHeader className="sr-only">
             <DialogTitle>{t('profile.photo_title')}</DialogTitle>
           </DialogHeader>
-          <div className="bg-[#f7f7f4] p-3 sm:p-4">
+          <div className="bg-[#f7f7f7] p-3 sm:p-4">
             <div className="overflow-hidden rounded-[8px] bg-white">
               {avatarPreviewUrl ? (
                 <img

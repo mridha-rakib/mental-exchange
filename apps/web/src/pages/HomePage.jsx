@@ -1,20 +1,49 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, Layers3 } from 'lucide-react';
 import PopularProductsSection from '@/components/PopularProductsSection.jsx';
 import InfoBannersSection from '@/components/InfoBannersSection.jsx';
 import CustomerReviewsSection from '@/components/CustomerReviewsSection.jsx';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
+import { Button } from '@/components/ui/button.jsx';
+import { Badge } from '@/components/ui/badge.jsx';
+import { listLearningPackages } from '@/lib/learningApi.js';
+import { localizeLearningPackage } from '@/lib/learningContentLocalization.js';
+import { getPriceIntervalLabel } from '@/lib/learningPresentation.js';
+
 const HomePage = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const {
     isAuthenticated,
     isSeller
   } = useAuth();
+  const [learningPackage, setLearningPackage] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadLearningPackage = async () => {
+      try {
+        const data = await listLearningPackages();
+        if (active) {
+          setLearningPackage(localizeLearningPackage(Array.isArray(data.items) ? data.items[0] || null : null, language));
+        }
+      } catch (error) {
+        console.error('Failed to load learning spotlight:', error);
+      }
+    };
+
+    loadLearningPackage();
+
+    return () => {
+      active = false;
+    };
+  }, [language]);
+
   const handleSellClick = e => {
     e.preventDefault();
     if (!isAuthenticated || !isSeller) {
@@ -23,6 +52,12 @@ const HomePage = () => {
       navigate('/seller/new-product');
     }
   };
+
+  const locale = language === 'DE' ? 'de-DE' : 'en-US';
+  const learningPrice = learningPackage
+    ? getPriceIntervalLabel(t, learningPackage.priceAmount, learningPackage.currency, learningPackage.billingInterval, locale)
+    : null;
+
   return <>
       <Helmet>
         <title>{t('home.title')}</title>
@@ -95,6 +130,70 @@ const HomePage = () => {
         </section>
 
         <PopularProductsSection />
+        <section className="bg-[linear-gradient(180deg,#f7f7f7_0%,#ffffff_100%)] py-14 md:py-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="overflow-hidden rounded-[32px] border border-black/6 bg-white shadow-[0_22px_72px_-56px_rgba(15,23,42,0.42)]">
+              <div className="grid gap-0 lg:grid-cols-[0.98fr_1.02fr]">
+                <div className="border-b border-black/6 bg-[linear-gradient(135deg,#f7f7f7_0%,#ffffff_56%,#eef2ff_100%)] p-7 md:p-10 lg:border-b-0 lg:border-r">
+                  <Badge className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0000FF] shadow-none">
+                    {t('learning.hero_eyebrow')}
+                  </Badge>
+                  <h2 className="mt-5 text-3xl font-bold text-slate-900 md:text-4xl">{t('learning.hero_title')}</h2>
+                  <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">{t('learning.hero_body')}</p>
+
+                  <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-[22px] border border-black/6 bg-white/88 p-4">
+                      <div className="flex items-center gap-2 text-[#0000FF]">
+                        <Layers3 className="size-4" />
+                        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{t('learning.modules_count')}</span>
+                      </div>
+                      <p className="mt-3 text-2xl font-semibold text-slate-900">{learningPackage?.moduleCount || 0}</p>
+                    </div>
+                    <div className="rounded-[22px] border border-black/6 bg-white/88 p-4">
+                      <div className="flex items-center gap-2 text-[#0000FF]">
+                        <BookOpenCheck className="size-4" />
+                        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{t('learning.lessons_count')}</span>
+                      </div>
+                      <p className="mt-3 text-2xl font-semibold text-slate-900">{learningPackage?.lessonCount || 0}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-7 md:p-10">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0000FF]/75">
+                    {learningPackage?.title || t('nav.learning')}
+                  </p>
+                  <h3 className="mt-3 text-3xl font-semibold text-slate-900">
+                    {learningPackage?.subtitle || t('learning.subscription_note')}
+                  </h3>
+                  <p className="mt-4 text-base leading-7 text-slate-600">
+                    {learningPackage?.description || t('learning.meta_description')}
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    {(learningPackage?.valuePoints || []).slice(0, 3).map((point) => (
+                      <span key={point} className="rounded-full bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600">
+                        {point}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="mt-8 flex flex-wrap items-center gap-4">
+                    <p className="text-3xl font-semibold text-slate-900">
+                      {learningPrice || '--'}
+                    </p>
+                    <Button asChild className="h-11 rounded-full bg-[#0000FF] px-6 text-white shadow-none hover:bg-[#0000CC]">
+                      <Link to={learningPackage ? `/learning/packages/${learningPackage.slug}` : '/learning'}>
+                        {t('learning.explore')}
+                        <ArrowRight className="size-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
         <InfoBannersSection />
         <CustomerReviewsSection />
       </main>

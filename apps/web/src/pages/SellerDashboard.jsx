@@ -1,20 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link } from 'react-router-dom';
-import { Package, ShoppingBag, DollarSign, Settings, Plus, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Package, ShoppingBag, DollarSign, Settings, Plus, Clock, CheckCircle, XCircle, Download, Truck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
 import { Skeleton } from '@/components/ui/skeleton.jsx';
+import AccountLayout from '@/components/AccountLayout.jsx';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
 import pb from '@/lib/pocketbaseClient.js';
+import apiServerClient from '@/lib/apiServerClient.js';
+import {
+  buildOrderFromLabelError,
+  buildOrderFromLabelResponse,
+  canGenerateOrderLabel,
+  downloadBase64Pdf,
+  downloadBlob,
+  getOrderLabelIssue,
+  getOrderLabelStatus,
+  getOrderLabelText,
+  getOrderTrackingNumber,
+  hasOrderLabel,
+} from '@/lib/dhlLabelUi.js';
+import { toast } from 'sonner';
+
+const sellerTabs = ['products', 'orders', 'earnings', 'settings'];
+
+const getSellerTabFromParams = (searchParams) => {
+  const tab = searchParams.get('tab');
+  const accountSection = searchParams.get('account');
+
+  if (sellerTabs.includes(tab)) return tab;
+  if (accountSection === 'sales') return 'orders';
+  if (accountSection === 'revenue' || accountSection === 'payouts') return 'earnings';
+  return 'products';
+};
 
 const SellerDashboard = () => {
   const { currentUser } = useAuth();
   const { t, language } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState(() => getSellerTabFromParams(searchParams));
   const [stats, setStats] = useState({
     totalProducts: 0,
     pendingProducts: 0,
@@ -27,6 +56,39 @@ const SellerDashboard = () => {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [earnings, setEarnings] = useState([]);
+  const [labelActionId, setLabelActionId] = useState('');
+  const accountSection = searchParams.get('account');
+  const accountActiveKey = accountSection === 'payouts'
+    ? 'payouts'
+    : accountSection === 'revenue' || activeTab === 'earnings'
+      ? 'revenue'
+      : 'sales';
+
+  const dashboardCopy = language === 'EN'
+    ? {
+      labelReady: 'Label ready',
+      labelMissing: 'Label pending',
+      labelDownload: 'Download label',
+      labelGenerate: 'Generate label',
+      downloadError: 'The shipping label could not be downloaded.',
+      generateError: 'The shipping label could not be created.',
+      generateSuccess: 'DHL label created.',
+      trackingColumn: 'Tracking',
+    }
+    : {
+      labelReady: 'Label bereit',
+      labelMissing: 'Label ausstehend',
+      labelDownload: 'Label laden',
+      labelGenerate: 'Label erstellen',
+      downloadError: 'Das Versandlabel konnte nicht geladen werden.',
+      generateError: 'Das Versandlabel konnte nicht erstellt werden.',
+      generateSuccess: 'DHL-Label wurde erstellt.',
+      trackingColumn: 'Tracking',
+    };
+
+  useEffect(() => {
+    setActiveTab(getSellerTabFromParams(searchParams));
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -91,6 +153,23 @@ const SellerDashboard = () => {
     fetchDashboardData();
   }, [currentUser]);
 
+  const handleTabChange = (value) => {
+    setActiveTab(value);
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('tab', value);
+
+    if (value === 'orders') {
+      nextParams.set('account', 'sales');
+    } else if (value === 'earnings') {
+      nextParams.set('account', accountSection === 'payouts' ? 'payouts' : 'revenue');
+    } else {
+      nextParams.delete('account');
+    }
+
+    setSearchParams(nextParams, { replace: true });
+  };
+
   const getStatusBadge = (status) => {
     switch(status) {
       case 'active': return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">{t('seller.status_active')}</Badge>;
@@ -101,14 +180,73 @@ const SellerDashboard = () => {
     }
   };
 
+  const handleDownloadLabel = async (order) => {
+    setLabelActionId(order.id);
+    try {
+      if (order?.dhl_label_pdf) {
+        downloadBase64Pdf(order.dhl_label_pdf, `DHL_Label_${order.order_number || order.id}.pdf`);
+        return;
+      }
+
+      if (hasOrderLabel(order)) {
+        const response = await apiServerClient.fetch(`/dhl-labels/${order.id}/pdf`, {
+          headers: {
+            Authorization: `Bearer ${pb.authStore.token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Label request failed with status ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        downloadBlob(blob, `DHL_Label_${order.order_number || order.id}.pdf`);
+        return;
+      }
+
+      if (!canGenerateOrderLabel(order)) {
+        throw new Error(getOrderLabelIssue(order) || dashboardCopy.generateError);
+      }
+
+      const response = await apiServerClient.fetch('/dhl-labels/generate-label', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${pb.authStore.token}`,
+        },
+        body: JSON.stringify({ order_id: order.id }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setOrders((currentOrders) =>
+          currentOrders.map((item) => (item.id === order.id ? buildOrderFromLabelError(item, data, dashboardCopy.generateError) : item))
+        );
+        throw new Error(data.details || data.error || dashboardCopy.generateError);
+      }
+
+      const updatedOrder = buildOrderFromLabelResponse(order, data);
+      setOrders((currentOrders) =>
+        currentOrders.map((item) => (item.id === order.id ? { ...item, ...updatedOrder } : item))
+      );
+      downloadBase64Pdf(updatedOrder.dhl_label_pdf, `DHL_Label_${order.order_number || order.id}.pdf`);
+      toast.success(dashboardCopy.generateSuccess);
+    } catch (error) {
+      console.error('Seller label download failed:', error);
+      toast.error(error.message || dashboardCopy.downloadError);
+    } finally {
+      setLabelActionId('');
+    }
+  };
+
   return (
     <>
       <Helmet>
         <title>{t('seller_dashboard.title')} - Zahnibörse</title>
       </Helmet>
 
-      <main className="flex-1 bg-muted/30 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <AccountLayout activeKey={accountActiveKey}>
+        <div className="space-y-8">
           
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
@@ -186,7 +324,7 @@ const SellerDashboard = () => {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue="products" className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="mb-6 bg-white border shadow-sm">
               <TabsTrigger value="products" className="gap-2"><Package className="w-4 h-4" /> {t('seller_dashboard.products')}</TabsTrigger>
               <TabsTrigger value="orders" className="gap-2"><ShoppingBag className="w-4 h-4" /> {t('orders.title')}</TabsTrigger>
@@ -268,6 +406,7 @@ const SellerDashboard = () => {
                             <th className="px-4 py-3">{t('orders.date')}</th>
                             <th className="px-4 py-3">{t('orders.total')}</th>
                             <th className="px-4 py-3">{t('orders.status')}</th>
+                            <th className="px-4 py-3">{dashboardCopy.trackingColumn}</th>
                             <th className="px-4 py-3 rounded-tr-lg text-right">{t('seller.actions')}</th>
                           </tr>
                         </thead>
@@ -284,8 +423,32 @@ const SellerDashboard = () => {
                                   {order.status}
                                 </Badge>
                               </td>
+                              <td className="px-4 py-4 text-muted-foreground">
+                                {getOrderTrackingNumber(order) ? (
+                                  <div className="flex items-center gap-2">
+                                    <Truck className="h-4 w-4 text-[#0000FF]" />
+                                    <span className="font-mono text-xs">{getOrderTrackingNumber(order)}</span>
+                                  </div>
+                                ) : (
+                                  <span title={getOrderLabelIssue(order)}>{getOrderLabelText(order, language)}</span>
+                                )}
+                              </td>
                               <td className="px-4 py-4 text-right">
-                                <Button variant="ghost" size="sm">{t('shop.details')}</Button>
+                                <div className="flex justify-end gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2"
+                                    onClick={() => handleDownloadLabel(order)}
+                                    disabled={labelActionId === order.id || getOrderLabelStatus(order) === 'generating' || getOrderLabelStatus(order) === 'unknown'}
+                                  >
+                                    <Download className="h-4 w-4" />
+                                    {hasOrderLabel(order) ? dashboardCopy.labelDownload : dashboardCopy.labelGenerate}
+                                  </Button>
+                                  <Badge variant="outline" title={getOrderLabelIssue(order)}>
+                                    {getOrderLabelText(order, language)}
+                                  </Badge>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -382,7 +545,7 @@ const SellerDashboard = () => {
 
           </Tabs>
         </div>
-      </main>
+      </AccountLayout>
     </>
   );
 };

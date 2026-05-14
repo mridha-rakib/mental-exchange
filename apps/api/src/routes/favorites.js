@@ -13,13 +13,106 @@ const normalizeProductId = (body = {}) => {
   return String(raw).trim();
 };
 
-const buildFavoriteResponse = (favorite) => ({
-  id: String(favorite.id).trim(),
-  user_id: String(favorite.user_id).trim(),
-  product_id: String(favorite.product_id).trim(),
-  product: favorite.expand?.product_id || null,
-  created_at: favorite.created,
-});
+const escapeFilterValue = (value) => String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+
+const normalizeMarketplaceProduct = (product) => product ? ({
+  ...product,
+  product_type: product.product_type || 'Article',
+  fachbereich: Array.isArray(product.fachbereich)
+    ? product.fachbereich
+    : product.fachbereich
+      ? [product.fachbereich]
+      : [],
+  source: 'marketplace',
+}) : null;
+
+const normalizeShopProduct = (product) => product ? ({
+  id: product.id,
+  collectionId: product.collectionId,
+  collectionName: product.collectionName,
+  name: product.name,
+  description: product.description || '',
+  price: product.price,
+  image: product.image || null,
+  image_url: product.image ? pb.files.getUrl(product, product.image) : null,
+  condition: product.condition || null,
+  fachbereich: Array.isArray(product.fachbereich)
+    ? product.fachbereich
+    : product.fachbereich
+      ? [product.fachbereich]
+      : [],
+  product_type: product.product_type || 'Article',
+  source: 'shop',
+  created: product.created,
+  updated: product.updated,
+}) : null;
+
+const getProductById = async (productId) => {
+  try {
+    const product = await pb.collection('products').getOne(productId, { $autoCancel: false });
+    return normalizeMarketplaceProduct(product);
+  } catch (error) {
+    if (error?.status !== 404) {
+      throw error;
+    }
+  }
+
+  try {
+    const product = await pb.collection('shop_products').getOne(productId, { $autoCancel: false });
+    return normalizeShopProduct(product);
+  } catch (error) {
+    if (error?.status !== 404) {
+      throw error;
+    }
+  }
+
+  return null;
+};
+
+const getProductMap = async (productIds = []) => {
+  const ids = [...new Set(productIds.map((id) => String(id || '').trim()).filter(Boolean))];
+
+  if (ids.length === 0) {
+    return new Map();
+  }
+
+  const filter = ids.map((id) => `id="${escapeFilterValue(id)}"`).join(' || ');
+  const marketplaceProducts = await pb.collection('products').getFullList({
+    filter,
+    $autoCancel: false,
+  });
+
+  const productMap = new Map(
+    marketplaceProducts.map((product) => [String(product.id).trim(), normalizeMarketplaceProduct(product)])
+  );
+
+  const missingIds = ids.filter((id) => !productMap.has(id));
+  if (missingIds.length > 0) {
+    const shopFilter = missingIds.map((id) => `id="${escapeFilterValue(id)}"`).join(' || ');
+    const shopProducts = await pb.collection('shop_products').getFullList({
+      filter: shopFilter,
+      $autoCancel: false,
+    });
+
+    shopProducts.forEach((product) => {
+      productMap.set(String(product.id).trim(), normalizeShopProduct(product));
+    });
+  }
+
+  return productMap;
+};
+
+const buildFavoriteResponse = (favorite, productMap = new Map()) => {
+  const productId = String(favorite.product_id).trim();
+
+  return {
+    id: String(favorite.id).trim(),
+    user_id: String(favorite.user_id).trim(),
+    product_id: productId,
+    product: productMap.get(productId) || null,
+    created_at: favorite.created,
+  };
+};
 
 router.post('/', async (req, res, next) => {
   try {
@@ -34,7 +127,11 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ error: 'product_id is required' });
     }
 
-    await pb.collection('products').getOne(productIdStr, { $autoCancel: false });
+    const product = await getProductById(productIdStr);
+
+    if (!product) {
+      return res.status(400).json({ error: 'Product not found' });
+    }
 
     const existingFavorites = await pb.collection('favorites').getFullList({
       filter: `user_id="${userId}" && product_id="${productIdStr}"`,
@@ -43,7 +140,7 @@ router.post('/', async (req, res, next) => {
     });
 
     if (existingFavorites.length > 0) {
-      const favorite = buildFavoriteResponse(existingFavorites[0]);
+      const favorite = buildFavoriteResponse(existingFavorites[0], new Map([[productIdStr, product]]));
       return res.status(200).json({
         success: true,
         idempotent: true,
@@ -67,7 +164,7 @@ router.post('/', async (req, res, next) => {
       $autoCancel: false,
     });
 
-    const favorite = buildFavoriteResponse(favoriteWithExpand);
+    const favorite = buildFavoriteResponse(favoriteWithExpand, new Map([[productIdStr, product]]));
 
     res.status(200).json({
       success: true,
@@ -121,7 +218,11 @@ router.post('/toggle', async (req, res, next) => {
       });
     }
 
-    await pb.collection('products').getOne(productIdStr, { $autoCancel: false });
+    const product = await getProductById(productIdStr);
+
+    if (!product) {
+      return res.status(400).json({ error: 'Product not found' });
+    }
 
     const created = await pb.collection('favorites').create(
       {
@@ -142,7 +243,7 @@ router.post('/toggle', async (req, res, next) => {
       favorite_id: String(created.id).trim(),
       product_id: productIdStr,
       isFavorite: true,
-      favorite: buildFavoriteResponse(favoriteWithExpand),
+      favorite: buildFavoriteResponse(favoriteWithExpand, new Map([[productIdStr, product]])),
       message: 'Product added to favorites successfully',
     });
   } catch (error) {
@@ -181,7 +282,8 @@ router.get('/', async (req, res, next) => {
       $autoCancel: false,
     });
 
-    const formattedFavorites = result.items.map(buildFavoriteResponse);
+    const productMap = await getProductMap(result.items.map((favorite) => favorite.product_id));
+    const formattedFavorites = result.items.map((favorite) => buildFavoriteResponse(favorite, productMap));
 
     res.status(200).json({
       success: true,

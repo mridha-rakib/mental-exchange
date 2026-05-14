@@ -1,11 +1,39 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BadgeCheck, Minus, PackageCheck, Plus, ShieldCheck, Trash2, Truck } from 'lucide-react';
+import {
+  ArrowLeft,
+  BadgeCheck,
+  CreditCard,
+  Minus,
+  PackageCheck,
+  Pencil,
+  Plus,
+  ReceiptText,
+  ShieldCheck,
+  ShoppingBag,
+  Trash2,
+  Truck,
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { useCart } from '@/contexts/CartContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
 import pb from '@/lib/pocketbaseClient.js';
+
+const getProductImageUrl = (product) => {
+  if (!product) return '';
+  if (product.image_url) return product.image_url;
+  if (product.image) return pb.files.getUrl(product, product.image);
+  return '';
+};
+
+const getProductTitle = (product, fallback) => product?.name || product?.title || fallback;
+
+const getProductPath = (item) => {
+  const typeSuffix = item.product_type === 'shop' ? '?type=shop' : '';
+  return `/product/${item.product_id || item.product?.id}${typeSuffix}`;
+};
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -21,25 +49,42 @@ const CartPage = () => {
   } = useCart();
   const { t, language } = useTranslation();
 
+  const locale = language === 'DE' ? 'de-DE' : 'en-US';
   const formatPrice = (value) =>
-    new Intl.NumberFormat(language === 'DE' ? 'de-DE' : 'en-US', {
+    new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'EUR',
     }).format(Number(value || 0));
 
-  const trustItems = [
+  const cartCountLabel = t('cart.count_label', { count: itemCount });
+  const summaryRows = [
     {
-      icon: ShieldCheck,
-      title: t('info.secure_title'),
-      body: t('info.secure_body'),
+      label: t('cart.subtotal'),
+      value: formatPrice(getSubtotal()),
     },
     {
-      icon: Truck,
+      label: t('cart.shipping'),
+      value: formatPrice(SHIPPING_FEE),
+    },
+    {
+      label: t('cart.service_fee'),
+      value: formatPrice(SERVICE_FEE),
+    },
+  ];
+
+  const trustItems = [
+    {
+      Icon: ShieldCheck,
+      title: t('info.secure_title'),
+      body: t('checkout.stripe_note'),
+    },
+    {
+      Icon: Truck,
       title: t('cart.shipping'),
       body: t('help.shipping_body'),
     },
     {
-      icon: BadgeCheck,
+      Icon: BadgeCheck,
       title: t('popular.verified'),
       body: t('shop.subtitle'),
     },
@@ -52,33 +97,36 @@ const CartPage = () => {
           <title>{`${t('cart.title')} - Zahniboerse`}</title>
         </Helmet>
 
-        <main className="bg-[linear-gradient(180deg,#f7f8fc_0%,#eef2fb_100%)] px-4 py-14 md:px-6 md:py-20">
-          <div className="mx-auto max-w-3xl rounded-[32px] bg-white/92 p-8 text-center shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur md:p-12">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(0,0,255,0.08)] text-[#0000FF]">
+        <main className="flex-1 bg-[#f6f7f9] px-4 py-10 sm:px-6 md:py-14 lg:px-8">
+          <section className="mx-auto flex min-h-[460px] max-w-3xl flex-col items-center justify-center rounded-[8px] border border-dashed border-black/15 bg-white px-6 py-14 text-center shadow-sm">
+            <div className="flex h-16 w-16 items-center justify-center rounded-[8px] border border-[#0000FF]/20 bg-[#f1f1ff] text-[#0000FF]">
               <PackageCheck className="h-8 w-8" />
             </div>
-            <h1 className="mt-6 font-['Playfair_Display'] text-3xl text-[hsl(var(--foreground))] md:text-4xl">
+            <h1 className="mt-6 text-3xl font-bold tracking-tight text-[#151515] md:text-4xl">
               {t('cart.empty_title')}
             </h1>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[hsl(var(--secondary-text))] md:text-base">
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#666666] md:text-base">
               {t('cart.empty_desc')}
             </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mt-8 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
               <Button
+                type="button"
                 onClick={() => navigate('/marketplace')}
-                className="h-12 rounded-full bg-[#0000FF] px-6 text-white hover:bg-[#0000CC]"
+                className="h-11 rounded-[8px] bg-[#0000FF] px-5 text-white shadow-none hover:bg-[#0000CC]"
               >
+                <ShoppingBag className="h-4 w-4" />
                 {t('cart.go_marketplace')}
               </Button>
               <Button
+                type="button"
                 variant="outline"
                 onClick={() => navigate('/shop')}
-                className="h-12 rounded-full border-[hsl(var(--border))] px-6"
+                className="h-11 rounded-[8px] border-black/10 bg-white px-5 shadow-none hover:bg-[#f3f3ff]"
               >
                 {t('nav.shop')}
               </Button>
             </div>
-          </div>
+          </section>
         </main>
       </>
     );
@@ -90,128 +138,163 @@ const CartPage = () => {
         <title>{`${t('cart.title')} - Zahniboerse`}</title>
       </Helmet>
 
-      <main className="bg-[linear-gradient(180deg,#f8f9fd_0%,#eef2fb_55%,#f8f8fb_100%)] px-4 py-8 md:px-6 md:py-12">
-        <div className="mx-auto max-w-7xl">
-          <section className="rounded-[32px] bg-white/88 px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] backdrop-blur md:px-8 md:py-8">
+      <main className="flex-1 bg-[#f6f7f9] px-4 py-8 sm:px-6 md:py-12 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl">
+          <header className="mb-6 rounded-[8px] border border-black/10 bg-white p-5 shadow-sm md:p-6">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="inline-flex items-center gap-2 text-sm font-medium text-[hsl(var(--secondary-text))] transition hover:text-[#0000FF]"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#666666] transition-colors hover:text-[#0000FF]"
             >
               <ArrowLeft className="h-4 w-4" />
               {t('product.back')}
             </button>
 
-            <div className="mt-5 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="mt-5 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div className="max-w-2xl">
-                <p className="text-sm font-medium uppercase tracking-[0.22em] text-[#0000FF]/72">
+                <Badge className="rounded-[8px] bg-[#f1f1ff] px-3 py-1 text-xs font-semibold text-[#0000FF] shadow-none hover:bg-[#f1f1ff]">
+                  {cartCountLabel}
+                </Badge>
+                <h1 className="mt-4 text-3xl font-bold tracking-tight text-[#151515] md:text-4xl">
                   {t('cart.title')}
-                </p>
-                <h1 className="mt-3 font-['Playfair_Display'] text-4xl leading-tight text-[hsl(var(--foreground))] md:text-5xl">
-                  {itemCount} {itemCount === 1 ? t('marketplace.product_singular') : t('marketplace.product_plural')}
                 </h1>
-                <p className="mt-3 max-w-xl text-sm leading-7 text-[hsl(var(--secondary-text))] md:text-base">
-                  {t('checkout.stripe_note')}
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-[#666666] md:text-base">
+                  {t('cart.page_subtitle')}
                 </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
-                {trustItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div
-                      key={item.title}
-                      className="rounded-[24px] border border-[rgba(0,0,255,0.08)] bg-[linear-gradient(180deg,rgba(0,0,255,0.04),rgba(255,255,255,0.92))] px-4 py-4"
-                    >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#0000FF]">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <h2 className="mt-4 text-sm font-semibold text-[hsl(var(--foreground))]">{item.title}</h2>
-                      <p className="mt-2 text-xs leading-6 text-[hsl(var(--secondary-text))]">{item.body}</p>
-                    </div>
-                  );
-                })}
-              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate('/marketplace')}
+                className="h-11 rounded-[8px] border-black/10 bg-white px-5 shadow-none hover:bg-[#f3f3ff] md:self-end"
+              >
+                <ShoppingBag className="h-4 w-4" />
+                {t('cart.continue')}
+              </Button>
             </div>
-          </section>
+          </header>
 
-          <section className="mt-8 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-            <div className="space-y-4">
+          <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+            <div className="min-w-0 space-y-4">
+              <div className="rounded-[8px] border border-black/10 bg-white p-4 shadow-sm md:p-5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#151515]">{t('cart.items_title')}</h2>
+                    <p className="mt-1 text-sm text-[#666666]">{t('cart.items_body')}</p>
+                  </div>
+                  <p className="text-sm font-semibold text-[#0000FF]">{cartCountLabel}</p>
+                </div>
+              </div>
+
               {cartItems.map((item) => {
-                const imageUrl = item.product?.image ? pb.files.getUrl(item.product, item.product.image) : null;
-                const lineTotal = (item.product?.price || 0) * (item.quantity || 1);
+                const product = item.product || {};
+                const productTitle = getProductTitle(product, t('product.untitled'));
+                const productImageUrl = getProductImageUrl(product);
+                const unitPrice = Number(product.price || 0);
+                const quantity = Number(item.quantity || 1);
+                const lineTotal = unitPrice * quantity;
+                const productPath = getProductPath(item);
 
                 return (
                   <article
-                    key={item.id}
-                    className="rounded-[28px] border border-white/70 bg-white/94 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)] backdrop-blur md:p-5"
+                    key={`${item.id}-${item.product_id}`}
+                    className="rounded-[8px] border border-black/10 bg-white p-4 shadow-sm transition-colors hover:border-[#0000FF]/25 md:p-5"
                   >
-                    <div className="flex flex-col gap-5 md:flex-row">
-                      <div className="flex h-28 w-full items-center justify-center overflow-hidden rounded-[24px] bg-[hsl(var(--muted-bg))] md:h-32 md:w-32">
-                        {imageUrl ? (
-                          <img src={imageUrl} alt={item.product?.name} className="h-full w-full object-cover" />
+                    <div className="grid gap-4 lg:grid-cols-[132px_minmax(0,1fr)]">
+                      <button
+                        type="button"
+                        onClick={() => navigate(productPath)}
+                        className="h-32 w-full overflow-hidden rounded-[8px] border border-black/10 bg-[#eef0f3] text-[#8a8f98] sm:w-32"
+                        aria-label={productTitle}
+                      >
+                        {productImageUrl ? (
+                          <img src={productImageUrl} alt={productTitle} className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]" />
                         ) : (
-                          <span className="text-sm text-[hsl(var(--secondary-text))]">{t('shop.no_image')}</span>
+                          <span className="flex h-full w-full items-center justify-center text-sm font-medium">
+                            {t('product.no_image')}
+                          </span>
                         )}
-                      </div>
+                      </button>
 
-                      <div className="flex min-w-0 flex-1 flex-col gap-4">
-                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                           <div className="min-w-0">
-                            <div className="inline-flex rounded-full bg-[rgba(0,0,255,0.06)] px-3 py-1 text-xs font-medium text-[#0000FF]">
+                            <Badge variant="outline" className="rounded-[8px] border-black/10 bg-white px-2.5 py-1 text-xs text-[#666666] shadow-none">
                               {item.product_type === 'shop'
                                 ? t('common.shop')
                                 : t('cart.by_seller', {
-                                    seller: item.product?.seller_username || t('common.seller'),
+                                    seller: product.seller_username || t('common.seller'),
                                   })}
-                            </div>
-                            <h2 className="mt-3 text-xl font-semibold leading-tight text-[hsl(var(--foreground))]">
-                              {item.product?.name}
-                            </h2>
-                            <p className="mt-2 text-sm text-[hsl(var(--secondary-text))]">
-                              {item.product?.description || t('product.no_description')}
+                            </Badge>
+                            <button
+                              type="button"
+                              onClick={() => navigate(productPath)}
+                              className="mt-3 block text-left text-xl font-semibold leading-tight text-[#151515] transition-colors hover:text-[#0000FF]"
+                            >
+                              {productTitle}
+                            </button>
+                            <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#666666]">
+                              {product.description || t('product.no_description')}
                             </p>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => removeFromCart(item.id, item.product_id)}
-                            className="inline-flex items-center gap-2 self-start rounded-full bg-[rgba(239,68,68,0.08)] px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-[rgba(239,68,68,0.14)]"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            {t('seller.delete')}
-                          </button>
+                          <div className="flex shrink-0 gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => navigate(productPath)}
+                              className="h-9 rounded-[8px] border-black/10 bg-white px-3 shadow-none hover:bg-[#f3f3ff]"
+                            >
+                              <Pencil className="h-4 w-4" />
+                              {t('seller.edit')}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeFromCart(item.id, item.product_id)}
+                              className="h-9 rounded-[8px] border-red-200 bg-white px-3 text-red-600 shadow-none hover:bg-red-50 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              {t('seller.delete')}
+                            </Button>
+                          </div>
                         </div>
 
-                        <div className="flex flex-col gap-4 border-t border-[hsl(var(--border))] pt-4 sm:flex-row sm:items-center sm:justify-between">
-                          <div className="inline-flex w-fit items-center rounded-full border border-[hsl(var(--border))] bg-white p-1">
+                        <div className="mt-5 grid gap-3 border-t border-black/10 pt-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#777777]">{t('cart.unit_price')}</p>
+                            <p className="mt-1 text-lg font-bold text-[#151515]">{formatPrice(unitPrice)}</p>
+                          </div>
+
+                          <div className="flex w-fit items-center rounded-[8px] border border-black/10 bg-[#f7f7f7] p-1">
                             <button
                               type="button"
-                              className="flex h-10 w-10 items-center justify-center rounded-full text-[hsl(var(--secondary-text))] transition hover:bg-[hsl(var(--muted-bg))] disabled:opacity-40"
-                              onClick={() => updateQuantity(item.id, item.product_id, item.quantity - 1)}
-                              disabled={item.quantity <= 1}
+                              className="flex h-9 w-9 items-center justify-center rounded-[6px] text-[#666666] transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                              onClick={() => updateQuantity(item.id, item.product_id, quantity - 1)}
+                              disabled={quantity <= 1}
+                              aria-label={t('cart.decrease_quantity')}
                             >
                               <Minus className="h-4 w-4" />
                             </button>
-                            <span className="w-10 text-center text-sm font-semibold text-[hsl(var(--foreground))]">
-                              {item.quantity}
+                            <span className="w-10 text-center text-sm font-bold text-[#151515]" aria-label={t('common.quantity')}>
+                              {quantity}
                             </span>
                             <button
                               type="button"
-                              className="flex h-10 w-10 items-center justify-center rounded-full text-[hsl(var(--secondary-text))] transition hover:bg-[hsl(var(--muted-bg))]"
-                              onClick={() => updateQuantity(item.id, item.product_id, item.quantity + 1)}
+                              className="flex h-9 w-9 items-center justify-center rounded-[6px] text-[#666666] transition-colors hover:bg-white"
+                              onClick={() => updateQuantity(item.id, item.product_id, quantity + 1)}
+                              aria-label={t('cart.increase_quantity')}
                             >
                               <Plus className="h-4 w-4" />
                             </button>
                           </div>
 
-                          <div className="flex items-end justify-between gap-4 sm:block">
-                            <p className="text-xs uppercase tracking-[0.18em] text-[hsl(var(--secondary-text))]">
-                              {t('common.total')}
-                            </p>
-                            <p className="mt-1 text-2xl font-semibold text-[#0000FF]">
-                              {formatPrice(lineTotal)}
-                            </p>
+                          <div className="md:text-right">
+                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#777777]">{t('cart.line_total')}</p>
+                            <p className="mt-1 text-2xl font-bold text-[#0000FF]">{formatPrice(lineTotal)}</p>
                           </div>
                         </div>
                       </div>
@@ -221,69 +304,67 @@ const CartPage = () => {
               })}
             </div>
 
-            <aside className="lg:sticky lg:top-[100px] lg:self-start">
-              <div className="rounded-[30px] border border-white/70 bg-white/95 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] backdrop-blur md:p-7">
-                <div className="flex items-center justify-between">
+            <aside className="lg:sticky lg:top-24 lg:self-start">
+              <div className="rounded-[8px] border border-black/10 bg-white p-5 shadow-sm md:p-6">
+                <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#0000FF]/72">
-                      {t('cart.summary')}
-                    </p>
-                    <h2 className="mt-2 font-['Playfair_Display'] text-3xl text-[hsl(var(--foreground))]">
-                      {t('checkout.order_summary')}
-                    </h2>
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-[8px] bg-[#f1f1ff] text-[#0000FF]">
+                      <ReceiptText className="h-5 w-5" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-[#151515]">{t('checkout.order_summary')}</h2>
+                    <p className="mt-2 text-sm leading-6 text-[#666666]">{t('cart.order_note')}</p>
                   </div>
-                  <div className="rounded-full bg-[rgba(0,0,255,0.07)] px-3 py-1 text-sm font-medium text-[#0000FF]">
+                  <Badge className="rounded-[8px] bg-[#f1f1ff] px-3 py-1 text-xs font-semibold text-[#0000FF] shadow-none hover:bg-[#f1f1ff]">
                     {itemCount}
-                  </div>
+                  </Badge>
                 </div>
 
-                <div className="mt-6 space-y-3 rounded-[24px] bg-[hsl(var(--muted-bg))] p-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-[hsl(var(--secondary-text))]">{t('cart.subtotal')}</span>
-                    <span className="font-medium">{formatPrice(getSubtotal())}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-[hsl(var(--secondary-text))]">{t('cart.shipping')}</span>
-                    <span className="font-medium">{formatPrice(SHIPPING_FEE)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-[hsl(var(--secondary-text))]">{t('cart.service_fee')}</span>
-                    <span className="font-medium">{formatPrice(SERVICE_FEE)}</span>
-                  </div>
-                  <div className="border-t border-white pt-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-[hsl(var(--foreground))]">{t('common.total')}</span>
-                      <span className="text-2xl font-semibold text-[#0000FF]">{formatPrice(getTotal())}</span>
+                <dl className="mt-6 space-y-3">
+                  {summaryRows.map((row) => (
+                    <div key={row.label} className="flex items-center justify-between gap-4 text-sm">
+                      <dt className="text-[#666666]">{row.label}</dt>
+                      <dd className="font-semibold text-[#151515]">{row.value}</dd>
                     </div>
+                  ))}
+                </dl>
+
+                <div className="mt-5 border-t border-black/10 pt-5">
+                  <div className="flex items-end justify-between gap-4">
+                    <span className="text-sm font-bold text-[#151515]">{t('common.total')}</span>
+                    <span className="text-3xl font-bold text-[#0000FF]">{formatPrice(getTotal())}</span>
                   </div>
                 </div>
 
                 <div className="mt-6 space-y-3">
                   <Button
+                    type="button"
                     size="lg"
-                    className="h-12 w-full rounded-full bg-[#0000FF] text-white hover:bg-[#0000CC]"
+                    className="h-12 w-full rounded-[8px] bg-[#0000FF] text-white shadow-none hover:bg-[#0000CC]"
                     onClick={() => navigate('/checkout')}
                   >
+                    <CreditCard className="h-4 w-4" />
                     {t('cart.checkout')}
                   </Button>
                   <Button
+                    type="button"
                     variant="outline"
-                    className="h-12 w-full rounded-full border-[hsl(var(--border))]"
+                    className="h-11 w-full rounded-[8px] border-black/10 bg-white shadow-none hover:bg-[#f3f3ff]"
                     onClick={() => navigate('/marketplace')}
                   >
                     {t('cart.continue')}
                   </Button>
                 </div>
 
-                <div className="mt-6 space-y-3 rounded-[24px] border border-[rgba(0,0,255,0.08)] bg-[linear-gradient(180deg,rgba(0,0,255,0.03),rgba(255,255,255,0.92))] p-4">
-                  <div className="flex items-start gap-3">
-                    <ShieldCheck className="mt-0.5 h-4 w-4 text-[#0000FF]" />
-                    <p className="text-sm leading-6 text-[hsl(var(--secondary-text))]">{t('checkout.stripe_note')}</p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Truck className="mt-0.5 h-4 w-4 text-[#0000FF]" />
-                    <p className="text-sm leading-6 text-[hsl(var(--secondary-text))]">{t('help.shipping_body')}</p>
-                  </div>
+                <div className="mt-6 grid gap-3">
+                  {trustItems.map(({ Icon, title, body }) => (
+                    <div key={title} className="flex gap-3 rounded-[8px] border border-black/10 bg-[#f7f7f7] p-4">
+                      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#0000FF]" />
+                      <div>
+                        <p className="text-sm font-semibold text-[#151515]">{title}</p>
+                        <p className="mt-1 text-xs leading-5 text-[#666666]">{body}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </aside>

@@ -3,6 +3,7 @@ import express from 'express';
 import Stripe from 'stripe';
 import logger from '../utils/logger.js';
 import { getPlatformSettings } from '../utils/platformSettings.js';
+import { normalizeCountryCode } from '../utils/countryCodes.js';
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -139,6 +140,25 @@ const normalizeCartItems = (cartItems) => {
   return normalizedItems;
 };
 
+const normalizeShippingAddress = (shippingAddress) => {
+  if (!shippingAddress || typeof shippingAddress !== 'object') {
+    return shippingAddress;
+  }
+
+  return {
+    ...shippingAddress,
+    country: normalizeCountryCode(shippingAddress.country || 'DE'),
+  };
+};
+
+const parseBooleanInput = (value) => {
+  if (value === true) return true;
+  if (value === false || value === undefined || value === null) return false;
+
+  const normalized = String(value).trim().toLowerCase();
+  return ['true', '1', 'yes', 'on'].includes(normalized);
+};
+
 // ============================================================================
 // STRIPE CHECKOUT SESSION CREATION
 // ============================================================================
@@ -181,6 +201,9 @@ const normalizeCartItems = (cartItems) => {
  */
 router.post('/create-session', async (req, res) => {
   const { buyer_id, buyer_name, buyer_email, shipping_address, cart_items } = req.body;
+  const acceptedTerms = parseBooleanInput(req.body?.acceptedTerms ?? req.body?.accepted_terms);
+  const acceptedPrivacy = parseBooleanInput(req.body?.acceptedPrivacy ?? req.body?.accepted_privacy);
+  const newsletterOptIn = parseBooleanInput(req.body?.newsletterOptIn ?? req.body?.newsletter_opt_in);
   const timestamp = new Date().toISOString();
 
   logger.info(`[CHECKOUT] Create session request received - Timestamp: ${timestamp}`);
@@ -212,12 +235,27 @@ router.post('/create-session', async (req, res) => {
   if (missingFields.length > 0) {
     logger.warn(`[CHECKOUT] Missing required fields: ${missingFields.join(', ')}`);
     return res.status(400).json({
+      code: 'MISSING_REQUIRED_FIELDS',
       error: 'Missing required fields',
       missingFields: missingFields,
     });
   }
 
+  if (!acceptedTerms || !acceptedPrivacy) {
+    logger.warn(`[CHECKOUT] Legal acceptance missing - Terms: ${acceptedTerms}, Privacy: ${acceptedPrivacy}, Buyer: ${buyer_id || 'unknown'}`);
+    return res.status(400).json({
+      code: 'LEGAL_ACCEPTANCE_REQUIRED',
+      error: 'Terms and privacy acceptance are required before checkout',
+      required: {
+        acceptedTerms: true,
+        acceptedPrivacy: true,
+      },
+    });
+  }
+
   logger.info('[CHECKOUT] All required fields present');
+
+  const normalizedShippingAddress = normalizeShippingAddress(shipping_address);
 
   // Ensure all values are strings
   const buyerIdStr = String(buyer_id).trim();
@@ -237,6 +275,7 @@ router.post('/create-session', async (req, res) => {
   } catch (normalizationError) {
     logger.error(`[CHECKOUT] Cart item normalization failed - Error: ${normalizationError.message}`);
     return res.status(400).json({
+      code: 'INVALID_CART_ITEMS',
       error: 'Invalid cart items',
       details: normalizationError.message,
     });
@@ -327,12 +366,16 @@ router.post('/create-session', async (req, res) => {
     buyer_id: buyerIdStr,
     buyer_name: buyerNameStr,
     buyer_email: buyerEmailStr,
-    shipping_address: JSON.stringify(shipping_address),
+    shipping_address: JSON.stringify(normalizedShippingAddress),
     cart_item_ids: cartItemIds,
     type: 'marketplace_order',
     shipping_fee: String(shippingFee),
     service_fee: String(serviceFee),
     transaction_fee_percentage: String(fees.transaction_fee_percentage),
+    accepted_terms: 'true',
+    accepted_privacy: 'true',
+    legal_accepted_at: timestamp,
+    newsletter_opt_in: newsletterOptIn ? 'true' : 'false',
   };
 
   logger.info(`[CHECKOUT] Metadata prepared - Keys: ${Object.keys(metadata).join(', ')}`);
@@ -360,6 +403,7 @@ router.post('/create-session', async (req, res) => {
   if (metadataErrors.length > 0) {
     logger.error(`[CHECKOUT] Metadata validation failed - Errors: ${metadataErrors.join(', ')}`);
     return res.status(400).json({
+      code: 'METADATA_TOO_LARGE',
       error: 'Metadata fields exceed size limit',
       details: metadataErrors,
     });
@@ -393,7 +437,10 @@ router.post('/create-session', async (req, res) => {
     logger.error(`[CHECKOUT] Stripe session creation failed`);
     logger.error(`[CHECKOUT] Error: ${stripeError.message}`);
     logger.error(`[CHECKOUT] Stack trace: ${stripeError.stack}`);
-    throw stripeError;
+    return res.status(502).json({
+      code: 'PAYMENT_SESSION_CREATE_FAILED',
+      error: 'Unable to create payment session. Please try again.',
+    });
   }
 
   // ========================================================================

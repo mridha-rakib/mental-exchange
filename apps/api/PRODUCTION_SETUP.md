@@ -243,28 +243,35 @@ The following files have been replaced and should be deleted:
 **File:** `apps/api/.env`
 
 ### DHL Production Credentials:
+
+Security note: real DHL credentials must never be committed to this file. If real credentials were previously committed, rotate them before production use.
+
 ```env
 # DHL Production API Credentials
 # OAuth2 Token URL for DHL API authentication
 DHL_TOKEN_URL=https://api-eu.dhl.com/parcel/de/account/auth/ropc/v1/token
 
 # DHL API Key (Client ID) for OAuth2 authentication
-DHL_API_KEY=U2qL17ilWsLvlsXWzBAQCV4KEshJjySm
+DHL_API_KEY=replace-with-production-client-id
 
 # DHL API Secret (Client Secret) for OAuth2 authentication
-DHL_API_SECRET=bY3vATyj7A8HaRy6
+DHL_API_SECRET=replace-with-production-client-secret
 
 # DHL Username for Resource Owner Password Credentials (ROPC) flow
-DHL_USERNAME=tchoquesipatrick@yahoo.com
+DHL_USERNAME=replace-with-gkp-system-user
 
 # DHL Password for Resource Owner Password Credentials (ROPC) flow
-DHL_PASSWORD=#Marie12monamour123
+DHL_PASSWORD=replace-with-gkp-system-user-password
 
 # DHL Customer Number for shipment creation
-DHL_CUSTOMER_NUMBER=6395043921
+DHL_CUSTOMER_NUMBER=replace-with-ekp
 
 # DHL Billing Number for shipment creation (format: XXXXXXXXXX01XX)
-DHL_BILLING_NUMBER=63950439210101
+DHL_BILLING_NUMBER=replace-with-domestic-billing-number
+
+# Optional but required before creating international labels
+DHL_BILLING_NUMBER_INTERNATIONAL=replace-with-international-billing-number
+DHL_ALLOW_INTERNATIONAL=false
 
 # Warehouse/Shipper Address Information
 WAREHOUSE_NAME=Patrick Tchoquessi
@@ -276,8 +283,22 @@ WAREHOUSE_ADDRESS_COUNTRY=DE
 
 ### Notes:
 - No Sandbox URLs are used
-- All credentials are production-ready
+- Real credentials must be provisioned in the runtime environment, not copied into documentation
 - Token URL uses ROPC (Resource Owner Password Credentials) flow
+- The API converts app-level two-letter countries such as `DE` to DHL-required alpha-3 countries such as `DEU`
+- `DHL_BILLING_NUMBER` is used for German domestic shipments
+- Non-German destinations are disabled by default; set `DHL_ALLOW_INTERNATIONAL=true`, `DHL_BILLING_NUMBER_INTERNATIONAL`, and customs handling before enabling them
+- Product/order parcel weight is required for label generation. Only set `DHL_DEFAULT_PARCEL_WEIGHT_G` after the business approves a default package weight.
+- Optional hard dimension validation: set `DHL_REQUIRE_PARCEL_DIMENSIONS=true` when product length/width/height must be present before creating labels.
+- Optional rate/cache controls: `DHL_LABEL_GENERATION_RATE_LIMIT`, `DHL_TRACKING_RATE_LIMIT`, `DHL_TRACKING_CACHE_TTL_MS`, `DHL_HTTP_RETRY_ATTEMPTS`, `DHL_HTTP_RETRY_BASE_DELAY_MS`.
+- Run PocketBase migrations before deploying the API. Migrations `1776600000_020_dhl_label_jobs.js` and `1776600100_021_dhl_label_locks.js` create durable DHL label job/idempotency and cross-process lock state.
+
+### Durable DHL Label State:
+- Label creation is guarded by `dhl_label_jobs` plus short-lived unique `dhl_label_locks` records keyed by subject.
+- Duplicate webhook/manual requests for the same order return the existing result or a conflict instead of creating a second label.
+- Clear validation/auth errors mark the order label as `failed` and can be retried after the data/configuration is fixed.
+- Ambiguous shipment-create failures such as network timeouts or DHL 5xx responses mark the label as `unknown`. Do not retry automatically; reconcile with DHL first to avoid duplicate shipments.
+- If a label is created but cannot be saved to PocketBase, the job/order are also marked `unknown` for manual reconciliation.
 
 ---
 
@@ -347,20 +368,23 @@ WAREHOUSE_ADDRESS_COUNTRY=DE
 - [ ] Verify error handling for invalid credentials
 
 ### 4. DHL Label Generation
-- [ ] Verify shipment payload is built correctly
+- [x] Verify shipment payload is built correctly
 - [ ] Verify DHL API request succeeds
 - [ ] Verify tracking number is extracted
 - [ ] Verify PDF is downloaded/extracted
 - [ ] Verify PDF is converted to base64
 - [ ] Verify error handling for API failures
+- [x] Verify unsupported international billing configuration fails before calling DHL
 
 ### 5. DHL-Labels Route
-- [ ] Verify order validation (paid status)
-- [ ] Verify label existence check
-- [ ] Verify required field validation
-- [ ] Verify order update with label info
-- [ ] Verify response format
-- [ ] Verify error responses
+- [x] Verify order validation (paid status)
+- [x] Verify label existence check
+- [x] Verify required field validation
+- [x] Verify order update with label info
+- [x] Verify response format
+- [x] Verify error responses
+- [x] Verify cancellation endpoint exists for incorrect labels
+- [x] Verify concurrent manual generation is rejected
 
 ### 6. End-to-End Flow
 - [ ] Create checkout session
@@ -380,7 +404,7 @@ WAREHOUSE_ADDRESS_COUNTRY=DE
 [DHL-SERVICE] getDHLAccessToken() called
 [DHL-SERVICE] Cached token invalid or missing - fetching new token
 [DHL-SERVICE] OAuth2 Token Request - URL: https://api-eu.dhl.com/parcel/de/account/auth/ropc/v1/token
-[DHL-SERVICE] OAuth2 Credentials - Username: tchoquesipatrick@yahoo.com, Client ID: U2qL17ilWs...
+[DHL-SERVICE] OAuth2 Credentials - Username: [configured DHL user], Client ID: abc123...wxyz
 [DHL-SERVICE] Sending OAuth2 ROPC token request...
 [DHL-SERVICE] OAuth2 token response received - Status: 200
 [DHL-SERVICE] OAuth2 token received successfully - Expires in 3600s
@@ -395,7 +419,7 @@ WAREHOUSE_ADDRESS_COUNTRY=DE
 [DHL-SERVICE] Step 2: Preparing DHL API request payload...
 [DHL-SERVICE] DHL API Request Payload: {...}
 [DHL-SERVICE] Step 3: Calling DHL Shipping API - URL: https://api-eu.dhl.com/parcel/de/shipping/v2/shipments
-[DHL-SERVICE] Request Headers - Authorization: Bearer [3SXXX...], dhl-api-key: [U2qL17...]
+[DHL-SERVICE] Request Headers - Authorization: Bearer [abc123...wxyz], dhl-api-key: [abc123...wxyz]
 [DHL-SERVICE] DHL API response received - Status: 200
 [DHL-SERVICE] DHL API Response: {...}
 [DHL-SERVICE] Extracted from shipment - Shipment: 3SXXX..., HasB64: true
@@ -465,8 +489,10 @@ WAREHOUSE_ADDRESS_COUNTRY=DE
 
 ### DHL Labels
 - `POST /dhl-labels/generate-label` - Generate DHL shipping label
-- `GET /dhl-labels/:recordId/pdf` - Download label PDF
-- `GET /dhl-labels/order/:orderId` - Get label info for order
+- `GET /dhl-labels/debug/:orderId` - Inspect DHL readiness for an order
+- `GET /dhl-labels/:orderId/pdf` - Download label PDF
+- `GET /dhl-labels/:orderId/tracking` - Fetch DHL tracking status
+- `DELETE /dhl-labels/:orderId` - Cancel an unmanifested DHL label and clear order label fields
 
 ### Stripe Webhook
 - `POST /stripe/webhook` - Handle Stripe webhook events (internal)

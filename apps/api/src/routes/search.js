@@ -20,6 +20,30 @@ const formatProduct = (record, source) => ({
   source,
 });
 
+const getMarketplaceSearchFilter = async (search) => {
+  const filters = [
+    `(name~"${search}" || description~"${search}" || seller_username~"${search}")`,
+    'status="active"',
+    'seller_id != ""',
+    'shop_product != true',
+  ];
+
+  const adminUsers = await pb.collection('users').getFullList({
+    filter: 'is_admin=true',
+    fields: 'id',
+    $autoCancel: false,
+  }).catch((error) => {
+    logger.warn(`[SEARCH] Failed to load admin users for marketplace filter: ${error.message}`);
+    return [];
+  });
+
+  adminUsers.forEach((user) => {
+    filters.push(`seller_id != "${escapeFilterValue(user.id)}"`);
+  });
+
+  return filters.join(' && ');
+};
+
 router.get('/', async (req, res) => {
   const query = String(req.query.query || '').trim();
   const limit = Math.min(parseInt(req.query.limit, 10) || 8, 20);
@@ -29,7 +53,7 @@ router.get('/', async (req, res) => {
   }
 
   const search = escapeFilterValue(query);
-  const marketplaceFilter = `(name~"${search}" || description~"${search}" || seller_username~"${search}") && status="active"`;
+  const marketplaceFilter = await getMarketplaceSearchFilter(search);
   const shopFilter = `(name~"${search}" || description~"${search}")`;
 
   const [marketplaceProducts, shopProducts] = await Promise.all([

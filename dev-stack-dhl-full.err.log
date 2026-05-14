@@ -1,0 +1,8 @@
+Please replace pb.files.getUrl() with pb.files.getURL()
+Please replace pb.files.getUrl() with pb.files.getURL()
+[2m05:18:16[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+[2m05:18:16[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/realtime[39m
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)

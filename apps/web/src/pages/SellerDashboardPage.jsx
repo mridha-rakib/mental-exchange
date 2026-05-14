@@ -5,6 +5,18 @@ import { Edit, Trash2, Eye, Package, ShoppingBag, DollarSign, Plus, Download } f
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 import apiServerClient from '@/lib/apiServerClient.js';
+import {
+  buildOrderFromLabelError,
+  buildOrderFromLabelResponse,
+  canGenerateOrderLabel,
+  downloadBase64Pdf,
+  downloadBlob,
+  getOrderLabelIssue,
+  getOrderLabelStatus,
+  getOrderLabelText,
+  getOrderTrackingNumber,
+  hasOrderLabel,
+} from '@/lib/dhlLabelUi.js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
@@ -148,41 +160,78 @@ const SellerDashboardPage = () => {
   };
 
   const handleDownloadLabel = async (order) => {
+    if (order.dhl_label_pdf) {
+      downloadBase64Pdf(order.dhl_label_pdf, `DHL_Label_${order.order_number || order.id}.pdf`);
+      return;
+    }
+
+    if (hasOrderLabel(order)) {
+      setGeneratingLabel(order.id);
+      try {
+        const response = await apiServerClient.fetch(`/dhl-labels/${order.id}/pdf`, {
+          headers: {
+            Authorization: `Bearer ${pb.authStore.token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error || data.details || 'Label konnte nicht geladen werden');
+        }
+
+        const blob = await response.blob();
+        downloadBlob(blob, `DHL_Label_${order.order_number || order.id}.pdf`);
+      } catch (error) {
+        console.error('Error downloading label:', error);
+        toast.error(error.message || 'Fehler beim Laden des Labels');
+      } finally {
+        setGeneratingLabel(null);
+      }
+      return;
+    }
+
+    if (!canGenerateOrderLabel(order)) {
+      const issue = getOrderLabelIssue(order);
+      toast.error(issue || 'Label kann fuer diese Bestellung nicht erstellt werden.');
+      return;
+    }
+
     setGeneratingLabel(order.id);
 
     try {
       const response = await apiServerClient.fetch('/dhl-labels/generate-label', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${pb.authStore.token}`,
+        },
         body: JSON.stringify({
-          orderId: order.id,
-          shippingMethod: 'DHL PAKET GKP'
+          order_id: order.id
         })
       });
 
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        setOrders(prev =>
+          prev.map(o => (o.id === order.id ? buildOrderFromLabelError(o, data, 'Label generation failed') : o))
+        );
         throw new Error(data.error || data.details || 'Label generation failed');
       }
 
-      const pdfBase64 = data.labelPdfBase64 || data.label_pdf;
-      const trackingNumber = data.shipmentNumber || data.tracking_number;
+      const updatedOrder = buildOrderFromLabelResponse(order, data);
+      const pdfBase64 = updatedOrder.dhl_label_pdf;
 
       if (!pdfBase64) {
         throw new Error('Kein PDF vom DHL-Endpunkt erhalten');
       }
 
-      const linkSource = `data:application/pdf;base64,${pdfBase64}`;
-      const downloadLink = document.createElement('a');
-      downloadLink.href = linkSource;
-      downloadLink.download = `DHL_Label_${order.order_number || order.id}.pdf`;
-      downloadLink.click();
+      downloadBase64Pdf(pdfBase64, `DHL_Label_${order.order_number || order.id}.pdf`);
 
       setOrders(prev =>
         prev.map(o =>
           o.id === order.id
-            ? { ...o, dhl_tracking_number: trackingNumber, tracking_number: trackingNumber, dhl_label_pdf: pdfBase64 }
+            ? { ...o, ...updatedOrder }
             : o
         )
       );
@@ -394,10 +443,10 @@ const SellerDashboardPage = () => {
                           <TableCell>{new Date(order.created).toLocaleDateString('de-DE')}</TableCell>
                           <TableCell><Badge variant="outline">{order.status || 'Bezahlt'}</Badge></TableCell>
                           <TableCell>
-                            {order.dhl_tracking_number || order.tracking_number ? (
-                              <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{order.dhl_tracking_number || order.tracking_number}</span>
+                            {getOrderTrackingNumber(order) ? (
+                              <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">{getOrderTrackingNumber(order)}</span>
                             ) : (
-                              <span className="text-xs text-gray-400">-</span>
+                              <span className="text-xs text-gray-400" title={getOrderLabelIssue(order)}>{getOrderLabelText(order)}</span>
                             )}
                           </TableCell>
                           <TableCell className="text-right">
@@ -406,7 +455,7 @@ const SellerDashboardPage = () => {
                               size="sm"
                               className="gap-2"
                               onClick={() => handleDownloadLabel(order)}
-                              disabled={generatingLabel === order.id}
+                              disabled={generatingLabel === order.id || getOrderLabelStatus(order) === 'generating' || getOrderLabelStatus(order) === 'unknown'}
                             >
                               {generatingLabel === order.id ? (
                                 <span className="animate-pulse">Generiere...</span>

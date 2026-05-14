@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext.jsx';
@@ -7,6 +7,7 @@ import { useTranslation } from '@/contexts/TranslationContext.jsx';
 import { subscribeToNewsletter } from '@/lib/newsletterApi.js';
 import Logo from './Logo.jsx';
 const Footer = () => {
+  const location = useLocation();
   const {
     currentUser
   } = useAuth();
@@ -17,6 +18,10 @@ const Footer = () => {
   } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  if (location.pathname === '/auth') {
+    return null;
+  }
+
   const handleNewsletterSignup = async e => {
     e.preventDefault();
     const targetEmail = currentUser ? currentUser.email : email;

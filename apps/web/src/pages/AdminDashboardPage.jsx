@@ -2,12 +2,21 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import {
   Users, Package, ShoppingCart, DollarSign, AlertCircle,
-  RefreshCw, Search, Filter, MoreVertical, Edit, Trash2,
+  RefreshCw, Search, Filter, MoreVertical, Edit, Trash2, Copy,
   Eye, CheckCircle, XCircle, Download, Store, ArrowUpRight,
   Settings, BarChart3, RotateCcw, ArrowLeft
 } from 'lucide-react';
 import pb from '@/lib/pocketbaseClient.js';
 import apiServerClient from '@/lib/apiServerClient.js';
+import {
+  buildOrderFromLabelError,
+  buildOrderFromLabelResponse,
+  canGenerateOrderLabel,
+  getOrderLabelIssue,
+  getOrderLabelText,
+  getOrderTrackingNumber as resolveOrderTrackingNumber,
+  hasOrderLabel as resolveHasOrderLabel,
+} from '@/lib/dhlLabelUi.js';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
@@ -32,8 +41,46 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { toast } from 'sonner';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
 
+const parseShippingAddress = (rawAddress) => {
+  if (!rawAddress) return {};
+  if (typeof rawAddress === 'object') return rawAddress;
+
+  try {
+    return JSON.parse(rawAddress);
+  } catch {
+    return {};
+  }
+};
+
+const getShippingAddressLines = (rawAddress) => {
+  const address = parseShippingAddress(rawAddress);
+
+  return [
+    address.name || address.fullName || address.name1 || '',
+    address.street || address.addressStreet || address.address || '',
+    [address.postalCode || address.postal_code || address.zip || '', address.city || ''].filter(Boolean).join(' '),
+    address.country || '',
+  ].filter(Boolean);
+};
+
+const triggerPdfDownload = (blobOrBase64, filename, mimeType = 'application/pdf') => {
+  const link = document.createElement('a');
+
+  if (typeof blobOrBase64 === 'string') {
+    link.href = `data:${mimeType};base64,${blobOrBase64}`;
+  } else {
+    const url = URL.createObjectURL(blobOrBase64);
+    link.href = url;
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  link.download = filename;
+  link.click();
+};
+
 const AdminDashboardPage = () => {
   const { t, language } = useTranslation();
+  const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -62,32 +109,59 @@ const AdminDashboardPage = () => {
   const [productTypeFilter, setProductTypeFilter] = useState('all');
   const [userSearch, setUserSearch] = useState('');
   const [sellerSearch, setSellerSearch] = useState('');
+  const [tableSellers, setTableSellers] = useState([]);
+  const [isSellersLoading, setIsSellersLoading] = useState(false);
+  const [sellerSummary, setSellerSummary] = useState({
+    totalSellers: 0,
+    totalListings: 0,
+    activeListings: 0,
+    totalOrders: 0,
+    availableBalance: 0,
+    revenueTotal: 0,
+  });
+  const [analyticsData, setAnalyticsData] = useState({
+    orderVolume: [],
+    topSellers: [],
+    summary: null,
+  });
+  const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(false);
 
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
   const [currentUserRecord, setCurrentUserRecord] = useState(null);
+  const [orderDetailsModalOpen, setOrderDetailsModalOpen] = useState(false);
+  const [currentOrderDetails, setCurrentOrderDetails] = useState(null);
+  const [isOrderDetailsLoading, setIsOrderDetailsLoading] = useState(false);
+  const [orderActionLoadingId, setOrderActionLoadingId] = useState('');
 
   const fetchData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     setIsRefreshing(true);
     try {
-      const [ordersRes, productsRes, usersRes, returnsRes, sellerEarningsRes, settingsRes] = await Promise.all([
-        pb.collection('orders').getFullList({ sort: '-created', expand: 'buyer_id,seller_id,product_id', $autoCancel: false }),
-        pb.collection('products').getFullList({ sort: '-created', expand: 'seller_id', $autoCancel: false }),
-        pb.collection('users').getFullList({ sort: '-created', $autoCancel: false }),
-        pb.collection('returns').getFullList({ sort: '-created', expand: 'order_id,buyer_id', $autoCancel: false }).catch(() => []),
-        pb.collection('seller_earnings').getFullList({ sort: '-created', $autoCancel: false }).catch(() => []),
-        pb.collection('admin_settings').getFirstListItem('', { $autoCancel: false }).catch(() => null)
-      ]);
-      setOrders(ordersRes);
-      setProducts(productsRes);
-      setUsers(usersRes);
-      setReturns(returnsRes);
-      setSellerEarnings(sellerEarningsRes);
-      setSettings(settingsRes);
-      setLastRefresh(new Date());
+      const token = pb.authStore.token;
+      const response = await apiServerClient.fetch('/admin/dashboard', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch dashboard data (${response.status})`);
+      }
+
+      const data = await response.json();
+
+      setOrders(Array.isArray(data.orders) ? data.orders : []);
+      setProducts(Array.isArray(data.products) ? data.products : []);
+      setUsers(Array.isArray(data.users) ? data.users : []);
+      setReturns(Array.isArray(data.returns) ? data.returns : []);
+      setSellerEarnings(Array.isArray(data.sellerEarnings) ? data.sellerEarnings : []);
+      setSettings(data.settings || null);
+      setLastRefresh(data.fetchedAt ? new Date(data.fetchedAt) : new Date());
     } catch (error) {
       console.error('Error fetching admin data:', error);
       if (!silent) toast.error(t('admin_dashboard.load_error'));
@@ -162,9 +236,73 @@ const AdminDashboardPage = () => {
     }
   }, [userSearch, t]);
 
+  const fetchTableSellers = useCallback(async () => {
+    setIsSellersLoading(true);
+    try {
+      const params = new URLSearchParams({ limit: '200' });
+      if (sellerSearch.trim()) params.append('search', sellerSearch.trim());
+
+      const token = pb.authStore.token;
+      const res = await apiServerClient.fetch(`/admin/sellers?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('Failed to fetch sellers');
+      const data = await res.json();
+      setTableSellers(Array.isArray(data.items) ? data.items : []);
+      setSellerSummary(data.summary || {
+        totalSellers: 0,
+        totalListings: 0,
+        activeListings: 0,
+        totalOrders: 0,
+        availableBalance: 0,
+        revenueTotal: 0,
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error(t('admin_dashboard.load_error'));
+    } finally {
+      setIsSellersLoading(false);
+    }
+  }, [sellerSearch, t]);
+
+  const fetchAnalytics = useCallback(async () => {
+    setIsAnalyticsLoading(true);
+    try {
+      const token = pb.authStore.token;
+      const res = await apiServerClient.fetch('/admin/analytics?days=7', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `Failed to fetch analytics (${res.status})`);
+      }
+
+      setAnalyticsData({
+        orderVolume: Array.isArray(data.orderVolume) ? data.orderVolume : [],
+        topSellers: Array.isArray(data.topSellers) ? data.topSellers : [],
+        summary: data.summary || null,
+      });
+      setLastRefresh(data.fetchedAt ? new Date(data.fetchedAt) : new Date());
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      toast.error(t('admin_dashboard.load_error'));
+    } finally {
+      setIsAnalyticsLoading(false);
+    }
+  }, [t]);
+
   useEffect(() => {
     fetchData();
-    fetchTableProducts();
 
     const subscriptions = [];
 
@@ -184,11 +322,10 @@ const AdminDashboardPage = () => {
 
     pb.collection('orders').subscribe('*', (e) => {
       if (e.action === 'create') {
-        setOrders(prev => [e.record, ...prev]);
         toast.success(t('admin_dashboard.order_created_toast'));
-      } else if (e.action === 'update') {
-        setOrders(prev => prev.map(o => o.id === e.record.id ? e.record : o));
       }
+
+      fetchData(true);
     }).then(unsub => subscriptions.push(unsub)).catch(() => { });
 
     pb.collection('users').subscribe('*', (e) => {
@@ -213,21 +350,49 @@ const AdminDashboardPage = () => {
       pb.collection('orders').unsubscribe('*').catch(() => { });
       pb.collection('users').unsubscribe('*').catch(() => { });
     };
-  }, [fetchData, fetchTableProducts, t]);
+  }, [fetchData, t]);
 
   useEffect(() => {
+    if (activeTab !== 'products') {
+      return undefined;
+    }
+
     const timer = setTimeout(() => {
       fetchTableProducts();
     }, 300);
     return () => clearTimeout(timer);
-  }, [fetchTableProducts]);
+  }, [activeTab, fetchTableProducts]);
 
   useEffect(() => {
+    if (activeTab !== 'users') {
+      return undefined;
+    }
+
     const timer = setTimeout(() => {
       fetchTableUsers();
     }, 300);
     return () => clearTimeout(timer);
-  }, [fetchTableUsers]);
+  }, [activeTab, fetchTableUsers]);
+
+  useEffect(() => {
+    if (activeTab !== 'sellers') {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      fetchTableSellers();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [activeTab, fetchTableSellers]);
+
+  useEffect(() => {
+    if (activeTab !== 'analytics') {
+      return undefined;
+    }
+
+    fetchAnalytics();
+    return undefined;
+  }, [activeTab, fetchAnalytics]);
 
   const stats = useMemo(() => {
     const totalRevenue = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
@@ -264,6 +429,18 @@ const AdminDashboardPage = () => {
   }, [orders, language]);
 
   const dateLocale = language === 'EN' ? 'en-US' : 'de-DE';
+  const analyticsChartData = useMemo(() => (
+    analyticsData.orderVolume.map((item) => ({
+      ...item,
+      name: item.date
+        ? new Date(`${item.date}T00:00:00`).toLocaleDateString(dateLocale, { weekday: 'short' })
+        : '-',
+      orders: Number(item.orders) || 0,
+      revenue: Number(item.revenue) || 0,
+    }))
+  ), [analyticsData.orderVolume, dateLocale]);
+  const analyticsTopSellers = analyticsData.topSellers;
+
   const formatCurrency = (value) =>
     new Intl.NumberFormat(dateLocale, {
       style: 'currency',
@@ -323,12 +500,14 @@ const AdminDashboardPage = () => {
     }
   };
 
+  const emptyDetailValue = language === 'EN' ? 'Not available' : 'Nicht verfuegbar';
+
   const formatProductCategories = (fachbereich) => {
     if (Array.isArray(fachbereich)) {
-      return fachbereich.filter(Boolean).join(', ') || '-';
+      return fachbereich.filter(Boolean).join(', ') || emptyDetailValue;
     }
 
-    return fachbereich || '-';
+    return fachbereich || emptyDetailValue;
   };
 
   const getProductImageUrl = (product) => {
@@ -342,26 +521,55 @@ const AdminDashboardPage = () => {
     || product?.seller_username
     || t('product.anonymous_seller');
 
-  const formatDetailDate = (date) => (date ? formatDate(date) : '-');
+  const getProductSellerEmail = (product) => product?.seller?.email || product?.seller_email || emptyDetailValue;
+  const getProductSellerUniversity = (product) => product?.seller?.university || emptyDetailValue;
+  const getProductSellerId = (product) => product?.seller?.id || product?.seller_id || emptyDetailValue;
+  const getProductSourceParam = (product) => product?.source || (product?.shop_product ? 'shop' : 'marketplace');
+
+  const formatDetailDate = (date) => (date ? formatDate(date) : emptyDetailValue);
+  const formatDateTime = (date) => (date ? new Date(date).toLocaleString(dateLocale) : '-');
 
   const formatDetailValue = (value) => {
-    if (value === undefined || value === null || value === '') return '-';
-    if (Array.isArray(value)) return value.filter(Boolean).join(', ') || '-';
+    if (value === undefined || value === null || value === '') return emptyDetailValue;
+    if (Array.isArray(value)) return value.filter(Boolean).join(', ') || emptyDetailValue;
     if (typeof value === 'object') return JSON.stringify(value, null, 2);
     return String(value);
   };
 
+  const getOrderDisplayId = (order) => order?.order_number || order?.id || '-';
+  const getOrderTrackingNumber = (order) => resolveOrderTrackingNumber(order);
+  const hasOrderLabel = (order) => resolveHasOrderLabel(order);
+  const getOrderPartyLabel = (party) => party?.name || party?.seller_username || party?.email || t('admin_dashboard.unknown');
+  const getOrderPartyEmail = (party) => party?.email || '-';
+  const getOrderBuyer = (order) => order?.buyer || order?.expand?.buyer_id || null;
+  const getOrderShippingAddress = (order) => order?.shipping_address_parsed || parseShippingAddress(order?.shipping_address);
+  const getOrderCustomerName = (order) => {
+    const address = getOrderShippingAddress(order);
+    return getOrderPartyLabel(getOrderBuyer(order)) !== t('admin_dashboard.unknown')
+      ? getOrderPartyLabel(getOrderBuyer(order))
+      : address.name || address.fullName || address.name1 || address.email || t('admin_dashboard.unknown');
+  };
+  const getOrderCustomerEmail = (order) => {
+    const address = getOrderShippingAddress(order);
+    return getOrderPartyEmail(getOrderBuyer(order)) !== '-'
+      ? getOrderPartyEmail(getOrderBuyer(order))
+      : address.email || '-';
+  };
+
   const filteredOrders = orders.filter(o => {
-    const matchesSearch = o.id.toLowerCase().includes(orderSearch.toLowerCase()) ||
-      (o.expand?.buyer_id?.name || '').toLowerCase().includes(orderSearch.toLowerCase());
+    const searchValue = orderSearch.toLowerCase();
+    const customerName = getOrderCustomerName(o).toLowerCase();
+    const customerEmail = getOrderCustomerEmail(o).toLowerCase();
+    const productName = (o.product?.name || '').toLowerCase();
+    const matchesSearch = !searchValue
+      || o.id.toLowerCase().includes(searchValue)
+      || getOrderDisplayId(o).toLowerCase().includes(searchValue)
+      || customerName.includes(searchValue)
+      || customerEmail.includes(searchValue)
+      || productName.includes(searchValue);
     const matchesStatus = orderStatusFilter === 'all' || o.status === orderStatusFilter;
     return matchesSearch && matchesStatus;
   });
-
-  const sellers = users.filter(u => u.is_seller);
-  const filteredSellers = sellers.filter(s =>
-    (s.seller_username || s.name || '').toLowerCase().includes(sellerSearch.toLowerCase())
-  );
 
   const getUserRoleLabel = (user) => {
     if (user.is_admin) return 'Admin';
@@ -418,8 +626,261 @@ const AdminDashboardPage = () => {
     };
   }, [currentUserRecord, orders, products, returns, sellerEarnings]);
 
+  const handleOpenOrderDetails = async (orderId) => {
+    setOrderDetailsModalOpen(true);
+    setIsOrderDetailsLoading(true);
+    setCurrentOrderDetails(null);
+
+    try {
+      const token = pb.authStore.token;
+      const response = await apiServerClient.fetch(`/admin/orders/${orderId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Failed to fetch order details (${response.status})`);
+      }
+
+      setCurrentOrderDetails(data);
+    } catch (error) {
+      console.error('Failed to load order details:', error);
+      toast.error(t('admin_dashboard.order_details_error'));
+      setOrderDetailsModalOpen(false);
+    } finally {
+      setIsOrderDetailsLoading(false);
+    }
+  };
+
+  const handleCopyOrderValue = async (value) => {
+    if (!value) return;
+
+    try {
+      await navigator.clipboard.writeText(String(value));
+      toast.success(t('order_details.copied'));
+    } catch (error) {
+      console.error('Failed to copy value:', error);
+      toast.error(language === 'EN' ? 'Copy failed.' : 'Kopieren fehlgeschlagen.');
+    }
+  };
+
+  const handleDownloadOrderLabel = async (order) => {
+    if (!order?.id || !hasOrderLabel(order)) return;
+
+    setOrderActionLoadingId(order.id);
+
+    try {
+      const token = pb.authStore.token;
+      const response = await apiServerClient.fetch(`/admin/orders/${order.id}/label-pdf`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Download failed (${response.status})`);
+      }
+
+      const contentType = response.headers.get('Content-Type') || '';
+
+      if (contentType.includes('application/json')) {
+        const data = await response.json();
+        if (data.label_url) {
+          window.open(data.label_url, '_blank', 'noopener,noreferrer');
+          return;
+        }
+
+        throw new Error(data.error || 'No label URL returned');
+      }
+
+      const blob = await response.blob();
+      triggerPdfDownload(blob, `DHL_Label_${getOrderDisplayId(order)}.pdf`);
+    } catch (error) {
+      console.error('Failed to download label:', error);
+      toast.error(t('admin_dashboard.order_label_download_error'));
+    } finally {
+      setOrderActionLoadingId('');
+    }
+  };
+
+  const handleGenerateOrderLabel = async (order) => {
+    if (!order?.id || !canGenerateOrderLabel(order)) return;
+
+    setOrderActionLoadingId(order.id);
+
+    try {
+      const response = await apiServerClient.fetch('/dhl-labels/generate-label', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${pb.authStore.token}`,
+        },
+        body: JSON.stringify({ order_id: order.id }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const failedOrder = buildOrderFromLabelError(order, data, `DHL label generation failed (${response.status})`);
+        setOrders((prev) => prev.map((item) => (
+          item.id === order.id
+            ? { ...item, ...failedOrder, expand: item.expand }
+            : item
+        )));
+        setCurrentOrderDetails((prev) => (prev?.id === order.id ? { ...prev, ...failedOrder } : prev));
+        throw new Error(data.details || data.error || `DHL label generation failed (${response.status})`);
+      }
+
+      const updatedOrder = buildOrderFromLabelResponse(order, data);
+
+      setOrders((prev) => prev.map((item) => (
+        item.id === order.id
+          ? { ...item, ...updatedOrder, expand: item.expand }
+          : item
+      )));
+      setCurrentOrderDetails((prev) => (prev?.id === order.id ? { ...prev, ...updatedOrder } : prev));
+
+      toast.success(language === 'EN' ? 'DHL label generated.' : 'DHL-Label wurde erstellt.');
+      fetchData(true);
+    } catch (error) {
+      console.error('Failed to generate DHL label:', error);
+      toast.error(error.message || (language === 'EN' ? 'DHL label generation failed.' : 'DHL-Label konnte nicht erstellt werden.'));
+      fetchData(true);
+    } finally {
+      setOrderActionLoadingId('');
+    }
+  };
+
+  const handleAdminOrderStatusUpdate = async (order, newStatus) => {
+    if (!order?.id) return;
+
+    setOrderActionLoadingId(order.id);
+
+    try {
+      const token = pb.authStore.token;
+      const response = await apiServerClient.fetch(`/admin/orders/${order.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Status update failed (${response.status})`);
+      }
+
+      const updatedOrder = data.order || { ...order, status: newStatus };
+
+      setOrders((prev) => prev.map((item) => (
+        item.id === order.id
+          ? { ...item, ...updatedOrder, expand: item.expand }
+          : item
+      )));
+      setCurrentOrderDetails((prev) => (prev?.id === order.id ? updatedOrder : prev));
+
+      toast.success(t('admin_dashboard.order_status_updated', { status: getStatusLabel(newStatus) }));
+      fetchData(true);
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      toast.error(t('admin_dashboard.order_status_update_error'));
+    } finally {
+      setOrderActionLoadingId('');
+    }
+  };
+
   const openUserDetails = (user) => {
     setCurrentUserRecord(user);
+    setActiveTab('users');
+  };
+
+  const handleApproveReturn = async (returnRecord) => {
+    const defaultRefund = Number(returnRecord.refund_amount || returnRecord.expand?.order_id?.total_amount || 0).toFixed(2);
+    const notePrompt = language === 'EN'
+      ? 'Optional admin note for this approval:'
+      : 'Optionaler Admin-Hinweis für diese Freigabe:';
+    const refundPrompt = language === 'EN'
+      ? 'Refund amount in EUR:'
+      : 'Erstattungsbetrag in EUR:';
+
+    const adminNotes = window.prompt(notePrompt, returnRecord.admin_notes || '') ?? '';
+    const refundInput = window.prompt(refundPrompt, defaultRefund);
+    if (refundInput === null) {
+      return;
+    }
+
+    const refundAmount = Number(String(refundInput).replace(',', '.'));
+    if (!Number.isFinite(refundAmount) || refundAmount < 0) {
+      toast.error(language === 'EN' ? 'Please enter a valid refund amount.' : 'Bitte gib einen gültigen Erstattungsbetrag ein.');
+      return;
+    }
+
+    try {
+      const response = await apiServerClient.fetch(`/returns/${returnRecord.id}/approve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${pb.authStore.token}`,
+        },
+        body: JSON.stringify({
+          adminNotes,
+          refundAmount,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.details || data.error || `Approval failed with status ${response.status}`);
+      }
+
+      toast.success(language === 'EN' ? 'Return request approved.' : 'Retourenanfrage freigegeben.');
+      fetchData(true);
+    } catch (error) {
+      console.error('Approve return failed:', error);
+      toast.error(error.message || (language === 'EN' ? 'Return approval failed.' : 'Freigabe der Retoure fehlgeschlagen.'));
+    }
+  };
+
+  const handleRejectReturn = async (returnRecord) => {
+    const notePrompt = language === 'EN'
+      ? 'Reason for rejection:'
+      : 'Begründung für die Ablehnung:';
+    const adminNotes = window.prompt(notePrompt, returnRecord.admin_notes || '');
+
+    if (adminNotes === null) {
+      return;
+    }
+
+    try {
+      const response = await apiServerClient.fetch(`/returns/${returnRecord.id}/reject`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${pb.authStore.token}`,
+        },
+        body: JSON.stringify({
+          adminNotes,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Rejection failed with status ${response.status}`);
+      }
+
+      toast.success(language === 'EN' ? 'Return request rejected.' : 'Retourenanfrage abgelehnt.');
+      fetchData(true);
+    } catch (error) {
+      console.error('Reject return failed:', error);
+      toast.error(error.message || (language === 'EN' ? 'Return rejection failed.' : 'Ablehnung der Retoure fehlgeschlagen.'));
+    }
   };
 
   const handleDeleteUser = async (user) => {
@@ -448,11 +909,13 @@ const AdminDashboardPage = () => {
 
       toast.success(t('admin_dashboard.user_deleted'));
       setTableUsers((current) => current.filter((currentUser) => currentUser.id !== user.id));
+      setTableSellers((current) => current.filter((currentSeller) => currentSeller.id !== user.id));
       setUsers((current) => current.filter((currentUser) => currentUser.id !== user.id));
       if (currentUserRecord?.id === user.id) {
         setCurrentUserRecord(null);
       }
       fetchData(true);
+      fetchTableSellers();
 
       if (isCurrentUser) {
         pb.authStore.clear();
@@ -491,9 +954,11 @@ const AdminDashboardPage = () => {
             : currentUser
         ))
       );
+      setTableSellers((current) => current.filter((currentSeller) => currentSeller.id !== user.id));
       if (currentUserRecord?.id === user.id) {
         setCurrentUserRecord((current) => current ? { ...current, is_seller: false } : current);
       }
+      fetchTableSellers();
     } catch (error) {
       toast.error(t('admin_dashboard.user_remove_seller_error'));
     }
@@ -523,7 +988,8 @@ const AdminDashboardPage = () => {
     try {
       const token = pb.authStore.token;
       const existingProduct = tableProducts.find((product) => product.id === id);
-      const res = await apiServerClient.fetch(`/admin/products/${id}`, {
+      const sourceParam = getProductSourceParam(existingProduct);
+      const res = await apiServerClient.fetch(`/admin/products/${id}?source=${encodeURIComponent(sourceParam)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -543,7 +1009,8 @@ const AdminDashboardPage = () => {
     try {
       const token = pb.authStore.token;
       const existingProduct = tableProducts.find((product) => product.id === id);
-      const res = await apiServerClient.fetch(`/admin/products/${id}`, {
+      const sourceParam = getProductSourceParam(existingProduct);
+      const res = await apiServerClient.fetch(`/admin/products/${id}?source=${encodeURIComponent(sourceParam)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -667,6 +1134,31 @@ const AdminDashboardPage = () => {
     }
   };
 
+  const handleRefresh = () => {
+    fetchData();
+
+    if (activeTab === 'products') {
+      fetchTableProducts();
+    }
+
+    if (activeTab === 'users') {
+      fetchTableUsers();
+    }
+
+    if (activeTab === 'sellers') {
+      fetchTableSellers();
+    }
+
+    if (activeTab === 'analytics') {
+      fetchAnalytics();
+    }
+  };
+
+  const currentOrderTrackingNumber = getOrderTrackingNumber(currentOrderDetails);
+  const currentOrderShippingLines = getShippingAddressLines(
+    currentOrderDetails?.shipping_address_parsed || currentOrderDetails?.shipping_address,
+  );
+
   if (loading && !orders.length) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[hsl(var(--muted-bg))] min-h-screen">
@@ -699,14 +1191,18 @@ const AdminDashboardPage = () => {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={() => fetchData()} disabled={isRefreshing}>
+              <Button
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+              >
                 <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                 {t('admin_dashboard.refresh')}
               </Button>
             </div>
           </div>
 
-          <Tabs defaultValue="overview" className="w-full space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
             <div className="overflow-x-auto pb-2">
               <TabsList className="bg-background border shadow-sm inline-flex w-max min-w-full sm:min-w-0">
                 <TabsTrigger value="overview" className="gap-2"><BarChart3 className="w-4 h-4" /> {t('admin_dashboard.overview')}</TabsTrigger>
@@ -793,7 +1289,7 @@ const AdminDashboardPage = () => {
                             </div>
                             <div>
                               <p className="font-medium text-sm">{order.order_number || order.id.substring(0, 8)}</p>
-                              <p className="text-xs text-muted-foreground">{order.expand?.buyer_id?.name || t('admin_dashboard.customer')}</p>
+                              <p className="text-xs text-muted-foreground">{getOrderCustomerName(order) || t('admin_dashboard.customer')}</p>
                             </div>
                           </div>
                           <div className="text-right">
@@ -825,8 +1321,10 @@ const AdminDashboardPage = () => {
                           <SelectItem value="all">{t('seller.filter_all')}</SelectItem>
                           <SelectItem value="pending">{t('orders.status_pending')}</SelectItem>
                           <SelectItem value="paid">{t('success.paid')}</SelectItem>
+                          <SelectItem value="processing">{t('orders.status_processing')}</SelectItem>
                           <SelectItem value="shipped">{t('orders.status_shipped')}</SelectItem>
                           <SelectItem value="delivered">{t('orders.status_delivered')}</SelectItem>
+                          <SelectItem value="cancelled">{t('orders.status_cancelled')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -850,11 +1348,11 @@ const AdminDashboardPage = () => {
                         {filteredOrders.map(order => (
                           <TableRow key={order.id}>
                             <TableCell><Checkbox /></TableCell>
-                            <TableCell className="font-medium">{order.order_number || order.id.substring(0, 8)}</TableCell>
+                            <TableCell className="font-medium">{getOrderDisplayId(order)}</TableCell>
                             <TableCell>
                               <div className="flex flex-col">
-                                <span>{order.expand?.buyer_id?.name || t('admin_dashboard.unknown')}</span>
-                                <span className="text-xs text-muted-foreground">{order.expand?.buyer_id?.email}</span>
+                                <span>{getOrderCustomerName(order)}</span>
+                                <span className="text-xs text-muted-foreground">{getOrderCustomerEmail(order)}</span>
                               </div>
                             </TableCell>
                             <TableCell>{formatDate(order.created)}</TableCell>
@@ -862,8 +1360,80 @@ const AdminDashboardPage = () => {
                               <Badge variant={order.status === 'delivered' ? 'default' : 'outline'}>{getStatusLabel(order.status || 'pending')}</Badge>
                             </TableCell>
                             <TableCell className="text-right font-medium">{formatCurrency(order.total_amount)}</TableCell>
-                            <TableCell>
-                              <Button variant="ghost" size="icon"><MoreVertical className="w-4 h-4" /></Button>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 rounded-[8px]"
+                                    disabled={orderActionLoadingId === order.id}
+                                  >
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56 rounded-[8px] border border-[hsl(var(--border))] bg-white p-1">
+                                  <DropdownMenuItem onClick={() => handleOpenOrderDetails(order.id)} className="rounded-md">
+                                    <Eye className="w-4 h-4" />
+                                    {t('admin_dashboard.order_action_view')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleCopyOrderValue(getOrderDisplayId(order))} className="rounded-md">
+                                    <Copy className="w-4 h-4" />
+                                    {t('admin_dashboard.order_action_copy_id')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleGenerateOrderLabel(order)}
+                                    className="rounded-md"
+                                    disabled={order.status !== 'paid' || (getOrderTrackingNumber(order) && hasOrderLabel(order))}
+                                  >
+                                    <RefreshCw className="w-4 h-4" />
+                                    {hasOrderLabel(order) || getOrderTrackingNumber(order)
+                                      ? (language === 'EN' ? 'Regenerate DHL label' : 'DHL-Label neu erstellen')
+                                      : (language === 'EN' ? 'Generate DHL label' : 'DHL-Label erstellen')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleCopyOrderValue(getOrderTrackingNumber(order))}
+                                    className="rounded-md"
+                                    disabled={!getOrderTrackingNumber(order)}
+                                  >
+                                    <Copy className="w-4 h-4" />
+                                    {t('admin_dashboard.order_action_copy_tracking')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleDownloadOrderLabel(order)}
+                                    className="rounded-md"
+                                    disabled={!hasOrderLabel(order)}
+                                  >
+                                    <Download className="w-4 h-4" />
+                                    {t('admin_dashboard.order_action_download_label')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator className="bg-slate-100" />
+                                  <DropdownMenuItem
+                                    onClick={() => handleAdminOrderStatusUpdate(order, 'shipped')}
+                                    className="rounded-md"
+                                    disabled={['shipped', 'delivered', 'cancelled'].includes(order.status)}
+                                  >
+                                    <Package className="w-4 h-4" />
+                                    {t('admin_dashboard.order_action_mark_shipped')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleAdminOrderStatusUpdate(order, 'delivered')}
+                                    className="rounded-md"
+                                    disabled={['delivered', 'cancelled'].includes(order.status)}
+                                  >
+                                    <CheckCircle className="w-4 h-4" />
+                                    {t('admin_dashboard.order_action_mark_delivered')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleAdminOrderStatusUpdate(order, 'cancelled')}
+                                    className="rounded-md text-red-600 focus:bg-red-50 focus:text-red-700"
+                                    disabled={['delivered', 'cancelled'].includes(order.status)}
+                                  >
+                                    <XCircle className="w-4 h-4" />
+                                    {t('admin_dashboard.order_action_cancel')}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -1346,45 +1916,179 @@ const AdminDashboardPage = () => {
 
             {/* SELLERS */}
             <TabsContent value="sellers" className="space-y-4">
-              <Card>
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+                <Card className="overflow-hidden border-slate-200 bg-white shadow-sm">
+                  <CardContent className="p-6">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
+                      <Store className="h-3.5 w-3.5" />
+                      {t('admin_dashboard.sellers')}
+                    </div>
+                    <div className="mt-5 space-y-3">
+                      <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
+                        {t('admin_dashboard.sellers_shops')}
+                      </h2>
+                      <p className="max-w-2xl text-sm leading-6 text-slate-600">
+                        {t('admin_dashboard.sellers_section_body')}
+                      </p>
+                    </div>
+                    <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+                        {t('admin_dashboard.sellers_count', { count: sellerSummary.totalSellers })}
+                      </span>
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+                        {t('admin_dashboard.active_listings_count', { count: sellerSummary.activeListings })}
+                      </span>
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+                        {t('admin_dashboard.orders_count', { count: sellerSummary.totalOrders })}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Card className="border-slate-200 bg-white shadow-sm">
+                    <CardContent className="p-5">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.sellers')}
+                      </p>
+                      <p className="mt-3 text-3xl font-semibold text-slate-900">{sellerSummary.totalSellers}</p>
+                      <p className="mt-2 text-sm text-slate-500">{t('admin_dashboard.sellers_overview_hint')}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-slate-200 bg-white shadow-sm">
+                    <CardContent className="p-5">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.listings')}
+                      </p>
+                      <p className="mt-3 text-3xl font-semibold text-slate-900">{sellerSummary.totalListings}</p>
+                      <p className="mt-2 text-sm text-slate-500">
+                        {t('admin_dashboard.active_listings_count', { count: sellerSummary.activeListings })}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-slate-200 bg-white shadow-sm">
+                    <CardContent className="p-5">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.orders')}
+                      </p>
+                      <p className="mt-3 text-3xl font-semibold text-slate-900">{sellerSummary.totalOrders}</p>
+                      <p className="mt-2 text-sm text-slate-500">{t('admin_dashboard.total_revenue')}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-slate-200 bg-white shadow-sm">
+                    <CardContent className="p-5">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('seller_dashboard.available_balance')}
+                      </p>
+                      <p className="mt-3 text-3xl font-semibold text-slate-900">{formatCurrency(sellerSummary.availableBalance)}</p>
+                      <p className="mt-2 text-sm text-slate-500">
+                        {t('admin_dashboard.total_revenue')}: {formatCurrency(sellerSummary.revenueTotal)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              <Card className="border-slate-200 bg-white shadow-sm">
                 <CardHeader className="pb-3">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <CardTitle>{t('admin_dashboard.sellers_shops')}</CardTitle>
-                    <div className="relative w-full sm:w-72">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <CardTitle>{t('admin_dashboard.sellers_shops')}</CardTitle>
+                      <CardDescription>{t('admin_dashboard.sellers_table_body')}</CardDescription>
+                    </div>
+                    <div className="relative w-full lg:w-80">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input placeholder={t('admin_dashboard.seller_search_placeholder')} className="pl-9" value={sellerSearch} onChange={(e) => setSellerSearch(e.target.value)} />
+                      <Input
+                        placeholder={t('admin_dashboard.seller_search_placeholder')}
+                        className="pl-9"
+                        value={sellerSearch}
+                        onChange={(e) => setSellerSearch(e.target.value)}
+                      />
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="rounded-md border">
+                  <div className="overflow-hidden rounded-[8px] border border-slate-200">
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>{t('admin_dashboard.shop_seller')}</TableHead>
-                          <TableHead>E-Mail</TableHead>
-                          <TableHead>{t('admin_dashboard.products')}</TableHead>
+                          <TableHead>{t('admin_dashboard.university')}</TableHead>
+                          <TableHead>{t('admin_dashboard.listings')}</TableHead>
+                          <TableHead>{t('admin_dashboard.orders')}</TableHead>
+                          <TableHead>{t('seller_dashboard.available_balance')}</TableHead>
                           <TableHead>{t('seller.status')}</TableHead>
-                          <TableHead className="w-[100px]"></TableHead>
+                          <TableHead className="w-[140px] text-right">{t('seller.actions')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredSellers.map(seller => {
-                          const sellerProducts = products.filter(p => p.seller_id === seller.id).length;
-                          return (
+                        {isSellersLoading ? (
+                          Array.from({ length: 5 }).map((_, index) => (
+                            <TableRow key={index}>
+                              <TableCell><Skeleton className="h-10 w-[220px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[56px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[56px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[96px]" /></TableCell>
+                              <TableCell><Skeleton className="h-8 w-[90px]" /></TableCell>
+                              <TableCell><Skeleton className="ml-auto h-9 w-[112px]" /></TableCell>
+                            </TableRow>
+                          ))
+                        ) : tableSellers.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
+                              {t('admin_dashboard.no_sellers_found')}
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          tableSellers.map((seller) => (
                             <TableRow key={seller.id}>
-                              <TableCell className="font-medium">{seller.seller_username || seller.name || t('admin_dashboard.unnamed')}</TableCell>
-                              <TableCell>{seller.email}</TableCell>
-                              <TableCell>{sellerProducts}</TableCell>
-                              <TableCell><Badge className="bg-green-500">{t('popular.verified')}</Badge></TableCell>
                               <TableCell>
-                                <Button variant="ghost" size="sm" className="gap-1"><Eye className="w-4 h-4" /> {t('nav.profile')}</Button>
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-slate-900">
+                                    {seller.seller_username || seller.name || t('admin_dashboard.unnamed')}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {seller.email || t('admin_dashboard.unknown')}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell>{seller.university || '-'}</TableCell>
+                              <TableCell>
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-slate-900">{seller.product_count}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {t('admin_dashboard.active_listings_count', { count: seller.active_listings_count })}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-slate-900">{seller.order_count}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {t('admin_dashboard.delivered_orders_count', { count: seller.delivered_order_count })}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="font-medium">{formatCurrency(seller.available_balance)}</TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant="outline"
+                                  className={seller.is_deleted
+                                    ? 'border-red-200 bg-red-50 text-red-700'
+                                    : 'border-emerald-200 bg-emerald-50 text-emerald-700'}
+                                >
+                                  {seller.is_deleted ? t('admin_dashboard.user_status_deleted') : t('popular.verified')}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button variant="outline" size="sm" className="rounded-[8px]" onClick={() => openUserDetails(seller)}>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  {t('admin_dashboard.user_action_view')}
+                                </Button>
                               </TableCell>
                             </TableRow>
-                          );
-                        })}
-                        {filteredSellers.length === 0 && (
-                          <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">{t('admin_dashboard.no_sellers_found')}</TableCell></TableRow>
+                          ))
                         )}
                       </TableBody>
                     </Table>
@@ -1427,8 +2131,22 @@ const AdminDashboardPage = () => {
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
-                                <Button size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50">{t('admin_dashboard.accept')}</Button>
-                                <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">{t('admin_dashboard.reject')}</Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-green-600 border-green-200 hover:bg-green-50"
+                                  onClick={() => handleApproveReturn(ret)}
+                                >
+                                  {t('admin_dashboard.accept')}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-red-600 border-red-200 hover:bg-red-50"
+                                  onClick={() => handleRejectReturn(ret)}
+                                >
+                                  {t('admin_dashboard.reject')}
+                                </Button>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -1449,38 +2167,72 @@ const AdminDashboardPage = () => {
                 <Card>
                   <CardHeader><CardTitle>{t('admin_dashboard.order_volume_7_days')}</CardTitle></CardHeader>
                   <CardContent className="h-[350px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                        <YAxis axisLine={false} tickLine={false} />
-                        <Tooltip cursor={{ fill: '#f3f4f6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                        <Bar dataKey="orders" fill="#0000FF" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    {isAnalyticsLoading && analyticsChartData.length === 0 ? (
+                      <div className="flex h-full flex-col justify-end gap-3">
+                        <Skeleton className="h-56 w-full rounded-[8px]" />
+                        <Skeleton className="h-5 w-3/4 rounded-[8px]" />
+                      </div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={analyticsChartData}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                          <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
+                          <Tooltip
+                            cursor={{ fill: '#f3f4f6' }}
+                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                            formatter={(value, name) => [
+                              name === 'revenue' ? formatCurrency(value) : value,
+                              name === 'orders' ? t('admin_dashboard.orders') : name,
+                            ]}
+                          />
+                          <Bar dataKey="orders" fill="#0000FF" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader><CardTitle>{t('admin_dashboard.top_sellers')}</CardTitle></CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {sellers.slice(0, 5).map((seller, i) => {
-                        const sellerRevenue = orders.filter(o => o.seller_id === seller.id).reduce((sum, o) => sum + (o.total_amount || 0), 0);
-                        const sellerProductCount = products.filter(p => p.seller_id === seller.id).length;
-                        return (
+                    {isAnalyticsLoading && analyticsTopSellers.length === 0 ? (
+                      <div className="space-y-4">
+                        {[0, 1, 2, 3].map((item) => (
+                          <div key={item} className="flex items-center justify-between p-3">
+                            <div className="flex items-center gap-3">
+                              <Skeleton className="h-8 w-8 rounded-full" />
+                              <div className="space-y-2">
+                                <Skeleton className="h-4 w-28" />
+                                <Skeleton className="h-3 w-20" />
+                              </div>
+                            </div>
+                            <Skeleton className="h-4 w-20" />
+                          </div>
+                        ))}
+                      </div>
+                    ) : analyticsTopSellers.length > 0 ? (
+                      <div className="space-y-4">
+                        {analyticsTopSellers.map((seller, i) => (
                           <div key={seller.id} className="flex items-center justify-between p-3 border-b last:border-0">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-medium text-xs">{i + 1}</div>
                               <div>
-                                <p className="font-medium text-sm">{seller.seller_username || seller.name}</p>
-                                <p className="text-xs text-muted-foreground">{t('admin_dashboard.products_count', { count: sellerProductCount })}</p>
+                                <p className="font-medium text-sm">{seller.seller_username || seller.name || seller.email || seller.id}</p>
+                                <p className="text-xs text-muted-foreground">{t('admin_dashboard.products_count', { count: seller.product_count || 0 })}</p>
                               </div>
                             </div>
-                            <div className="font-bold text-sm">{formatCurrency(sellerRevenue)}</div>
+                            <div className="text-right">
+                              <div className="font-bold text-sm">{formatCurrency(seller.revenue_total)}</div>
+                              <div className="text-xs text-muted-foreground">{t('admin_dashboard.orders_count', { count: seller.order_count || 0 })}</div>
+                            </div>
                           </div>
-                        );
-                      })}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-12 text-center text-sm text-muted-foreground">
+                        {t('admin_dashboard.no_sellers_found')}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -1754,9 +2506,9 @@ const AdminDashboardPage = () => {
                       </p>
                       <div className="mt-3 space-y-2 text-sm">
                         <p className="font-semibold text-slate-900">{getProductSellerName(currentProduct)}</p>
-                        <p className="break-all text-slate-600">{currentProduct.seller?.email || '-'}</p>
-                        <p className="text-slate-600">{currentProduct.seller?.university || '-'}</p>
-                        <p className="break-all text-xs text-slate-500">{currentProduct.seller?.id || currentProduct.seller_id || '-'}</p>
+                        <p className="break-all text-slate-600">{getProductSellerEmail(currentProduct)}</p>
+                        <p className="text-slate-600">{getProductSellerUniversity(currentProduct)}</p>
+                        <p className="break-all text-xs text-slate-500">{getProductSellerId(currentProduct)}</p>
                       </div>
                     </div>
                   </div>
@@ -1805,7 +2557,7 @@ const AdminDashboardPage = () => {
                       <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
                         {t('seller.condition')}
                       </p>
-                      <p className="mt-2 font-medium text-slate-900">{currentProduct.condition || '-'}</p>
+                      <p className="mt-2 font-medium text-slate-900">{formatDetailValue(currentProduct.condition)}</p>
                     </div>
                     <div className="rounded-[8px] border border-slate-200 px-4 py-3">
                       <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
@@ -1827,7 +2579,7 @@ const AdminDashboardPage = () => {
                       <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
                         {t('admin_dashboard.verification_status')}
                       </p>
-                      <p className="mt-2 font-medium text-slate-900">{currentProduct.verification_status || '-'}</p>
+                      <p className="mt-2 font-medium text-slate-900">{formatDetailValue(currentProduct.verification_status)}</p>
                     </div>
                     <div className="rounded-[8px] border border-slate-200 px-4 py-3">
                       <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
@@ -1842,7 +2594,7 @@ const AdminDashboardPage = () => {
                       {t('seller.description')}
                     </p>
                     <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
-                      {currentProduct.description || '-'}
+                      {formatDetailValue(currentProduct.description)}
                     </p>
                   </div>
                 </div>
@@ -1855,19 +2607,19 @@ const AdminDashboardPage = () => {
                     <div className="mt-4 space-y-3 text-sm">
                       <div>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('shipping.name')}</p>
-                        <p className="mt-1 font-medium text-slate-900">{currentProduct.seller?.name || '-'}</p>
+                        <p className="mt-1 font-medium text-slate-900">{currentProduct.seller?.name || getProductSellerName(currentProduct)}</p>
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.seller_username')}</p>
-                        <p className="mt-1 font-medium text-slate-900">{currentProduct.seller?.seller_username || currentProduct.seller_username || '-'}</p>
+                        <p className="mt-1 font-medium text-slate-900">{currentProduct.seller?.seller_username || currentProduct.seller_username || getProductSellerName(currentProduct)}</p>
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.seller_email')}</p>
-                        <p className="mt-1 break-all font-medium text-slate-900">{currentProduct.seller?.email || '-'}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{getProductSellerEmail(currentProduct)}</p>
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.seller_id')}</p>
-                        <p className="mt-1 break-all font-medium text-slate-900">{currentProduct.seller?.id || currentProduct.seller_id || '-'}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{getProductSellerId(currentProduct)}</p>
                       </div>
                     </div>
                   </section>
@@ -1877,19 +2629,19 @@ const AdminDashboardPage = () => {
                     <div className="mt-4 space-y-3 text-sm">
                       <div>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.registered_at')}</p>
-                        <p className="mt-1 font-medium text-slate-900">{formatDetailDate(currentProduct.created)}</p>
+                        <p className="mt-1 font-medium text-slate-900">{formatDetailDate(currentProduct.created || currentProduct.created_at)}</p>
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.created_at')}</p>
-                        <p className="mt-1 font-medium text-slate-900">{formatDetailDate(currentProduct.created_at)}</p>
+                        <p className="mt-1 font-medium text-slate-900">{formatDetailDate(currentProduct.created_at || currentProduct.created)}</p>
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.updated_at')}</p>
-                        <p className="mt-1 font-medium text-slate-900">{formatDetailDate(currentProduct.updated || currentProduct.updated_at)}</p>
+                        <p className="mt-1 font-medium text-slate-900">{formatDetailDate(currentProduct.updated || currentProduct.updated_at || currentProduct.created_at || currentProduct.created)}</p>
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('seller_dashboard.created_at')}</p>
-                        <p className="mt-1 font-medium text-slate-900">{formatDetailDate(currentProduct.seller?.created)}</p>
+                        <p className="mt-1 font-medium text-slate-900">{formatDetailDate(currentProduct.seller?.created || currentProduct.created_at || currentProduct.created)}</p>
                       </div>
                     </div>
                   </section>
@@ -1903,11 +2655,11 @@ const AdminDashboardPage = () => {
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.collection')}</p>
-                        <p className="mt-1 break-all font-medium text-slate-900">{currentProduct.collectionName || currentProduct.collectionId || '-'}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{formatDetailValue(currentProduct.collectionName || currentProduct.collectionId)}</p>
                       </div>
                       <div>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.image_file')}</p>
-                        <p className="mt-1 break-all font-medium text-slate-900">{currentProduct.image || '-'}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{formatDetailValue(currentProduct.image)}</p>
                       </div>
                     </div>
                   </section>
@@ -1920,12 +2672,16 @@ const AdminDashboardPage = () => {
                       ['product_type', currentProduct.product_type],
                       ['price', formatCurrency(currentProduct.price)],
                       ['stock_quantity', currentProduct.stock_quantity ?? 0],
+                      ['weight_g', currentProduct.weight_g ?? ''],
                       ['condition', currentProduct.condition],
                       ['fachbereich', currentProduct.fachbereich],
                       ['status', currentProduct.status],
                       ['verification_status', currentProduct.verification_status],
                       ['seller_id', currentProduct.seller_id],
                       ['seller_username', currentProduct.seller_username],
+                      ['seller_email', currentProduct.seller_email || currentProduct.seller?.email],
+                      ['created_at', currentProduct.created_at || currentProduct.created],
+                      ['updated_at', currentProduct.updated_at || currentProduct.updated],
                       ['shop_product', currentProduct.shop_product],
                       ['set_items', currentProduct.set_items],
                     ].map(([label, value]) => (
@@ -1939,6 +2695,284 @@ const AdminDashboardPage = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={orderDetailsModalOpen}
+        onOpenChange={(open) => {
+          setOrderDetailsModalOpen(open);
+          if (!open) {
+            setCurrentOrderDetails(null);
+            setIsOrderDetailsLoading(false);
+          }
+        }}
+      >
+        <DialogContent className="max-h-[90vh] overflow-y-auto p-0 sm:max-w-[980px]">
+          {isOrderDetailsLoading ? (
+            <div className="flex min-h-[240px] items-center justify-center p-10 text-muted-foreground">
+              {t('admin_dashboard.loading')}
+            </div>
+          ) : currentOrderDetails ? (
+            <div className="bg-white">
+              <div className="border-b border-slate-200 p-6 md:p-7">
+                <DialogHeader className="space-y-4 text-left">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={currentOrderDetails.status === 'delivered'
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                        : 'border-slate-200 bg-slate-50 text-slate-700'}
+                    >
+                      {getStatusLabel(currentOrderDetails.status || 'pending')}
+                    </Badge>
+                    {currentOrderDetails.product_type && (
+                      <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">
+                        {formatDetailValue(currentOrderDetails.product_type)}
+                      </Badge>
+                    )}
+                    {(hasOrderLabel(currentOrderDetails) || currentOrderDetails.label_status) && (
+                      <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+                        {getOrderLabelText(currentOrderDetails, language)}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0000FF]">
+                        {t('admin_dashboard.order_details')}
+                      </p>
+                      <DialogTitle className="mt-2 text-3xl font-semibold leading-tight text-slate-900">
+                        {getOrderDisplayId(currentOrderDetails)}
+                      </DialogTitle>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {formatDateTime(currentOrderDetails.created)}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleCopyOrderValue(getOrderDisplayId(currentOrderDetails))}
+                      >
+                        <Copy className="mr-2 h-4 w-4" />
+                        {t('admin_dashboard.order_action_copy_id')}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleGenerateOrderLabel(currentOrderDetails)}
+                        disabled={!canGenerateOrderLabel(currentOrderDetails) || orderActionLoadingId === currentOrderDetails.id}
+                      >
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        {hasOrderLabel(currentOrderDetails) || getOrderTrackingNumber(currentOrderDetails)
+                          ? (language === 'EN' ? 'Regenerate DHL label' : 'DHL-Label neu erstellen')
+                          : (language === 'EN' ? 'Generate DHL label' : 'DHL-Label erstellen')}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleDownloadOrderLabel(currentOrderDetails)}
+                        disabled={!hasOrderLabel(currentOrderDetails) || orderActionLoadingId === currentOrderDetails.id}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        {t('admin_dashboard.order_action_download_label')}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogHeader>
+              </div>
+
+              <div className="grid gap-5 p-6 md:p-7">
+                <section className="rounded-[8px] border border-slate-200 p-5">
+                  <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.order_summary')}</h3>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_total')}
+                      </p>
+                      <p className="mt-2 text-lg font-semibold text-slate-900">
+                        {formatCurrency(currentOrderDetails.total_amount)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_quantity')}
+                      </p>
+                      <p className="mt-2 text-lg font-semibold text-slate-900">
+                        {formatDetailValue(currentOrderDetails.quantity)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_type')}
+                      </p>
+                      <p className="mt-2 text-lg font-semibold capitalize text-slate-900">
+                        {formatDetailValue(currentOrderDetails.product_type)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('orders.tracking')}
+                      </p>
+                      <p className="mt-2 break-all font-medium text-slate-900">
+                        {formatDetailValue(currentOrderTrackingNumber)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_label_status')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900" title={getOrderLabelIssue(currentOrderDetails)}>
+                        {getOrderLabelText(currentOrderDetails, language)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_label_error')}
+                      </p>
+                      <p className="mt-2 break-words font-medium text-slate-900">
+                        {formatDetailValue(getOrderLabelIssue(currentOrderDetails))}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_label_generated_at')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">
+                        {formatDateTime(currentOrderDetails.label_generated_at)}
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
+                <div className="grid gap-5 lg:grid-cols-2">
+                  <section className="rounded-[8px] border border-slate-200 p-5">
+                    <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.order_buyer')}</h3>
+                    <div className="mt-4 space-y-3 text-sm">
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('shipping.name')}</p>
+                        <p className="mt-1 font-medium text-slate-900">{getOrderPartyLabel(currentOrderDetails.buyer)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Email</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{getOrderPartyEmail(currentOrderDetails.buyer)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.account_id')}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{formatDetailValue(currentOrderDetails.buyer?.id)}</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="rounded-[8px] border border-slate-200 p-5">
+                    <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.order_seller')}</h3>
+                    <div className="mt-4 space-y-3 text-sm">
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('shipping.name')}</p>
+                        <p className="mt-1 font-medium text-slate-900">{getOrderPartyLabel(currentOrderDetails.seller)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">Email</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{getOrderPartyEmail(currentOrderDetails.seller)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.account_id')}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{formatDetailValue(currentOrderDetails.seller?.id)}</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="rounded-[8px] border border-slate-200 p-5">
+                    <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.order_product')}</h3>
+                    <div className="mt-4 space-y-3 text-sm">
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('shipping.name')}</p>
+                        <p className="mt-1 font-medium text-slate-900">{formatDetailValue(currentOrderDetails.product?.name)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('seller.price')}</p>
+                        <p className="mt-1 font-medium text-slate-900">
+                          {currentOrderDetails.product?.price !== undefined
+                            ? formatCurrency(currentOrderDetails.product.price)
+                            : '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.product_id')}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{formatDetailValue(currentOrderDetails.product?.id)}</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="rounded-[8px] border border-slate-200 p-5">
+                    <h3 className="text-base font-semibold text-slate-900">{t('order_details.shipping_address')}</h3>
+                    <div className="mt-4 space-y-1 text-sm text-slate-700">
+                      {currentOrderShippingLines.length > 0 ? currentOrderShippingLines.map((line) => (
+                        <p key={line} className="break-words font-medium text-slate-900">{line}</p>
+                      )) : (
+                        <p className="text-muted-foreground">{t('admin_dashboard.unknown')}</p>
+                      )}
+                    </div>
+                  </section>
+                </div>
+
+                <div className="grid gap-5 lg:grid-cols-2">
+                  <section className="rounded-[8px] border border-slate-200 p-5">
+                    <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.order_identifiers')}</h3>
+                    <div className="mt-4 space-y-3 text-sm">
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.order_id')}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{formatDetailValue(currentOrderDetails.id)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.order_payment_intent')}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">{formatDetailValue(currentOrderDetails.payment_intent_id)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.created_at')}</p>
+                        <p className="mt-1 font-medium text-slate-900">{formatDateTime(currentOrderDetails.created)}</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="rounded-[8px] border border-slate-200 p-5">
+                    <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.order_return_request')}</h3>
+                    {currentOrderDetails.return_request ? (
+                      <div className="mt-4 space-y-3 text-sm">
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('seller.status')}</p>
+                          <p className="mt-1 font-medium text-slate-900">{formatDetailValue(currentOrderDetails.return_request.status)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.reason')}</p>
+                          <p className="mt-1 whitespace-pre-wrap font-medium text-slate-900">
+                            {formatDetailValue(currentOrderDetails.return_request.reason)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('seller.description')}</p>
+                          <p className="mt-1 whitespace-pre-wrap font-medium text-slate-900">
+                            {formatDetailValue(currentOrderDetails.return_request.details)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('order_details.tracking_title')}</p>
+                          <p className="mt-1 break-all font-medium text-slate-900">
+                            {formatDetailValue(currentOrderDetails.return_request.tracking_number)}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        {t('admin_dashboard.order_no_return_request')}
+                      </p>
+                    )}
+                  </section>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </DialogContent>
       </Dialog>
 

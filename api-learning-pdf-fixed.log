@@ -1,0 +1,40 @@
+
+> api@0.0.0 dev
+> node src/main.js
+
+[INFO] Connecting to PocketBase at http://127.0.0.1:8090
+[INFO] [CHECKOUT] Configuration loaded from environment variables
+[INFO] [CHECKOUT] Frontend URL: http://localhost:3000
+[INFO] [DHL-SERVICE] DHL Configuration loaded from environment variables
+[INFO] [DHL-SERVICE] Token URL: https://api-eu.dhl.com/parcel/de/account/auth/ropc/v1/token
+[INFO] [DHL-SERVICE] Shipping URL: https://api-eu.dhl.com/parcel/de/shipping/v2/orders
+[INFO] [DHL-SERVICE] Warehouse: Patrick Tchoquessi, Angelika-machinek-Straße 12, 60486 Frankfurt, DE
+[INFO] [MAIN] Registering Stripe webhook handler
+[INFO] [MAIN] Registering auth middleware BEFORE routes
+[INFO] [MAIN] Mounting routes
+[INFO] [ROUTES] Registering /checkout routes
+[INFO] [ROUTES] Registering /dhl-labels routes
+[INFO] [ROUTES] Registering /tracking routes
+[INFO] [ROUTES] Registering /favorites routes
+[INFO] [ROUTES] Registering /admin routes
+[INFO] [ROUTES] Registering /email routes
+[INFO] [ROUTES] Registering /verification routes
+[INFO] [ROUTES] Registering /orders routes
+[INFO] [ROUTES] Registering /returns routes
+[INFO] [ROUTES] Registering /search routes
+[INFO] [ROUTES] Registering /settings routes
+[INFO] [ROUTES] Registering /seller routes
+[INFO] [ROUTES] Registering /learning routes
+[INFO] [ROUTES] Registering /marketplace routes
+[INFO] [ROUTES] Registering /shop routes
+[INFO] [ROUTES] Registering /reviews routes
+[INFO] [ROUTES] Stripe webhook is registered in main.js with express.raw() middleware
+[INFO] [ROUTES] All routes registered successfully
+[INFO] 🚀 API Server running on http://localhost:3001
+[INFO] PocketBase client initialized successfully
+[INFO] [HEALTH CHECK] Health check request - Timestamp: 2026-05-05T19:31:45.483Z
+::ffff:127.0.0.1 - - [05/May/2026:19:31:45 +0000] "GET /health HTTP/1.1" 200 54 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+::ffff:127.0.0.1 - - [05/May/2026:19:32:05 +0000] "GET /learning/lessons/tupqigwu58qogej HTTP/1.1" 200 6165 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+::ffff:127.0.0.1 - - [05/May/2026:19:32:05 +0000] "GET /learning/lessons/tupqigwu58qogej/assets/pdf?token=eyJsZXNzb25JZCI6InR1cHFpZ3d1NThxb2dlaiIsImFzc2V0VHlwZSI6InBkZiIsImF0dGFjaG1lbnRJbmRleCI6bnVsbCwiYWNjZXNzTGV2ZWwiOiJwcmV2aWV3IiwicGFja2FnZUlkIjoiamZ5eXM2anZmNXBtb203IiwidXNlcklkIjoiIiwiYWNjZXNzUm9sZSI6InByZXZpZXciLCJleHBpcmVzQXQiOjE3NzgwMTA0MjUxODF9.mej8m7oiJoy6Aeu3qsCWGP-B5pYxKF2UZvlqZnjtiVc HTTP/1.1" 200 1023 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+::ffff:127.0.0.1 - - [05/May/2026:19:32:05 +0000] "GET /learning/lessons/tupqigwu58qogej/assets/download?token=eyJsZXNzb25JZCI6InR1cHFpZ3d1NThxb2dlaiIsImFzc2V0VHlwZSI6ImRvd25sb2FkIiwiYXR0YWNobWVudEluZGV4IjpudWxsLCJhY2Nlc3NMZXZlbCI6InByZXZpZXciLCJwYWNrYWdlSWQiOiJqZnl5czZqdmY1cG1vbTciLCJ1c2VySWQiOiIiLCJhY2Nlc3NSb2xlIjoicHJldmlldyIsImV4cGlyZXNBdCI6MTc3ODAxMDQyNTE4MX0.S-ihmCFoex8npH8_wyxJs8LRjy9E9C-pFJ0ZEkzDb9k HTTP/1.1" 200 1028 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"
+::ffff:127.0.0.1 - - [05/May/2026:19:32:05 +0000] "GET /learning/lessons/tupqigwu58qogej/assets/attachment/0?token=eyJsZXNzb25JZCI6InR1cHFpZ3d1NThxb2dlaiIsImFzc2V0VHlwZSI6ImF0dGFjaG1lbnQiLCJhdHRhY2htZW50SW5kZXgiOjAsImFjY2Vzc0xldmVsIjoicHJldmlldyIsInBhY2thZ2VJZCI6ImpmeXlzNmp2ZjVwbW9tNyIsInVzZXJJZCI6IiIsImFjY2Vzc1JvbGUiOiJwcmV2aWV3IiwiZXhwaXJlc0F0IjoxNzc4MDEwNDI1MTgxfQ.PPeeMP03h2KKJh7p7S20AKmIPeuWMpv1UCCBMYTWmKQ HTTP/1.1" 200 1037 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-GB) WindowsPowerShell/5.1.26100.8115"

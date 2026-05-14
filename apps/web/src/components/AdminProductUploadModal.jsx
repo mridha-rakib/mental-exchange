@@ -21,7 +21,8 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
     price: '',
     category: '',
     condition: '',
-    stock_quantity: '1'
+    stock_quantity: '1',
+    weight_g: ''
   });
 
   const handleChange = (e) => {
@@ -37,7 +38,9 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.price || !formData.category || !formData.condition || !formData.stock_quantity) {
+    const parcelWeight = Number(formData.weight_g);
+
+    if (!formData.name || !formData.price || !formData.category || !formData.condition || !formData.stock_quantity || !Number.isFinite(parcelWeight) || parcelWeight <= 0) {
       toast.error(t('checkout.required_toast'));
       return;
     }
@@ -50,6 +53,8 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
       data.append('price', formData.price);
       data.append('fachbereich', formData.category); // Map category to fachbereich
       data.append('condition', formData.condition);
+      data.append('stock_quantity', formData.stock_quantity);
+      data.append('weight_g', String(Math.round(parcelWeight)));
       
       if (imageFile) {
         data.append('image', imageFile);
@@ -67,7 +72,8 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
         price: '',
         category: '',
         condition: '',
-        stock_quantity: '1'
+        stock_quantity: '1',
+        weight_g: ''
       });
       setImageFile(null);
       
@@ -110,6 +116,10 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
             <div className="space-y-2">
               <Label htmlFor="stock_quantity">{t('admin_product.stock')} *</Label>
               <Input id="stock_quantity" name="stock_quantity" type="number" min="1" value={formData.stock_quantity} onChange={handleChange} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="weight_g">{t('product.weight_g')} *</Label>
+              <Input id="weight_g" name="weight_g" type="number" min="1" step="1" value={formData.weight_g} onChange={handleChange} required />
             </div>
           </div>
 

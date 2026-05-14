@@ -169,6 +169,7 @@ const SellerProductsPage = () => {
     setEditForm({
       name: product.name || '',
       price: String(product.price ?? ''),
+      weight_g: product.weight_g ? String(product.weight_g) : '',
       product_type: product.product_type || 'Article',
       condition: product.condition || 'Gut',
       fachbereich: Array.isArray(product.fachbereich) ? product.fachbereich : product.fachbereich ? [product.fachbereich] : [],
@@ -202,6 +203,7 @@ const SellerProductsPage = () => {
     if (!editingProduct || !editForm) return;
 
     const price = Number(editForm.price);
+    const parcelWeight = Number(editForm.weight_g);
 
     if (!editForm.name.trim()) {
       toast.error(t('seller.name_required'));
@@ -213,6 +215,11 @@ const SellerProductsPage = () => {
       return;
     }
 
+    if (!Number.isFinite(parcelWeight) || parcelWeight <= 0) {
+      toast.error(t('product.weight_invalid'));
+      return;
+    }
+
     setSavingEdit(true);
     try {
       const updatedProduct = await pb.collection('products').update(
@@ -220,6 +227,7 @@ const SellerProductsPage = () => {
         {
           name: editForm.name.trim(),
           price,
+          weight_g: Math.round(parcelWeight),
           product_type: editForm.product_type,
           condition: editForm.condition,
           fachbereich: editForm.fachbereich,
@@ -341,12 +349,12 @@ const SellerProductsPage = () => {
         <title>{t('seller.my_items')} - Zahnibörse</title>
       </Helmet>
 
-      <main className="flex-1 bg-[linear-gradient(180deg,#f6f1e8_0%,#fbfaf7_34%,#ffffff_100%)] py-8 md:py-12">
+      <main className="flex-1 bg-[linear-gradient(180deg,#f7f7f7_0%,#ffffff_34%,#ffffff_100%)] py-8 md:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative mb-8 overflow-hidden rounded-[32px] border border-black/5 bg-slate-950 p-6 text-white shadow-sm md:p-8">
             <div className="absolute inset-0 opacity-80">
               <div className="absolute -right-16 -top-20 h-72 w-72 rounded-full bg-[#0000FF]/60 blur-3xl" />
-              <div className="absolute bottom-0 left-1/3 h-48 w-48 rounded-full bg-amber-300/20 blur-3xl" />
+              <div className="absolute bottom-0 left-1/3 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
             </div>
 
             <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -563,6 +571,19 @@ const SellerProductsPage = () => {
                       step="0.01"
                       value={editForm.price}
                       onChange={(event) => handleEditFieldChange('price', event.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-weight-g">{t('product.weight_g')}</Label>
+                    <Input
+                      id="edit-weight-g"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={editForm.weight_g}
+                      onChange={(event) => handleEditFieldChange('weight_g', event.target.value)}
                       required
                     />
                   </div>

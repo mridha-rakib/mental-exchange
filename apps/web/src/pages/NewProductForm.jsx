@@ -22,7 +22,7 @@ const FACHBEREICHE = [
 ];
 
 const NewProductForm = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, isAdmin } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -38,6 +38,7 @@ const NewProductForm = () => {
     description: '',
     price: '',
     condition: '',
+    weight_g: '',
     fachbereich: [],
     image: null,
     set_items: [{ name: '', quantity: 1 }]
@@ -86,8 +87,15 @@ const NewProductForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    const parcelWeight = Number(formData.weight_g);
+
     if (!formData.name || !formData.price || !formData.condition || !formData.image) {
       toast.error(t('new_product.required_image_error'));
+      return;
+    }
+
+    if (!Number.isFinite(parcelWeight) || parcelWeight <= 0) {
+      toast.error(t('product.weight_invalid'));
       return;
     }
 
@@ -107,8 +115,12 @@ const NewProductForm = () => {
       data.append('description', formData.description);
       data.append('price', formData.price);
       data.append('condition', formData.condition);
-      data.append('seller_id', currentUser.id);
-      data.append('seller_username', currentUser.seller_username || currentUser.name);
+      data.append('weight_g', String(Math.round(parcelWeight)));
+
+      if (!isAdmin) {
+        data.append('seller_id', currentUser.id);
+        data.append('seller_username', currentUser.seller_username || currentUser.name);
+      }
       
       formData.fachbereich.forEach(fb => {
         data.append('fachbereich', fb);
@@ -118,16 +130,19 @@ const NewProductForm = () => {
         data.append('set_items', JSON.stringify(formData.set_items));
       }
 
-      const needsVerification = (formData.condition === 'Neu' || formData.condition === 'Wie neu');
-      const status = needsVerification ? 'draft' : 'active';
-      data.append('status', status);
+      const needsVerification = !isAdmin && (formData.condition === 'Neu' || formData.condition === 'Wie neu');
+      if (!isAdmin) {
+        const status = needsVerification ? 'draft' : 'active';
+        data.append('status', status);
+      }
 
       if (formData.image) {
         const fileToUpload = Array.isArray(formData.image) ? formData.image[0] : formData.image;
         data.append('image', fileToUpload);
       }
 
-      const record = await pb.collection('products').create(data, { $autoCancel: false });
+      const collectionName = isAdmin ? 'shop_products' : 'products';
+      const record = await pb.collection(collectionName).create(data, { $autoCancel: false });
       
       if (needsVerification) {
         setCreatedProductId(record.id);
@@ -135,7 +150,7 @@ const NewProductForm = () => {
         setStep(3);
       } else {
         toast.success(t('new_product.publish_success'));
-        navigate('/seller-dashboard');
+        navigate(isAdmin ? '/shop' : '/seller-dashboard');
       }
     } catch (error) {
       console.error('Upload error:', error);
@@ -397,6 +412,21 @@ const NewProductForm = () => {
                         <SelectItem value="Befriedigend">{t('marketplace.condition_satisfactory')}</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="weight_g" className="text-base">{t('product.weight_g')} *</Label>
+                    <Input
+                      id="weight_g"
+                      name="weight_g"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={formData.weight_g}
+                      onChange={handleChange}
+                      className="h-12"
+                      required
+                    />
                   </div>
                 </div>
 

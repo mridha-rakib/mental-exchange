@@ -1,89 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Heart, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button.jsx';
 import { Card, CardContent } from '@/components/ui/card.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
 import { toast } from 'sonner';
-import apiServerClient from '@/lib/apiServerClient.js';
 import pb from '@/lib/pocketbaseClient.js';
 import { useAuth } from '@/contexts/AuthContext.jsx';
+import { useFavorites } from '@/contexts/FavoritesContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
-import { getAuthToken } from '@/lib/getAuthToken.js';
 
 const FavoritesPage = () => {
   const { isAuthenticated } = useAuth();
+  const { favorites, loading, loadFavorites, removeFromFavorites } = useFavorites();
   const { t } = useTranslation();
-  const [favorites, setFavorites] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchFavorites();
-    } else {
-      setLoading(false);
+      loadFavorites();
     }
-  }, [isAuthenticated]);
-
-  const fetchFavorites = async () => {
-    const token = getAuthToken();
-    if (!token) {
-      toast.error(t('auth.login_required_favorites'));
-      navigate('/auth');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await apiServerClient.fetch('/favorites', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (response.status === 401) {
-        toast.error(t('auth.session_expired'));
-        navigate('/auth');
-        return;
-      }
-      
-      const data = await response.json();
-      setFavorites(data.items || []);
-    } catch (error) {
-      console.error('Error fetching favorites:', error);
-      toast.error(t('favorites.load_error'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [isAuthenticated, loadFavorites]);
 
   const handleRemoveFavorite = async (productId) => {
-    const token = getAuthToken();
-    if (!token) {
-      toast.error(t('auth.login_required_favorites'));
-      navigate('/auth');
-      return;
-    }
-
     try {
-      const response = await apiServerClient.fetch('/favorites/toggle', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ productId })
-      });
-      
-      if (response.status === 401) {
-        toast.error(t('auth.session_expired'));
-        navigate('/auth');
-        return;
-      }
-      
-      if (!response.ok) throw new Error(t('favorites.remove_error'));
-      
-      setFavorites(favorites.filter(fav => fav.product_id !== productId));
+      await removeFromFavorites(productId);
       toast.success(t('common.remove_favorite'));
     } catch (error) {
       console.error('Error removing favorite:', error);
@@ -145,15 +86,18 @@ const FavoritesPage = () => {
           ) : favorites.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {favorites.map((fav) => {
-                const product = fav.expand?.product_id || fav.product;
+                const product = fav.product;
                 if (!product) return null;
+                const isShopProduct = product.source === 'shop' || product.collectionName === 'shop_products';
+                const productLink = `/product/${product.id}${isShopProduct ? '?type=shop' : ''}`;
+                const productImageUrl = product.image_url || (product.image ? pb.files.getUrl(product, product.image) : null);
 
                 return (
                   <Card key={fav.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 border border-[hsl(var(--border))] flex flex-col">
                     <div className="aspect-square bg-[hsl(var(--muted-bg))] relative overflow-hidden group">
-                      {product.image ? (
+                      {productImageUrl ? (
                         <img
-                          src={pb.files.getUrl(product, product.image)}
+                          src={productImageUrl}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -179,8 +123,8 @@ const FavoritesPage = () => {
                     <CardContent className="p-4 flex flex-col flex-1">
                       <h3 className="font-['Playfair_Display'] font-semibold text-base md:text-lg mb-2 line-clamp-2">{product.name}</h3>
                       <div className="mt-auto pt-4 flex items-center justify-between">
-                        <p className="text-lg md:text-xl font-bold text-[#0000FF]">€{product.price?.toFixed(2)}</p>
-                        <Link to={`/product/${product.id}`}>
+                        <p className="text-lg md:text-xl font-bold text-[#0000FF]">€{Number(product.price || 0).toFixed(2)}</p>
+                        <Link to={productLink}>
                           <Button size="sm" className="bg-[#0000FF] hover:bg-[#0000CC] text-white min-h-[36px] md:min-h-[40px]">
                             {t('shop.details')}
                           </Button>

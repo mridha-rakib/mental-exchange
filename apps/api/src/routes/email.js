@@ -21,6 +21,8 @@ const EMAIL_SENDERS = {
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const escapeFilterValue = (value) => String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+
 // POST /email/send-order-confirmation
 // Send order confirmation email to customer
 router.post('/send-order-confirmation', async (req, res) => {
@@ -385,7 +387,7 @@ router.post('/newsletter', async (req, res) => {
   const { email } = req.body;
 
   // Ensure email is a string
-  const emailStr = String(email).trim();
+  const emailStr = String(email).trim().toLowerCase();
 
   logger.info(`[EMAIL] Newsletter signup - Email: ${emailStr}`);
 
@@ -400,11 +402,15 @@ router.post('/newsletter', async (req, res) => {
 
   // Check if email already exists in newsletter_signups
   const existingSubscribers = await pb.collection('newsletter_signups').getList(1, 1, {
-    filter: `email="${emailStr}"`,
+    filter: `email="${escapeFilterValue(emailStr)}"`,
   });
 
   if (existingSubscribers.items && existingSubscribers.items.length > 0) {
-    return res.json({ success: false, message: 'Email already subscribed' });
+    return res.json({
+      success: true,
+      idempotent: true,
+      message: 'Email already subscribed',
+    });
   }
 
   // Create new newsletter signup record
@@ -414,18 +420,22 @@ router.post('/newsletter', async (req, res) => {
     status: 'active',
   });
 
-  // Send welcome email
-  await pb.collection('emails').create({
-    recipient: emailStr,
-    type: 'newsletter',
-    sender: EMAIL_SENDERS.newsletter,
-    subject: 'Willkommen bei Zahnibörse Newsletter',
-    body: 'Vielen Dank für Ihre Anmeldung zu unserem Newsletter! Sie erhalten nun regelmäßig Updates und exklusive Angebote.',
-    metadata: {
-      subscriber_id: subscriber.id,
-    },
-    status: 'pending',
-  });
+  // Queueing the welcome email is optional; some local/dev schemas only keep newsletter_signups.
+  try {
+    await pb.collection('emails').create({
+      recipient: emailStr,
+      type: 'newsletter',
+      sender: EMAIL_SENDERS.newsletter,
+      subject: 'Willkommen bei Zahnibörse Newsletter',
+      body: 'Vielen Dank für Ihre Anmeldung zu unserem Newsletter! Sie erhalten nun regelmäßig Updates und exklusive Angebote.',
+      metadata: {
+        subscriber_id: subscriber.id,
+      },
+      status: 'pending',
+    });
+  } catch (emailError) {
+    logger.warn(`[EMAIL] Newsletter welcome email was not queued - Email: ${emailStr}, Error: ${emailError.message}`);
+  }
 
   logger.info(`[EMAIL] Newsletter subscriber added - Email: ${emailStr}`);
   res.json({ success: true, message: 'Successfully subscribed to newsletter' });

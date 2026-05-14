@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Check, ChevronsUpDown, PackageCheck, ShieldCheck, Store, Sparkles } from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
@@ -47,7 +47,10 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/';
+  const fromLocation = location.state?.from;
+  const from = fromLocation?.pathname
+    ? `${fromLocation.pathname}${fromLocation.search || ''}${fromLocation.hash || ''}`
+    : '/';
 
   const [formData, setFormData] = useState({
     email: '',
@@ -57,36 +60,6 @@ const AuthPage = () => {
     university: '',
     customUniversity: '',
   });
-
-  const benefits = useMemo(
-    () => [
-      {
-        icon: ShieldCheck,
-        title: t('info.secure_title'),
-        body: t('info.secure_body'),
-      },
-      {
-        icon: PackageCheck,
-        title: t('info.simple_title'),
-        body: t('info.simple_body'),
-      },
-      {
-        icon: Store,
-        title: t('info.sustainable_title'),
-        body: t('info.sustainable_body'),
-      },
-    ],
-    [t]
-  );
-
-  const highlights = useMemo(
-    () => [
-      t('marketplace.subtitle'),
-      t('shop.subtitle'),
-      t('seller.hero_body'),
-    ],
-    [t]
-  );
 
   const handleChange = (event) => {
     setFormData((current) => ({ ...current, [event.target.name]: event.target.value }));
@@ -162,71 +135,17 @@ const AuthPage = () => {
   return (
     <>
       <Helmet>
-        <title>{`${isLogin ? t('auth.login') : t('auth.register')} - Zahniboerse`}</title>
+        <title>{`${isLogin ? t('auth.login') : t('auth.register')} - Zahnibörse`}</title>
       </Helmet>
 
-      <main className="relative overflow-hidden bg-[linear-gradient(180deg,#f6f8fe_0%,#eef2fb_48%,#f7f8fc_100%)] px-4 py-10 md:px-6 md:py-16">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(circle_at_top_left,rgba(0,0,255,0.11),transparent_40%),radial-gradient(circle_at_top_right,rgba(0,0,255,0.08),transparent_32%)]" />
-
-        <div className="relative mx-auto grid max-w-6xl items-stretch gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <section className="rounded-[32px] bg-[linear-gradient(160deg,rgba(0,0,255,0.96),rgba(30,64,175,0.88))] px-6 py-7 text-white shadow-[0_24px_60px_rgba(15,23,42,0.12)] md:px-8 md:py-10">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/14 px-4 py-1.5 text-sm font-medium backdrop-blur">
-              <Sparkles className="h-4 w-4" />
-              Zahniboerse
-            </div>
-
-            <div className="mt-8 max-w-xl space-y-4">
-              <p className="text-sm font-medium uppercase tracking-[0.24em] text-white/72">
-                {isLogin ? t('auth.welcome_back') : t('auth.create_account')}
-              </p>
-              <h1 className="font-['Playfair_Display'] text-4xl leading-tight md:text-5xl">
-                {isLogin ? t('home.hero_title') : t('seller.hero_title')}
-              </h1>
-              <p className="max-w-lg text-base leading-7 text-white/82 md:text-lg">
-                {t('brand.tagline')}
-              </p>
-            </div>
-
-            <div className="mt-8 grid gap-3 md:grid-cols-3">
-              {benefits.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div
-                    key={item.title}
-                    className="rounded-[22px] border border-white/16 bg-white/10 p-4 backdrop-blur"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/16">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <h2 className="mt-4 text-sm font-semibold">{item.title}</h2>
-                    <p className="mt-2 text-sm leading-6 text-white/76">{item.body}</p>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-8 rounded-[26px] border border-white/16 bg-white/10 p-5 backdrop-blur">
-              <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/70">
-                {t('nav.marketplace')} / {t('nav.shop')}
-              </p>
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
-                {highlights.map((text) => (
-                  <div key={text} className="rounded-[20px] bg-white/10 px-4 py-4">
-                    <p className="text-sm leading-6 text-white/82">{text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="rounded-[32px] border border-white/60 bg-white/92 p-4 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur md:p-6">
-            <div className="rounded-[26px] bg-[linear-gradient(180deg,#ffffff_0%,#f9faff_100%)] p-5 md:p-7">
-              <div className="flex flex-wrap gap-2 rounded-full bg-[hsl(var(--muted-bg))] p-1">
+      <main className="bg-[hsl(var(--background))] px-4 py-10 md:px-6 md:py-16">
+        <section className="mx-auto max-w-md rounded-[8px] border border-[hsl(var(--border))] bg-white p-5 shadow-[0_18px_44px_rgba(15,23,42,0.08)] md:p-7">
+              <div className="flex flex-wrap gap-2 rounded-[8px] bg-[hsl(var(--muted-bg))] p-1">
                 <button
                   type="button"
                   onClick={() => handleModeChange(true)}
                   className={cn(
-                    'flex-1 rounded-full px-4 py-2.5 text-sm font-medium transition',
+                    'flex-1 rounded-[6px] px-4 py-2.5 text-sm font-medium transition',
                     isLogin ? 'bg-white text-[#0000FF] shadow-sm' : 'text-[hsl(var(--secondary-text))]'
                   )}
                 >
@@ -236,7 +155,7 @@ const AuthPage = () => {
                   type="button"
                   onClick={() => handleModeChange(false)}
                   className={cn(
-                    'flex-1 rounded-full px-4 py-2.5 text-sm font-medium transition',
+                    'flex-1 rounded-[6px] px-4 py-2.5 text-sm font-medium transition',
                     !isLogin ? 'bg-white text-[#0000FF] shadow-sm' : 'text-[hsl(var(--secondary-text))]'
                   )}
                 >
@@ -264,7 +183,7 @@ const AuthPage = () => {
                         value={formData.name}
                         onChange={handleChange}
                         required
-                        className="h-12 rounded-2xl border-[hsl(var(--border))] bg-white px-4"
+                        className="h-12 rounded-[8px] border-[hsl(var(--border))] bg-white px-4"
                       />
                     </div>
 
@@ -276,7 +195,7 @@ const AuthPage = () => {
                             variant="outline"
                             role="combobox"
                             aria-expanded={openUni}
-                            className="h-12 w-full justify-between rounded-2xl border-[hsl(var(--border))] bg-white px-4 font-normal text-[hsl(var(--foreground))] hover:bg-white"
+                            className="h-12 w-full justify-between rounded-[8px] border-[hsl(var(--border))] bg-white px-4 font-normal text-[hsl(var(--foreground))] hover:bg-white"
                           >
                             <span className="truncate">
                               {formData.university
@@ -288,7 +207,7 @@ const AuthPage = () => {
                             <ChevronsUpDown className="ml-3 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[var(--radix-popover-trigger-width)] rounded-2xl border-white/70 bg-white p-0 shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
+                        <PopoverContent className="w-[var(--radix-popover-trigger-width)] rounded-[8px] border-white/70 bg-white p-0 shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
                           <Command>
                             <CommandInput placeholder={t('auth.search_university')} />
                             <CommandList>
@@ -330,7 +249,7 @@ const AuthPage = () => {
                           value={formData.customUniversity}
                           onChange={handleChange}
                           required
-                          className="h-12 rounded-2xl border-[hsl(var(--border))] bg-white px-4"
+                          className="h-12 rounded-[8px] border-[hsl(var(--border))] bg-white px-4"
                         />
                       </div>
                     )}
@@ -346,7 +265,7 @@ const AuthPage = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="h-12 rounded-2xl border-[hsl(var(--border))] bg-white px-4"
+                    className="h-12 rounded-[8px] border-[hsl(var(--border))] bg-white px-4"
                   />
                 </div>
 
@@ -365,7 +284,7 @@ const AuthPage = () => {
                     onChange={handleChange}
                     required
                     minLength={8}
-                    className="h-12 rounded-2xl border-[hsl(var(--border))] bg-white px-4"
+                    className="h-12 rounded-[8px] border-[hsl(var(--border))] bg-white px-4"
                   />
                 </div>
 
@@ -380,18 +299,14 @@ const AuthPage = () => {
                       onChange={handleChange}
                       required
                       minLength={8}
-                      className="h-12 rounded-2xl border-[hsl(var(--border))] bg-white px-4"
+                      className="h-12 rounded-[8px] border-[hsl(var(--border))] bg-white px-4"
                     />
                   </div>
                 )}
 
-                <div className="rounded-[22px] bg-[hsl(var(--muted-bg))] px-4 py-3 text-sm leading-6 text-[hsl(var(--secondary-text))]">
-                  {isLogin ? t('marketplace.subtitle') : t('seller.activate_body')}
-                </div>
-
                 <Button
                   type="submit"
-                  className="h-12 w-full rounded-2xl bg-[#0000FF] text-white hover:bg-[#0000CC]"
+                  className="h-12 w-full rounded-[8px] bg-[#0000FF] text-white hover:bg-[#0000CC]"
                   disabled={loading}
                 >
                   {loading ? t('auth.wait') : isLogin ? t('auth.login') : t('auth.register')}
@@ -408,9 +323,7 @@ const AuthPage = () => {
                   {isLogin ? t('auth.register_now') : t('auth.login_here')}
                 </button>
               </div>
-            </div>
-          </section>
-        </div>
+        </section>
       </main>
     </>
   );

@@ -53,11 +53,18 @@ const Header = () => {
     { name: t('nav.home'), path: '/' },
     { name: t('nav.shop'), path: '/shop' },
     { name: t('nav.marketplace'), path: '/marketplace' },
+    { name: t('nav.learning'), path: '/learning' },
   ];
 
   const currentLanguageName = language === 'DE' ? t('language.german') : t('language.english');
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
 
   useEffect(() => {
     const updateNavIndicator = () => {
@@ -365,6 +372,13 @@ const Header = () => {
                         <Link to="/my-orders" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">{t('nav.orders')}</Link>
                       </DropdownMenuItem>
                     )}
+
+                    <DropdownMenuItem asChild className="cursor-pointer hover:bg-gray-50 rounded-md focus:bg-gray-50">
+                      <Link to="/learning/dashboard" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">{t('learning.dashboard')}</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="cursor-pointer hover:bg-gray-50 rounded-md focus:bg-gray-50">
+                      <Link to="/learning/subscription" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">{t('learning.my_subscription')}</Link>
+                    </DropdownMenuItem>
                     
                     {isSeller && (
                       <DropdownMenuItem asChild className="cursor-pointer hover:bg-gray-50 rounded-md focus:bg-gray-50">
@@ -375,6 +389,11 @@ const Header = () => {
                     {isAdmin && (
                       <DropdownMenuItem asChild className="cursor-pointer hover:bg-gray-50 rounded-md focus:bg-gray-50">
                         <Link to="/admin" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">{t('nav.admin')}</Link>
+                      </DropdownMenuItem>
+                    )}
+                    {isAdmin && (
+                      <DropdownMenuItem asChild className="cursor-pointer hover:bg-gray-50 rounded-md focus:bg-gray-50">
+                        <Link to="/admin/learning" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">{t('learning.admin_title')}</Link>
                       </DropdownMenuItem>
                     )}
                     
@@ -482,8 +501,11 @@ const Header = () => {
                   </div>
                   <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.profile')}</Link>
                   {!isAdmin && <Link to="/my-orders" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.orders')}</Link>}
+                  <Link to="/learning/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('learning.dashboard')}</Link>
+                  <Link to="/learning/subscription" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('learning.my_subscription')}</Link>
                   {isSeller && <Link to="/seller-products" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.seller_items')}</Link>}
                   {isAdmin && <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.admin')}</Link>}
+                  {isAdmin && <Link to="/admin/learning" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('learning.admin_title')}</Link>}
                   <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="rounded-[8px] px-3.5 py-3 text-left text-[16px] font-medium text-red-600 hover:bg-red-50">{t('nav.logout')}</button>
                 </div>
               ) : (

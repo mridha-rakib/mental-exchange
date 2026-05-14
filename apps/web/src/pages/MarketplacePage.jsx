@@ -1,101 +1,85 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowRight, BadgeCheck, PackagePlus, ShieldCheck, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import pb from '@/lib/pocketbaseClient.js';
+import apiServerClient from '@/lib/apiServerClient.js';
 import MarketplaceProductCard from '@/components/MarketplaceProductCard.jsx';
 import FilterSection from '@/components/FilterSection.jsx';
 import { Button } from '@/components/ui/button.jsx';
-import { Badge } from '@/components/ui/badge.jsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.jsx';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet.jsx';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
+import {
+  appendFilterSearchParams,
+  DEFAULT_SHOP_FILTER_DEFINITIONS,
+  getActiveFilterEntries,
+  getEmptyFilterValues,
+  getVisibleFilterDefinitions,
+} from '@/lib/shopFilterDefinitions.js';
 
 const heroImage =
   'https://horizons-cdn.hostinger.com/ee44c44d-e3d6-46f2-a1fd-aa631a0ae621/e168444fa4c2e4395f832548af45023f.jpg';
 
-const DEFAULT_FILTERS = {
-  productTypes: [],
-  conditions: [],
-  fachbereiche: [],
-};
-
-const PRODUCT_TYPE_LABELS = {
-  Article: 'marketplace.type_article',
-  Set: 'marketplace.type_set',
-  Consumable: 'marketplace.type_consumable',
-};
-
-const CONDITION_LABELS = {
-  Neu: 'marketplace.condition_new',
-  'Wie neu': 'marketplace.condition_like_new',
-  Gut: 'marketplace.condition_good',
-  Befriedigend: 'marketplace.condition_satisfactory',
-};
-
-const SUBJECT_LABELS = {
-  Kons: 'marketplace.subject_kons',
-  Pro: 'marketplace.subject_pro',
-  KFO: 'marketplace.subject_kfo',
-  Paro: 'marketplace.subject_paro',
-};
+const DEFAULT_FILTERS = getEmptyFilterValues(DEFAULT_SHOP_FILTER_DEFINITIONS);
 
 const MarketplacePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isAuthenticated, isSeller } = useAuth();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [filterDefinitions, setFilterDefinitions] = useState(DEFAULT_SHOP_FILTER_DEFINITIONS);
 
   const currentSort = searchParams.get('sort') || '-created';
 
-  const fetchProducts = useCallback(async () => {
-    setLoading(true);
+  const fetchProducts = useCallback(async ({ showLoading = false } = {}) => {
+    if (showLoading) {
+      setLoading(true);
+    }
 
     try {
-      let filterStr = 'status="active"';
-
-      if (filters.productTypes.length > 0) {
-        const types = filters.productTypes.map((type) => `product_type="${type}"`).join(' || ');
-        filterStr += ` && (${types})`;
-      }
-
-      if (filters.conditions.length > 0) {
-        const conditions = filters.conditions.map((condition) => `condition="${condition}"`).join(' || ');
-        filterStr += ` && (${conditions})`;
-      }
-
-      if (filters.fachbereiche.length > 0) {
-        const fachbereiche = filters.fachbereiche.map((fachbereich) => `fachbereich~"${fachbereich}"`).join(' || ');
-        filterStr += ` && (${fachbereiche})`;
-      }
-
-      const result = await pb.collection('products').getList(1, 50, {
-        filter: filterStr,
+      const params = new URLSearchParams({
+        page: '1',
+        perPage: '50',
         sort: currentSort,
-        $autoCancel: false,
       });
 
-      setProducts(result.items);
+      appendFilterSearchParams({
+        params,
+        filters,
+        definitions: filterDefinitions,
+      });
+
+      const response = await apiServerClient.fetch(`/marketplace/products?${params.toString()}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch marketplace products');
+      }
+
+      const result = await response.json();
+      setProducts(Array.isArray(result.items) ? result.items : []);
+      if (Array.isArray(result.filters) && result.filters.length > 0) {
+        setFilterDefinitions((current) =>
+          JSON.stringify(current) === JSON.stringify(result.filters) ? current : result.filters);
+      }
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
-  }, [currentSort, filters]);
+  }, [currentSort, filterDefinitions, filters]);
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts({ showLoading: true });
 
     const handleFocus = () => fetchProducts();
     window.addEventListener('focus', handleFocus);
-
-    const intervalId = setInterval(() => {
-      fetchProducts();
-    }, 5000);
 
     pb.collection('products').subscribe('*', (event) => {
       if (event.action === 'update' && event.record.status === 'sold') {
@@ -111,7 +95,6 @@ const MarketplacePage = () => {
 
     return () => {
       window.removeEventListener('focus', handleFocus);
-      clearInterval(intervalId);
       pb.collection('products').unsubscribe('*');
     };
   }, [fetchProducts]);
@@ -132,21 +115,14 @@ const MarketplacePage = () => {
     }
   };
 
-  const scrollToCatalog = () => {
-    document.getElementById('marketplace-catalog')?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
-  };
-
-  const activeFilterCount = filters.productTypes.length + filters.conditions.length + filters.fachbereiche.length;
+  const visibleFilterDefinitions = getVisibleFilterDefinitions(filterDefinitions);
+  const activeFilterEntries = getActiveFilterEntries({
+    filters,
+    definitions: visibleFilterDefinitions,
+    language,
+  });
+  const activeFilterCount = activeFilterEntries.length;
   const hasActiveFilters = activeFilterCount > 0;
-
-  const activeFilterPills = [
-    ...filters.productTypes.map((value) => t(PRODUCT_TYPE_LABELS[value])),
-    ...filters.conditions.map((value) => t(CONDITION_LABELS[value])),
-    ...filters.fachbereiche.map((value) => t(SUBJECT_LABELS[value])),
-  ];
 
   const resultLabel = t('marketplace.product_count', {
     count: products.length,
@@ -159,131 +135,58 @@ const MarketplacePage = () => {
         <title>{t('marketplace.title')} - Zahniboerse</title>
       </Helmet>
 
-      <main className="flex-1 bg-[linear-gradient(180deg,#f7f5ef_0%,#faf9f5_24%,#ffffff_100%)] pb-16">
-        <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,255,0.08),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.28),rgba(255,255,255,0.92))]" />
-          <div className="absolute inset-y-0 right-0 hidden w-[44%] lg:block">
-            <img src={heroImage} alt="Zahnmedizinische Instrumente" className="h-full w-full object-cover opacity-30" />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,#f7f5ef_0%,rgba(247,245,239,0.72)_36%,rgba(247,245,239,0.14)_100%)]" />
+      <main className="flex-1 bg-[#f7f7f7] pb-16">
+        <section className="relative overflow-hidden bg-[#f7f7f7]">
+          <div className="absolute inset-x-0 top-0 h-[330px] opacity-[0.08]">
+            <img src={heroImage} alt="" className="h-full w-full object-cover" />
           </div>
-
-          <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20">
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-end">
-              <div className="max-w-3xl">
-                <div className="mb-6 flex flex-wrap gap-2">
-                  <Badge className="rounded-full bg-white/85 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0000FF] shadow-none">
+          <div className="relative mx-auto max-w-[1280px] px-4 pb-16 pt-16 sm:px-6 md:pb-[64px] md:pt-[64px] lg:px-8 xl:px-0">
+            <div className="rounded-[20px] bg-white px-6 py-9 shadow-[0_12px_22px_rgba(15,23,42,0.15)] md:px-10 md:py-11">
+              <div className="flex flex-col gap-7 md:flex-row md:items-center md:justify-between">
+                <div className="min-w-0 max-w-[760px]">
+                  <h1 className="font-serif text-[42px] font-bold leading-[1.05] text-[#333] md:text-[52px] lg:whitespace-nowrap">
                     {t('marketplace.title')}
-                  </Badge>
-                  <Badge className="rounded-full bg-[#0000FF]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0000FF] shadow-none">
-                    {resultLabel}
-                  </Badge>
+                  </h1>
+                  <p className="mt-3 max-w-[560px] text-[20px] leading-[1.45] text-[#666]">
+                    {t('marketplace.subtitle')}
+                  </p>
                 </div>
 
-                <h1 className="max-w-2xl text-4xl font-bold leading-tight text-slate-900 md:text-6xl">
-                  {t('marketplace.title')}
-                </h1>
-                <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
-                  {t('marketplace.subtitle')}
-                </p>
-
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Button
-                    type="button"
-                    onClick={handleSellClick}
-                    className="h-11 rounded-full bg-[#0000FF] px-6 text-white shadow-none hover:bg-[#0000CC]"
-                  >
-                    {t('marketplace.sell_now')}
-                    <ArrowRight className="size-4" />
-                  </Button>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={scrollToCatalog}
-                    className="h-11 rounded-full border-black/10 bg-white/80 px-6 text-slate-700 shadow-none hover:bg-white"
-                  >
-                    {t('marketplace.adjust_filters')}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="rounded-[28px] border border-white/80 bg-white/78 p-5 backdrop-blur-sm md:p-6">
-                <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900">
-                  <PackagePlus className="size-4 text-[#0000FF]" />
-                  <span>{t('seller.benefits_title')}</span>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="rounded-2xl border border-black/5 bg-white/88 p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 rounded-full bg-[#0000FF]/8 p-2 text-[#0000FF]">
-                        <Sparkles className="size-4" />
-                      </div>
-                      <div>
-                        <h2 className="text-lg font-semibold text-slate-900">{t('seller.benefit_reach_title')}</h2>
-                        <p className="mt-1 text-sm leading-6 text-slate-600">{t('seller.benefit_reach_body')}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-black/5 bg-white/88 p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 rounded-full bg-[#0000FF]/8 p-2 text-[#0000FF]">
-                        <BadgeCheck className="size-4" />
-                      </div>
-                      <div>
-                        <h2 className="text-lg font-semibold text-slate-900">{t('seller.benefit_free_title')}</h2>
-                        <p className="mt-1 text-sm leading-6 text-slate-600">{t('seller.benefit_free_body')}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-black/5 bg-white/88 p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 rounded-full bg-[#0000FF]/8 p-2 text-[#0000FF]">
-                        <ShieldCheck className="size-4" />
-                      </div>
-                      <div>
-                        <h2 className="text-lg font-semibold text-slate-900">{t('seller.benefit_payment_title')}</h2>
-                        <p className="mt-1 text-sm leading-6 text-slate-600">{t('seller.benefit_payment_body')}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <Button
+                  type="button"
+                  onClick={handleSellClick}
+                  className="h-[52px] rounded-[8px] bg-[#0000FF] px-7 text-base font-semibold text-white shadow-none hover:bg-[#0000CC] md:mr-0"
+                >
+                  {t('marketplace.sell_now')}
+                </Button>
               </div>
             </div>
           </div>
         </section>
 
-        <section id="marketplace-catalog" className="py-10 md:py-14">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-8 lg:grid-cols-[288px_minmax(0,1fr)]">
+        <section id="marketplace-catalog" className="py-8 md:py-8">
+          <div className="mx-auto max-w-[1230px] px-4 sm:px-6 lg:px-8 xl:px-0">
+            <div className="grid gap-8 lg:grid-cols-[256px_minmax(0,1fr)]">
               <aside className="hidden lg:block">
-                <div className="sticky top-[104px]">
-                  <FilterSection filters={filters} onFiltersChange={setFilters} />
+                <div className="sticky top-[102px]">
+                  <FilterSection filters={filters} filterDefinitions={visibleFilterDefinitions} onFiltersChange={setFilters} />
                 </div>
               </aside>
 
               <div className="min-w-0">
-                <div className="rounded-[28px] border border-black/5 bg-white p-5 md:p-6">
-                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                <div className="rounded-[12px] border border-[#d7d7d7] bg-white px-4 py-4 md:px-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0000FF]/70">
-                        {t('marketplace.filter')}
-                      </p>
-                      <h2 className="mt-2 text-2xl font-bold text-slate-900">{resultLabel}</h2>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">
-                        {hasActiveFilters ? t('marketplace.adjust_filters') : t('marketplace.subtitle')}
-                      </p>
+                      <p className="text-[15px] font-medium text-[#666]">{resultLabel}</p>
 
                       {hasActiveFilters && (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {activeFilterPills.map((label) => (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {activeFilterEntries.map((entry) => (
                             <span
-                              key={label}
+                              key={entry.key}
                               className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
                             >
-                              {label}
+                              {entry.label}
                             </span>
                           ))}
                         </div>
@@ -311,7 +214,7 @@ const MarketplacePage = () => {
                             <SheetTitle>{t('marketplace.adjust_filters')}</SheetTitle>
                           </SheetHeader>
                           <div className="p-6">
-                            <FilterSection filters={filters} onFiltersChange={setFilters} />
+                            <FilterSection filters={filters} filterDefinitions={visibleFilterDefinitions} onFiltersChange={setFilters} />
                           </div>
                         </SheetContent>
                       </Sheet>
@@ -320,7 +223,7 @@ const MarketplacePage = () => {
                         <Button
                           type="button"
                           variant="ghost"
-                          onClick={() => setFilters(DEFAULT_FILTERS)}
+                          onClick={() => setFilters(getEmptyFilterValues(visibleFilterDefinitions))}
                           className="h-11 rounded-full px-4 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                         >
                           {t('marketplace.reset_filters')}
@@ -328,7 +231,7 @@ const MarketplacePage = () => {
                       )}
 
                       <Select value={currentSort} onValueChange={handleSortChange}>
-                        <SelectTrigger className="h-11 w-full rounded-full border-black/10 bg-white px-4 shadow-none sm:w-[210px]">
+                        <SelectTrigger className="h-9 w-full rounded-[7px] border-[#333] bg-white px-3 text-[15px] shadow-none sm:w-[180px]">
                           <SelectValue placeholder={t('marketplace.sort_placeholder')} />
                         </SelectTrigger>
                         <SelectContent className="border-black/5 bg-white">
@@ -344,34 +247,28 @@ const MarketplacePage = () => {
 
                 <div className="mt-6">
                   {loading ? (
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 2xl:grid-cols-3">
-                      {[...Array(8)].map((_, index) => (
-                        <div key={index} className="overflow-hidden rounded-[24px] border border-black/5 bg-white">
-                          <div className="aspect-[4/3] animate-pulse bg-[linear-gradient(135deg,#f3f4f6,#e5e7eb)]" />
-                          <div className="space-y-3 p-5">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+                      {[...Array(10)].map((_, index) => (
+                        <div key={index} className="overflow-hidden rounded-[12px] border border-[#ddd] bg-white">
+                          <div className="aspect-[1.32] animate-pulse bg-[linear-gradient(135deg,#f3f4f6,#e5e7eb)]" />
+                          <div className="space-y-3 p-3">
                             <div className="h-3 w-20 animate-pulse rounded-full bg-slate-200" />
                             <div className="h-5 w-3/4 animate-pulse rounded-full bg-slate-200" />
                             <div className="h-5 w-1/2 animate-pulse rounded-full bg-slate-200" />
-                            <div className="pt-4">
-                              <div className="h-10 animate-pulse rounded-full bg-slate-200" />
-                            </div>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : products.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 2xl:grid-cols-3">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
                       {products.map((product) => (
                         <MarketplaceProductCard key={product.id} product={product} />
                       ))}
                     </div>
                   ) : (
-                    <div className="overflow-hidden rounded-[32px] border border-black/5 bg-white">
+                    <div className="overflow-hidden rounded-[12px] border border-[#ddd] bg-white">
                       <div className="grid lg:grid-cols-[minmax(0,1fr)_360px]">
                         <div className="p-7 md:p-10 lg:p-12">
-                          <Badge className="rounded-full bg-[#0000FF]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0000FF] shadow-none">
-                            {t('marketplace.empty_title')}
-                          </Badge>
                           <h3 className="mt-5 max-w-xl text-3xl font-bold text-slate-900 md:text-4xl">
                             {t('marketplace.empty_title')}
                           </h3>
@@ -382,7 +279,7 @@ const MarketplacePage = () => {
                           <div className="mt-8 flex flex-wrap gap-3">
                             <Button
                               type="button"
-                              onClick={() => setFilters(DEFAULT_FILTERS)}
+                              onClick={() => setFilters(getEmptyFilterValues(visibleFilterDefinitions))}
                               className="h-11 rounded-full bg-[#0000FF] px-6 text-white shadow-none hover:bg-[#0000CC]"
                             >
                               {t('marketplace.reset_filters')}
@@ -399,8 +296,8 @@ const MarketplacePage = () => {
                           </div>
                         </div>
 
-                        <div className="bg-[linear-gradient(180deg,#fbfaf7_0%,#f4efe5_100%)] p-7 md:p-10 lg:p-12">
-                          <FilterSection filters={filters} onFiltersChange={setFilters} />
+                        <div className="bg-[linear-gradient(180deg,#f7f7f7_0%,#ffffff_100%)] p-7 md:p-10 lg:p-12">
+                          <FilterSection filters={filters} filterDefinitions={visibleFilterDefinitions} onFiltersChange={setFilters} />
                         </div>
                       </div>
                     </div>

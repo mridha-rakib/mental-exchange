@@ -3,11 +3,17 @@ import pb from './pocketbaseClient.js';
 import logger from './logger.js';
 import { generateLabel } from './dhlService.js';
 import {
+  beginDhlLabelJob,
+  completeDhlLabelJob,
+  failDhlLabelJob,
+} from './dhlLabelJobs.js';
+import {
   sendOrderConfirmationToBuyer,
   sendOrderNotificationToSeller,
   sendTrackingEmailToBuyer
 } from './emailService.js';
 import { getPlatformSettings, getSellerFeeRate, normalizePlatformSettings } from './platformSettings.js';
+import { normalizeCountryCode } from './countryCodes.js';
 
 const parseShippingAddress = (addressData) => {
   if (!addressData) return {};
@@ -26,6 +32,7 @@ const normalizeRecipientAddress = (parsedAddress, buyer) => ({
     parsedAddress?.name ||
     parsedAddress?.fullName ||
     parsedAddress?.name1 ||
+    parsedAddress?.full_name ||
     buyer?.name ||
     buyer?.full_name ||
     buyer?.email ||
@@ -34,6 +41,7 @@ const normalizeRecipientAddress = (parsedAddress, buyer) => ({
   street: String(
     parsedAddress?.street ||
     parsedAddress?.addressStreet ||
+    parsedAddress?.street_address ||
     parsedAddress?.address ||
     ''
   ).trim(),
@@ -44,17 +52,83 @@ const normalizeRecipientAddress = (parsedAddress, buyer) => ({
     ''
   ).trim(),
   city: String(parsedAddress?.city || '').trim(),
-  country: String(parsedAddress?.country || 'DE').trim(),
+  country: normalizeCountryCode(parsedAddress?.country || 'DE'),
 });
 
-const getMissingRecipientFields = (address) => {
+const getMissingAddressFields = (prefix, address) => {
   const missing = [];
-  if (!address.name) missing.push('recipient.name');
-  if (!address.street) missing.push('recipient.street');
-  if (!address.postal_code) missing.push('recipient.postal_code');
-  if (!address.city) missing.push('recipient.city');
-  if (!address.country) missing.push('recipient.country');
+  if (!address.name) missing.push(`${prefix}.name`);
+  if (!address.street) missing.push(`${prefix}.street`);
+  if (!address.postal_code) missing.push(`${prefix}.postal_code`);
+  if (!address.city) missing.push(`${prefix}.city`);
+  if (!address.country) missing.push(`${prefix}.country`);
   return missing;
+};
+
+const getWarehouseAddress = () => ({
+  name: process.env.WAREHOUSE_NAME || '',
+  street: process.env.WAREHOUSE_ADDRESS_STREET || '',
+  postal_code: process.env.WAREHOUSE_ADDRESS_ZIP || '',
+  city: process.env.WAREHOUSE_ADDRESS_CITY || '',
+  country: normalizeCountryCode(process.env.WAREHOUSE_ADDRESS_COUNTRY || 'DE'),
+});
+
+const resolveSellerShippingAddress = async (sellerId, seller) => {
+  const shippingInfo = await pb.collection('shipping_info')
+    .getFirstListItem(`user_id="${String(sellerId).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`)
+    .catch(() => null);
+
+  return normalizeRecipientAddress(shippingInfo || {}, seller);
+};
+
+const resolveShipperAddress = async ({ productType, sellerId, seller }) => {
+  if (productType === 'shop') {
+    return getWarehouseAddress();
+  }
+
+  return resolveSellerShippingAddress(sellerId, seller);
+};
+
+const buildParcelFromProduct = (product) => ({
+  weight_g: product.weight_g || product.weight_grams || product.weight || null,
+  length_mm: product.length_mm || product.length || null,
+  width_mm: product.width_mm || product.width || null,
+  height_mm: product.height_mm || product.height || null,
+});
+
+const getDhlErrorType = (error) => error?.dhl?.type || error?.details?.job?.failure_type || error?.name || 'unknown';
+
+const buildOrderLabelIdempotencyKey = (order) => [
+  'order',
+  order?.id || '',
+  order?.payment_intent_id || '',
+  order?.product_id || '',
+].filter(Boolean).join(':');
+
+const escapePbString = (value) => String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+
+const getPocketBaseErrorDetails = (error) => {
+  const response = error?.response || error?.data || error?.originalError?.data || {};
+  const data = response?.data || response || {};
+
+  if (!data || typeof data !== 'object') {
+    return '';
+  }
+
+  return JSON.stringify(data);
+};
+
+const findExistingOrder = async (paymentIntentId, productId) => {
+  const paymentIntentIdStr = String(paymentIntentId || '').trim();
+  const productIdStr = String(productId || '').trim();
+
+  if (!paymentIntentIdStr || !productIdStr) {
+    return null;
+  }
+
+  return pb.collection('orders')
+    .getFirstListItem(`payment_intent_id="${escapePbString(paymentIntentIdStr)}" && product_id="${escapePbString(productIdStr)}"`)
+    .catch(() => null);
 };
 
 const resolvePlatformSellerId = async () => {
@@ -71,6 +145,171 @@ const resolvePlatformSellerId = async () => {
   }
 
   return String(adminUser.id).trim();
+};
+
+export const ensureDhlLabelForOrder = async ({ order, product, buyer, seller = null, productType, sellerId }) => {
+  const orderIdStr = String(order?.id || '').trim();
+  const orderNumber = String(order?.order_number || '').trim();
+  const productTypeStr = productType === 'shop' || order?.product_type === 'shop' ? 'shop' : 'marketplace';
+  const sellerIdStr = String(sellerId || order?.seller_id || '').trim();
+
+  if (!orderIdStr) {
+    throw new Error('order.id is required for DHL label generation');
+  }
+
+  if (order?.dhl_tracking_number && order?.dhl_label_pdf) {
+    return {
+      order,
+      dhlLabelPdf: order.dhl_label_pdf,
+      trackingNumber: order.dhl_tracking_number,
+      idempotent: true,
+    };
+  }
+
+  let dhlLabelPdf = null;
+  let trackingNumber = null;
+  let labelJob = null;
+
+  try {
+    const jobStart = await beginDhlLabelJob({
+      subjectType: 'order_outbound',
+      subjectId: orderIdStr,
+      idempotencyKey: buildOrderLabelIdempotencyKey(order),
+      requestedBy: sellerIdStr,
+      metadata: {
+        orderNumber,
+        productType: productTypeStr,
+        productId: order?.product_id || '',
+        paymentIntentId: order?.payment_intent_id || '',
+      },
+    });
+
+    labelJob = jobStart.job;
+
+    if (jobStart.state === 'generated') {
+      return {
+        order,
+        dhlLabelPdf: order.dhl_label_pdf || null,
+        trackingNumber: labelJob.tracking_number || order.dhl_tracking_number || '',
+        idempotent: true,
+      };
+    }
+
+    const parsedAddress = parseShippingAddress(order.shipping_address);
+    const recipient = normalizeRecipientAddress(parsedAddress, buyer);
+    const shipper = await resolveShipperAddress({
+      productType: productTypeStr,
+      sellerId: sellerIdStr,
+      seller,
+    });
+
+    logger.info(`[ORDER-HANDLER] Starting DHL label generation - Order: ${orderIdStr}, Shipper country: ${shipper.country || 'missing'}, Recipient country: ${recipient.country || 'missing'}`);
+
+    await pb.collection('orders').update(orderIdStr, {
+      label_status: 'generating',
+      label_error: '',
+      label_failure_type: '',
+      label_last_attempt_at: new Date().toISOString(),
+      label_idempotency_key: buildOrderLabelIdempotencyKey(order),
+    }).catch(() => { });
+
+    const missingFields = [
+      ...getMissingAddressFields('shipper', shipper),
+      ...getMissingAddressFields('recipient', recipient),
+    ];
+
+    if (missingFields.length > 0) {
+      const errorMessage = `Missing DHL address fields: ${missingFields.join(', ')}`;
+
+      await pb.collection('orders').update(orderIdStr, {
+        label_status: 'failed',
+        label_error: errorMessage,
+        label_failure_type: 'validation',
+      }).catch(() => { });
+
+      throw new Error(errorMessage);
+    }
+
+    const dhlResult = await generateLabel({
+      id: orderIdStr,
+      order_number: orderNumber,
+      shipper,
+      recipient,
+      parcel: buildParcelFromProduct(product || {}),
+    });
+
+    dhlLabelPdf = dhlResult.label_pdf;
+    trackingNumber = dhlResult.tracking_number;
+
+    const encodedLabel = Buffer.isBuffer(dhlLabelPdf) ? dhlLabelPdf.toString('base64') : String(dhlLabelPdf || '');
+
+    try {
+      await pb.collection('orders').update(orderIdStr, {
+        dhl_label_pdf: encodedLabel,
+        dhl_tracking_number: trackingNumber,
+        dhl_shipment_number: dhlResult.shipment_number || trackingNumber,
+        tracking_number: trackingNumber,
+        label_generated_at: new Date().toISOString(),
+        label_status: 'generated',
+        label_error: '',
+        label_failure_type: '',
+        label_retry_after: '',
+        destination_country: dhlResult.destination_country || recipient.country,
+        dhl_product_used: dhlResult.product_used || '',
+      });
+    } catch (persistError) {
+      persistError.dhl = {
+        type: 'persistence_after_label_create',
+        retryable: false,
+        ambiguous: true,
+        operation: 'save_generated_label',
+      };
+      throw persistError;
+    }
+
+    await completeDhlLabelJob(labelJob, {
+      ...dhlResult,
+      label_saved: true,
+    });
+
+    const updatedOrder = {
+      ...order,
+      dhl_label_pdf: encodedLabel,
+      dhl_tracking_number: trackingNumber,
+      tracking_number: trackingNumber,
+    };
+
+    logger.info(`[ORDER-HANDLER] DHL label generated - Tracking: ${trackingNumber}`);
+
+    return {
+      order: updatedOrder,
+      dhlLabelPdf,
+      trackingNumber,
+      idempotent: false,
+    };
+  } catch (dhlError) {
+    logger.warn(`[ORDER-HANDLER] DHL label generation failed: ${dhlError.message}`);
+
+    await failDhlLabelJob(labelJob, dhlError);
+    const failureType = getDhlErrorType(dhlError);
+    const labelStatus = dhlError?.dhl?.ambiguous === true || dhlError?.name === 'DhlLabelJobConflictError'
+      ? 'unknown'
+      : 'failed';
+
+    await pb.collection('orders').update(orderIdStr, {
+      label_status: labelStatus,
+      label_error: dhlError.message,
+      label_failure_type: failureType,
+      label_retry_after: labelStatus === 'failed' ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : '',
+    }).catch(() => { });
+
+    return {
+      order,
+      dhlLabelPdf,
+      trackingNumber,
+      error: dhlError,
+    };
+  }
 };
 
 export const orderHandler = async (paymentData) => {
@@ -177,7 +416,32 @@ export const orderHandler = async (paymentData) => {
       created_at: new Date().toISOString(),
     });
   } catch (error) {
-    throw new Error(`Failed to create order: ${error.message}`);
+    const existingOrder = await findExistingOrder(paymentIntentIdStr, productIdStr);
+    if (existingOrder) {
+      logger.warn(`[ORDER-HANDLER] Order create collided with existing record - PaymentIntent: ${paymentIntentIdStr}, Product: ${productIdStr}, Existing order: ${existingOrder.id}`);
+      const dhlResult = await ensureDhlLabelForOrder({
+        order: existingOrder,
+        product,
+        buyer,
+        seller,
+        productType: productTypeStr,
+        sellerId: sellerIdStr,
+      });
+
+      return {
+        order_id: existingOrder.id,
+        order_number: existingOrder.order_number,
+        dhl_label_pdf: dhlResult.dhlLabelPdf || existingOrder.dhl_label_pdf || null,
+        tracking_number: dhlResult.trackingNumber || existingOrder.tracking_number || existingOrder.dhl_tracking_number || null,
+        total_amount: existingOrder.total_amount || 0,
+        seller_earnings: 0,
+        idempotent: true,
+      };
+    }
+
+    const details = getPocketBaseErrorDetails(error);
+    logger.error(`[ORDER-HANDLER] Failed to create order record - PaymentIntent: ${paymentIntentIdStr}, Product: ${productIdStr}, Error: ${error.message}, Details: ${details || 'none'}`);
+    throw new Error(`Failed to create order: ${error.message}${details ? ` - ${details}` : ''}`);
   }
 
   const orderIdStr = String(order.id);
@@ -187,58 +451,18 @@ export const orderHandler = async (paymentData) => {
   let dhlLabelPdf = null;
   let trackingNumber = null;
 
-  try {
-    const parsedAddress = parseShippingAddress(shippingAddress);
-    const recipient = normalizeRecipientAddress(parsedAddress, buyer);
-    const missingFields = getMissingRecipientFields(recipient);
+  const dhlResult = await ensureDhlLabelForOrder({
+    order,
+    product,
+    buyer,
+    seller,
+    productType: productTypeStr,
+    sellerId: sellerIdStr,
+  });
 
-    if (missingFields.length > 0) {
-      const errorMessage = `Missing DHL recipient fields: ${missingFields.join(', ')}`;
-
-      await pb.collection('orders').update(orderIdStr, {
-        label_status: 'failed',
-        label_error: errorMessage,
-      }).catch(() => { });
-
-      throw new Error(errorMessage);
-    }
-
-    const orderForDHL = {
-      id: orderIdStr,
-      order_number: orderNumber,
-      shipper: {
-        name: process.env.WAREHOUSE_NAME || '',
-        street: process.env.WAREHOUSE_ADDRESS_STREET || '',
-        postal_code: process.env.WAREHOUSE_ADDRESS_ZIP || '',
-        city: process.env.WAREHOUSE_ADDRESS_CITY || '',
-        country: process.env.WAREHOUSE_ADDRESS_COUNTRY || 'DE',
-      },
-      recipient,
-    };
-
-    const dhlResult = await generateLabel(orderForDHL);
-
-    dhlLabelPdf = dhlResult.label_pdf;
-    trackingNumber = dhlResult.tracking_number;
-
-    await pb.collection('orders').update(orderIdStr, {
-      dhl_label_pdf: Buffer.isBuffer(dhlLabelPdf) ? dhlLabelPdf.toString('base64') : String(dhlLabelPdf || ''),
-      dhl_tracking_number: trackingNumber,
-      tracking_number: trackingNumber,
-      label_generated_at: new Date().toISOString(),
-      label_status: 'generated',
-      label_error: '',
-    });
-
-    logger.info(`[ORDER-HANDLER] DHL label generated - Tracking: ${trackingNumber}`);
-  } catch (dhlError) {
-    logger.warn(`[ORDER-HANDLER] DHL label generation failed: ${dhlError.message}`);
-
-    await pb.collection('orders').update(orderIdStr, {
-      label_status: 'failed',
-      label_error: dhlError.message,
-    }).catch(() => { });
-  }
+  order = dhlResult.order || order;
+  dhlLabelPdf = dhlResult.dhlLabelPdf;
+  trackingNumber = dhlResult.trackingNumber;
 
   if (productTypeStr === 'marketplace') {
     try {
@@ -278,11 +502,7 @@ export const orderHandler = async (paymentData) => {
 
   if (productTypeStr === 'marketplace' && seller) {
     try {
-      const trackingUrl = trackingNumber
-        ? `https://www.dhl.de/de/privatkunden/dhl-sendungsverfolgung.html?piececode=${trackingNumber}`
-        : null;
-
-      await sendOrderNotificationToSeller(order, product, seller, trackingUrl);
+      await sendOrderNotificationToSeller(order, product, seller, dhlLabelPdf);
     } catch (emailError) {
       logger.warn(`[ORDER-HANDLER] Seller notification email failed: ${emailError.message}`);
     }
@@ -291,7 +511,7 @@ export const orderHandler = async (paymentData) => {
   if (trackingNumber) {
     try {
       const trackingUrl = `https://www.dhl.de/de/privatkunden/dhl-sendungsverfolgung.html?piececode=${trackingNumber}`;
-      await sendTrackingEmailToBuyer(order, trackingNumber, trackingUrl);
+      await sendTrackingEmailToBuyer(order, buyer.email, trackingNumber, trackingUrl);
     } catch (emailError) {
       logger.warn(`[ORDER-HANDLER] Tracking email failed: ${emailError.message}`);
     }
