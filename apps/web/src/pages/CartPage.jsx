@@ -19,13 +19,11 @@ import { Badge } from '@/components/ui/badge.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { useCart } from '@/contexts/CartContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
-import pb from '@/lib/pocketbaseClient.js';
+import { getProductImageUrl as resolveProductImageUrl } from '@/lib/productImages.js';
 
 const getProductImageUrl = (product) => {
   if (!product) return '';
-  if (product.image_url) return product.image_url;
-  if (product.image) return pb.files.getUrl(product, product.image);
-  return '';
+  return resolveProductImageUrl(product) || '';
 };
 
 const getProductTitle = (product, fallback) => product?.name || product?.title || fallback;

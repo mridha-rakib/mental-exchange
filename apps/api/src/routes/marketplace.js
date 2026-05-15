@@ -9,6 +9,15 @@ const SORT_OPTIONS = new Set(['-created', 'created', 'price', '-price']);
 
 const escapeFilterValue = (value) => String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 
+const getProductImages = (product) => (
+  Array.isArray(product.images) ? product.images : product.images ? [product.images] : []
+);
+
+const getProductImageUrl = (product, imageName = '') => {
+  const resolvedImage = imageName || getProductImages(product)[0] || product.image || '';
+  return resolvedImage ? pb.files.getUrl(product, resolvedImage) : null;
+};
+
 const getMarketplaceBaseFilters = async () => {
   const filters = [
     'status="active"',
@@ -36,6 +45,13 @@ const toProductResponse = (product) => ({
   ...product,
   source: 'marketplace',
   product_type: product.product_type || 'Article',
+  images: getProductImages(product),
+  image_urls: getProductImages(product).map((imageName) => getProductImageUrl(product, imageName)).filter(Boolean),
+  image_url: getProductImageUrl(product),
+  brand: product.brand || '',
+  location: product.location || '',
+  shipping_type: product.shipping_type || 'dhl_parcel',
+  filter_values: product.filter_values || {},
   fachbereich: Array.isArray(product.fachbereich)
     ? product.fachbereich
     : product.fachbereich

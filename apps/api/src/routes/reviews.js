@@ -2,10 +2,11 @@ import express from 'express';
 import pb from '../utils/pocketbaseClient.js';
 import logger from '../utils/logger.js';
 import { requireAuth, admin } from '../middleware/index.js';
+import { ORDER_REVIEW_READY_STATUSES } from '../utils/orderStatus.js';
 
 const router = express.Router();
 
-const REVIEWABLE_ORDER_STATUSES = new Set(['delivered', 'completed']);
+const REVIEWABLE_ORDER_STATUSES = ORDER_REVIEW_READY_STATUSES;
 const PRODUCT_COLLECTION_BY_TYPE = {
   marketplace: 'products',
   shop: 'shop_products',

@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   PackageCheck,
   ReceiptText,
+  SlidersHorizontal,
   ShoppingBag,
   UserRound,
   WalletCards,
@@ -23,13 +24,14 @@ const AccountLayout = ({
   activeKey,
   children,
   className,
+  containerClassName,
   contentClassName,
   headerAction,
   title,
   description,
 }) => {
   const { currentUser, isAdmin, isSeller } = useAuth();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const location = useLocation();
   const canUseSellerArea = isSeller || isAdmin;
 
@@ -87,6 +89,13 @@ const AccountLayout = ({
       Icon: LayoutDashboard,
       hidden: !isAdmin,
     },
+    {
+      key: 'admin-filters',
+      label: language === 'EN' ? 'Filters' : 'Filter',
+      href: '/admin/filters',
+      Icon: SlidersHorizontal,
+      hidden: !isAdmin,
+    },
   ].filter((item) => !item.hidden);
 
   const isItemActive = (item) => {
@@ -99,7 +108,7 @@ const AccountLayout = ({
 
   return (
     <main className={cn('flex-1 bg-[#f6f7f9] py-6 md:py-10', className)}>
-      <div className="mx-auto grid w-full max-w-7xl gap-5 px-4 sm:px-6 lg:grid-cols-[244px_minmax(0,1fr)] lg:px-8">
+      <div className={cn('mx-auto grid w-full max-w-7xl gap-5 px-4 sm:px-6 lg:grid-cols-[244px_minmax(0,1fr)] lg:px-8', containerClassName)}>
         <aside className="min-w-0">
           <div className="sticky top-24 rounded-[8px] border border-black/10 bg-white p-3 shadow-sm">
             <div className="mb-3 hidden border-b border-black/10 px-2 pb-3 lg:block">

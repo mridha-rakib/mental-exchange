@@ -17,6 +17,7 @@ import {
   getOrderTrackingNumber as resolveOrderTrackingNumber,
   hasOrderLabel as resolveHasOrderLabel,
 } from '@/lib/dhlLabelUi.js';
+import { getProductImageUrl as resolveProductImageUrl } from '@/lib/productImages.js';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
@@ -77,6 +78,28 @@ const triggerPdfDownload = (blobOrBase64, filename, mimeType = 'application/pdf'
   link.download = filename;
   link.click();
 };
+
+const ORDER_ACTIVE_STATUSES = new Set([
+  'pending',
+  'paid',
+  'waiting_admin_validation',
+  'validated',
+  'processing',
+  'shipped',
+  'dhl_delivered',
+  'delivered',
+  'waiting_payout_release',
+  'payout_available',
+]);
+const ORDER_COMPLETED_STATUSES = new Set(['paid_out', 'completed']);
+const ORDER_LABEL_ELIGIBLE_STATUSES = new Set(['paid', 'waiting_admin_validation', 'validated', 'processing']);
+const ORDER_SHIPPABLE_STATUSES = new Set(['paid', 'waiting_admin_validation', 'validated', 'processing']);
+const ORDER_DHL_DELIVERABLE_STATUSES = new Set(['shipped']);
+const ORDER_CANCELLABLE_STATUSES = new Set(['pending', 'paid', 'waiting_admin_validation', 'validated', 'processing', 'shipped']);
+const ORDER_DELIVERED_DISPLAY_STATUSES = new Set(['dhl_delivered', 'delivered', 'waiting_payout_release', 'payout_available', 'paid_out', 'completed']);
+const ORDER_VALIDATABLE_STATUSES = new Set(['paid', 'waiting_admin_validation']);
+const ORDER_PAUSABLE_STATUSES = new Set(['paid', 'validated', 'processing']);
+const ORDER_REFUNDABLE_STATUSES = new Set(['paid', 'waiting_admin_validation', 'validated', 'processing', 'shipped', 'dhl_delivered', 'delivered', 'waiting_payout_release', 'payout_available', 'cancelled']);
 
 const AdminDashboardPage = () => {
   const { t, language } = useTranslation();
@@ -397,9 +420,9 @@ const AdminDashboardPage = () => {
   const stats = useMemo(() => {
     const totalRevenue = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
     const sellers = users.filter(u => u.is_seller);
-    const activeOrders = orders.filter(o => ['paid', 'processing', 'shipped'].includes(o.status));
+    const activeOrders = orders.filter(o => ORDER_ACTIVE_STATUSES.has(o.status));
     const pendingOrders = orders.filter(o => o.status === 'pending');
-    const completedOrders = orders.filter(o => o.status === 'delivered' || o.status === 'completed');
+    const completedOrders = orders.filter(o => ORDER_COMPLETED_STATUSES.has(o.status));
     return {
       totalOrders: orders.length,
       totalRevenue,
@@ -511,8 +534,7 @@ const AdminDashboardPage = () => {
   };
 
   const getProductImageUrl = (product) => {
-    if (!product?.image) return null;
-    return pb.files.getUrl(product, product.image);
+    return resolveProductImageUrl(product);
   };
 
   const getProductSellerName = (product) =>
@@ -756,6 +778,82 @@ const AdminDashboardPage = () => {
     }
   };
 
+  const handleRefreshOrderTracking = async (order) => {
+    if (!order?.id || !getOrderTrackingNumber(order)) return;
+
+    setOrderActionLoadingId(order.id);
+
+    try {
+      const response = await apiServerClient.fetch(`/dhl-labels/${order.id}/tracking`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${pb.authStore.token}`,
+        },
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.details || data.error || `DHL tracking refresh failed (${response.status})`);
+      }
+
+      const updatedOrder = {
+        ...order,
+        ...(data.order || {}),
+        dhl_tracking_status: data.order?.dhl_tracking_status || data.delivery_confirmation?.status || order.dhl_tracking_status || '',
+        dhl_tracking_summary: data.order?.dhl_tracking_summary || data.delivery_confirmation?.summary || order.dhl_tracking_summary || '',
+      };
+
+      setOrders((prev) => prev.map((item) => (
+        item.id === order.id
+          ? { ...item, ...updatedOrder, expand: item.expand }
+          : item
+      )));
+      setCurrentOrderDetails((prev) => (prev?.id === order.id ? { ...prev, ...updatedOrder } : prev));
+
+      toast.success(data.delivery_confirmation?.delivered
+        ? t('admin_dashboard.order_tracking_delivered')
+        : t('admin_dashboard.order_tracking_refreshed'));
+      fetchData(true);
+    } catch (error) {
+      console.error('Failed to refresh DHL tracking:', error);
+      toast.error(error.message || t('admin_dashboard.order_tracking_refresh_error'));
+    } finally {
+      setOrderActionLoadingId('');
+    }
+  };
+
+  const handleReleaseEligiblePayouts = async () => {
+    setOrderActionLoadingId('release-eligible-payouts');
+
+    try {
+      const response = await apiServerClient.fetch('/admin/payouts/release-eligible', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${pb.authStore.token}`,
+        },
+        body: JSON.stringify({ limit: 100 }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Payout release failed (${response.status})`);
+      }
+
+      toast.success(t('admin_dashboard.payout_release_result', {
+        released: data.released || 0,
+        blocked: data.blocked || 0,
+      }));
+      fetchData(true);
+    } catch (error) {
+      console.error('Failed to release eligible payouts:', error);
+      toast.error(error.message || t('admin_dashboard.payout_release_error'));
+    } finally {
+      setOrderActionLoadingId('');
+    }
+  };
+
   const handleAdminOrderStatusUpdate = async (order, newStatus) => {
     if (!order?.id) return;
 
@@ -791,6 +889,81 @@ const AdminDashboardPage = () => {
     } catch (error) {
       console.error('Failed to update order status:', error);
       toast.error(t('admin_dashboard.order_status_update_error'));
+    } finally {
+      setOrderActionLoadingId('');
+    }
+  };
+
+  const handleAdminOrderAction = async (order, action) => {
+    if (!order?.id) return;
+
+    const payload = {};
+
+    if (action === 'validate') {
+      const note = window.prompt(t('admin_dashboard.order_action_note_prompt'), '');
+      if (note === null) return;
+      payload.note = note;
+    }
+
+    if (action === 'pause') {
+      const reason = window.prompt(t('admin_dashboard.order_action_pause_prompt'), order.admin_pause_reason || '');
+      if (reason === null) return;
+      payload.reason = reason;
+    }
+
+    if (action === 'cancel') {
+      const reason = window.prompt(t('admin_dashboard.order_action_cancel_prompt'), order.admin_cancel_reason || '');
+      if (reason === null) return;
+      payload.reason = reason;
+    }
+
+    if (action === 'refund') {
+      const amountInput = window.prompt(t('admin_dashboard.order_action_refund_amount_prompt'), String(Number(order.total_amount || 0).toFixed(2)));
+      if (amountInput === null) return;
+
+      const amount = Number(String(amountInput).replace(',', '.'));
+      if (!Number.isFinite(amount) || amount <= 0) {
+        toast.error(t('admin_dashboard.order_action_refund_amount_error'));
+        return;
+      }
+
+      const reason = window.prompt(t('admin_dashboard.order_action_refund_reason_prompt'), order.admin_notes || '');
+      if (reason === null) return;
+      payload.amount = amount;
+      payload.reason = reason;
+    }
+
+    setOrderActionLoadingId(order.id);
+
+    try {
+      const token = pb.authStore.token;
+      const response = await apiServerClient.fetch(`/admin/orders/${order.id}/${action}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Order action failed (${response.status})`);
+      }
+
+      const updatedOrder = data.order || order;
+      setOrders((prev) => prev.map((item) => (
+        item.id === order.id
+          ? { ...item, ...updatedOrder, expand: item.expand }
+          : item
+      )));
+      setCurrentOrderDetails((prev) => (prev?.id === order.id ? updatedOrder : prev));
+
+      toast.success(t(`admin_dashboard.order_action_${action}_success`));
+      fetchData(true);
+    } catch (error) {
+      console.error(`Failed to run order ${action}:`, error);
+      toast.error(error.message || t('admin_dashboard.order_action_error'));
     } finally {
       setOrderActionLoadingId('');
     }
@@ -1069,6 +1242,57 @@ const AdminDashboardPage = () => {
     }
   };
 
+  const handleApproveProductValidation = async (product) => {
+    const notes = window.prompt(t('admin_verifications.approve_notes_prompt'), '');
+    if (notes === null) return;
+
+    try {
+      const token = pb.authStore.token;
+      const res = await apiServerClient.fetch('/admin/approve-product', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productId: product.id, notes }),
+      });
+
+      if (!res.ok) throw new Error('Approval failed');
+      toast.success(t('admin_verifications.approve_success'));
+      fetchTableProducts();
+      fetchData(true);
+    } catch (error) {
+      toast.error(t('admin_verifications.approve_error'));
+    }
+  };
+
+  const handleRejectProductValidation = async (product) => {
+    const reason = window.prompt(t('admin_verifications.reject_prompt'));
+    if (reason === null) return;
+
+    try {
+      const token = pb.authStore.token;
+      const res = await apiServerClient.fetch('/admin/reject-product', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          reason: reason || t('admin_verifications.default_reject_reason'),
+        }),
+      });
+
+      if (!res.ok) throw new Error('Rejection failed');
+      toast.success(t('admin_verifications.reject_success'));
+      fetchTableProducts();
+      fetchData(true);
+    } catch (error) {
+      toast.error(t('admin_verifications.reject_error'));
+    }
+  };
+
   const handleBulkSelect = (id) => {
     setSelectedProducts(prev =>
       prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
@@ -1310,7 +1534,16 @@ const AdminDashboardPage = () => {
                 <CardHeader className="pb-3">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <CardTitle>{t('admin_dashboard.order_management')}</CardTitle>
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 w-full flex-wrap sm:w-auto">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleReleaseEligiblePayouts}
+                        disabled={orderActionLoadingId === 'release-eligible-payouts'}
+                      >
+                        <DollarSign className="mr-2 h-4 w-4" />
+                        {t('admin_dashboard.release_eligible_payouts')}
+                      </Button>
                       <div className="relative flex-1 sm:w-64">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input placeholder={t('admin_dashboard.search_placeholder')} className="pl-9" value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} />
@@ -1320,11 +1553,17 @@ const AdminDashboardPage = () => {
                         <SelectContent>
                           <SelectItem value="all">{t('seller.filter_all')}</SelectItem>
                           <SelectItem value="pending">{t('orders.status_pending')}</SelectItem>
-                          <SelectItem value="paid">{t('success.paid')}</SelectItem>
+                          <SelectItem value="paid">{t('orders.status_paid')}</SelectItem>
+                          <SelectItem value="waiting_admin_validation">{t('orders.status_waiting_admin_validation')}</SelectItem>
+                          <SelectItem value="validated">{t('orders.status_validated')}</SelectItem>
                           <SelectItem value="processing">{t('orders.status_processing')}</SelectItem>
                           <SelectItem value="shipped">{t('orders.status_shipped')}</SelectItem>
-                          <SelectItem value="delivered">{t('orders.status_delivered')}</SelectItem>
+                          <SelectItem value="dhl_delivered">{t('orders.status_dhl_delivered')}</SelectItem>
+                          <SelectItem value="waiting_payout_release">{t('orders.status_waiting_payout_release')}</SelectItem>
+                          <SelectItem value="payout_available">{t('orders.status_payout_available')}</SelectItem>
+                          <SelectItem value="paid_out">{t('orders.status_paid_out')}</SelectItem>
                           <SelectItem value="cancelled">{t('orders.status_cancelled')}</SelectItem>
+                          <SelectItem value="refunded">{t('orders.status_refunded')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1357,7 +1596,7 @@ const AdminDashboardPage = () => {
                             </TableCell>
                             <TableCell>{formatDate(order.created)}</TableCell>
                             <TableCell>
-                              <Badge variant={order.status === 'delivered' ? 'default' : 'outline'}>{getStatusLabel(order.status || 'pending')}</Badge>
+                              <Badge variant={ORDER_DELIVERED_DISPLAY_STATUSES.has(order.status) ? 'default' : 'outline'}>{getStatusLabel(order.status || 'pending')}</Badge>
                             </TableCell>
                             <TableCell className="text-right font-medium">{formatCurrency(order.total_amount)}</TableCell>
                             <TableCell className="text-right">
@@ -1384,7 +1623,7 @@ const AdminDashboardPage = () => {
                                   <DropdownMenuItem
                                     onClick={() => handleGenerateOrderLabel(order)}
                                     className="rounded-md"
-                                    disabled={order.status !== 'paid' || (getOrderTrackingNumber(order) && hasOrderLabel(order))}
+                                    disabled={!ORDER_LABEL_ELIGIBLE_STATUSES.has(order.status) || (getOrderTrackingNumber(order) && hasOrderLabel(order))}
                                   >
                                     <RefreshCw className="w-4 h-4" />
                                     {hasOrderLabel(order) || getOrderTrackingNumber(order)
@@ -1400,6 +1639,14 @@ const AdminDashboardPage = () => {
                                     {t('admin_dashboard.order_action_copy_tracking')}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
+                                    onClick={() => handleRefreshOrderTracking(order)}
+                                    className="rounded-md"
+                                    disabled={!getOrderTrackingNumber(order)}
+                                  >
+                                    <RefreshCw className="w-4 h-4" />
+                                    {t('admin_dashboard.order_action_refresh_tracking')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
                                     onClick={() => handleDownloadOrderLabel(order)}
                                     className="rounded-md"
                                     disabled={!hasOrderLabel(order)}
@@ -1409,28 +1656,52 @@ const AdminDashboardPage = () => {
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator className="bg-slate-100" />
                                   <DropdownMenuItem
+                                    onClick={() => handleAdminOrderAction(order, 'validate')}
+                                    className="rounded-md"
+                                    disabled={!ORDER_VALIDATABLE_STATUSES.has(order.status)}
+                                  >
+                                    <CheckCircle className="w-4 h-4" />
+                                    {t('admin_dashboard.order_action_validate')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleAdminOrderAction(order, 'pause')}
+                                    className="rounded-md"
+                                    disabled={!ORDER_PAUSABLE_STATUSES.has(order.status)}
+                                  >
+                                    <AlertCircle className="w-4 h-4" />
+                                    {t('admin_dashboard.order_action_pause')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
                                     onClick={() => handleAdminOrderStatusUpdate(order, 'shipped')}
                                     className="rounded-md"
-                                    disabled={['shipped', 'delivered', 'cancelled'].includes(order.status)}
+                                    disabled={!ORDER_SHIPPABLE_STATUSES.has(order.status)}
                                   >
                                     <Package className="w-4 h-4" />
                                     {t('admin_dashboard.order_action_mark_shipped')}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    onClick={() => handleAdminOrderStatusUpdate(order, 'delivered')}
+                                    onClick={() => handleAdminOrderStatusUpdate(order, 'dhl_delivered')}
                                     className="rounded-md"
-                                    disabled={['delivered', 'cancelled'].includes(order.status)}
+                                    disabled={!ORDER_DHL_DELIVERABLE_STATUSES.has(order.status)}
                                   >
                                     <CheckCircle className="w-4 h-4" />
                                     {t('admin_dashboard.order_action_mark_delivered')}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    onClick={() => handleAdminOrderStatusUpdate(order, 'cancelled')}
+                                    onClick={() => handleAdminOrderAction(order, 'cancel')}
                                     className="rounded-md text-red-600 focus:bg-red-50 focus:text-red-700"
-                                    disabled={['delivered', 'cancelled'].includes(order.status)}
+                                    disabled={!ORDER_CANCELLABLE_STATUSES.has(order.status)}
                                   >
                                     <XCircle className="w-4 h-4" />
                                     {t('admin_dashboard.order_action_cancel')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleAdminOrderAction(order, 'refund')}
+                                    className="rounded-md text-red-600 focus:bg-red-50 focus:text-red-700"
+                                    disabled={!ORDER_REFUNDABLE_STATUSES.has(order.status)}
+                                  >
+                                    <RotateCcw className="w-4 h-4" />
+                                    {t('admin_dashboard.order_action_refund')}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -1527,13 +1798,25 @@ const AdminDashboardPage = () => {
                               <TableCell><Badge variant="secondary">{getProductTypeLabel(product.product_type || 'Article')}</Badge></TableCell>
                               <TableCell>{product.fachbereich || '-'}</TableCell>
                               <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <Switch checked={product.status === 'active'} onCheckedChange={() => handleToggleStatus(product.id, product.status)} />
-                                  <span className="text-xs text-muted-foreground">{product.status === 'active' ? t('seller.status_active') : t('admin_dashboard.status_inactive')}</span>
-                                </div>
+                                {product.status === 'pending_verification' || product.verification_status === 'pending' || product.status === 'rejected' ? (
+                                  <Badge variant="outline" className={getStatusBadgeClass(product.status)}>
+                                    {getStatusLabel(product.status)}
+                                  </Badge>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <Switch checked={product.status === 'active'} onCheckedChange={() => handleToggleStatus(product.id, product.status)} />
+                                    <span className="text-xs text-muted-foreground">{product.status === 'active' ? t('seller.status_active') : t('admin_dashboard.status_inactive')}</span>
+                                  </div>
+                                )}
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-1">
+                                  {product.source === 'marketplace' && (product.status === 'pending_verification' || product.verification_status === 'pending') && (
+                                    <>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-emerald-600" onClick={() => handleApproveProductValidation(product)}><CheckCircle className="w-4 h-4" /></Button>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600" onClick={() => handleRejectProductValidation(product)}><XCircle className="w-4 h-4" /></Button>
+                                    </>
+                                  )}
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewDetails(product.id)}><Eye className="w-4 h-4" /></Button>
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleUpdateStock(product.id, product.stock_quantity)}><Package className="w-4 h-4" /></Button>
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditProduct(product.id)}><Edit className="w-4 h-4" /></Button>
@@ -2442,6 +2725,35 @@ const AdminDashboardPage = () => {
                         </SelectContent>
                       </Select>
                     </div>
+                    <div className="grid gap-2">
+                      <Label className="text-sm font-medium text-slate-700">{t('product.brand')}</Label>
+                      <Input
+                        className="h-11"
+                        value={currentProduct.brand || ''}
+                        onChange={e => setCurrentProduct({ ...currentProduct, brand: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label className="text-sm font-medium text-slate-700">{t('product.location')}</Label>
+                      <Input
+                        className="h-11"
+                        value={currentProduct.location || ''}
+                        onChange={e => setCurrentProduct({ ...currentProduct, location: e.target.value })}
+                      />
+                    </div>
+                    <div className="grid gap-2 sm:col-span-2">
+                      <Label className="text-sm font-medium text-slate-700">{t('product.shipping_type')}</Label>
+                      <Select value={currentProduct.shipping_type || 'dhl_parcel'} onValueChange={v => setCurrentProduct({ ...currentProduct, shipping_type: v })}>
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder={t('product.shipping_type')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="dhl_parcel">{t('product.shipping_dhl_parcel')}</SelectItem>
+                          <SelectItem value="letter_mail">{t('product.shipping_letter_mail')}</SelectItem>
+                          <SelectItem value="pickup">{t('product.shipping_pickup')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <DialogFooter className="border-t pt-5">
@@ -2569,6 +2881,24 @@ const AdminDashboardPage = () => {
                     </div>
                     <div className="rounded-[8px] border border-slate-200 px-4 py-3">
                       <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('product.brand')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">{formatDetailValue(currentProduct.brand)}</p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('product.location')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">{formatDetailValue(currentProduct.location)}</p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('product.shipping_type')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">{formatDetailValue(currentProduct.shipping_type)}</p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
                         {t('seller.status')}
                       </p>
                       <Badge variant="outline" className={`mt-2 ${getStatusBadgeClass(currentProduct.status)}`}>
@@ -2673,6 +3003,11 @@ const AdminDashboardPage = () => {
                       ['price', formatCurrency(currentProduct.price)],
                       ['stock_quantity', currentProduct.stock_quantity ?? 0],
                       ['weight_g', currentProduct.weight_g ?? ''],
+                      ['brand', currentProduct.brand],
+                      ['location', currentProduct.location],
+                      ['shipping_type', currentProduct.shipping_type],
+                      ['images', currentProduct.images],
+                      ['filter_values', currentProduct.filter_values],
                       ['condition', currentProduct.condition],
                       ['fachbereich', currentProduct.fachbereich],
                       ['status', currentProduct.status],
@@ -2720,7 +3055,7 @@ const AdminDashboardPage = () => {
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge
                       variant="outline"
-                      className={currentOrderDetails.status === 'delivered'
+                      className={ORDER_DELIVERED_DISPLAY_STATUSES.has(currentOrderDetails.status)
                         ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                         : 'border-slate-200 bg-slate-50 text-slate-700'}
                     >
@@ -2777,6 +3112,15 @@ const AdminDashboardPage = () => {
                       >
                         <Download className="mr-2 h-4 w-4" />
                         {t('admin_dashboard.order_action_download_label')}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleRefreshOrderTracking(currentOrderDetails)}
+                        disabled={!currentOrderTrackingNumber || orderActionLoadingId === currentOrderDetails.id}
+                      >
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        {t('admin_dashboard.order_action_refresh_tracking')}
                       </Button>
                     </div>
                   </div>
@@ -2841,6 +3185,62 @@ const AdminDashboardPage = () => {
                       </p>
                       <p className="mt-2 font-medium text-slate-900">
                         {formatDateTime(currentOrderDetails.label_generated_at)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_dhl_tracking_status')}
+                      </p>
+                      <p className="mt-2 break-words font-medium text-slate-900">
+                        {formatDetailValue(currentOrderDetails.dhl_tracking_status || currentOrderDetails.dhl_tracking_summary)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_tracking_last_checked')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">
+                        {formatDateTime(currentOrderDetails.dhl_tracking_last_checked_at)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_dhl_delivered_at')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">
+                        {formatDateTime(currentOrderDetails.dhl_delivered_at)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_dhl_delivery_confirmed_at')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">
+                        {formatDateTime(currentOrderDetails.dhl_delivery_confirmed_at)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_payout_release_at')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">
+                        {formatDateTime(currentOrderDetails.payout_release_at)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_payout_released_at')}
+                      </p>
+                      <p className="mt-2 font-medium text-slate-900">
+                        {formatDateTime(currentOrderDetails.payout_released_at)}
+                      </p>
+                    </div>
+                    <div className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                        {t('admin_dashboard.order_payout_blocked_reason')}
+                      </p>
+                      <p className="mt-2 break-words font-medium text-slate-900">
+                        {formatDetailValue(currentOrderDetails.payout_release_blocked_reason)}
                       </p>
                     </div>
                   </div>
@@ -2930,10 +3330,45 @@ const AdminDashboardPage = () => {
                         <p className="mt-1 break-all font-medium text-slate-900">{formatDetailValue(currentOrderDetails.payment_intent_id)}</p>
                       </div>
                       <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.order_refund')}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">
+                          {currentOrderDetails.stripe_refund_id
+                            ? `${formatCurrency(currentOrderDetails.refund_amount)} - ${currentOrderDetails.refund_status || currentOrderDetails.stripe_refund_id}`
+                            : formatDetailValue(currentOrderDetails.refund_status)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.order_payout_state')}</p>
+                        <p className="mt-1 break-all font-medium text-slate-900">
+                          {Array.isArray(currentOrderDetails.seller_earnings) && currentOrderDetails.seller_earnings.length > 0
+                            ? currentOrderDetails.seller_earnings.map((earning) => `${formatCurrency(earning.net_amount ?? earning.gross_amount)} - ${earning.status || '-'}`).join(', ')
+                            : '-'}
+                        </p>
+                      </div>
+                      <div>
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">{t('admin_dashboard.created_at')}</p>
                         <p className="mt-1 font-medium text-slate-900">{formatDateTime(currentOrderDetails.created)}</p>
                       </div>
                     </div>
+                  </section>
+
+                  <section className="rounded-[8px] border border-slate-200 p-5">
+                    <h3 className="text-base font-semibold text-slate-900">{t('admin_dashboard.order_status_events')}</h3>
+                    {Array.isArray(currentOrderDetails.status_events) && currentOrderDetails.status_events.length > 0 ? (
+                      <div className="mt-4 space-y-3 text-sm">
+                        {currentOrderDetails.status_events.slice(0, 6).map((event) => (
+                          <div key={event.id} className="rounded-[8px] bg-slate-50 px-3 py-2">
+                            <p className="font-medium text-slate-900">
+                              {formatDetailValue(event.event_type)}: {formatDetailValue(event.from_status)} - {formatDetailValue(event.to_status)}
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500">{formatDateTime(event.created)}</p>
+                            {event.note && <p className="mt-1 whitespace-pre-wrap text-slate-700">{event.note}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-4 text-sm text-muted-foreground">-</p>
+                    )}
                   </section>
 
                   <section className="rounded-[8px] border border-slate-200 p-5">

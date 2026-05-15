@@ -3,7 +3,12 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import pb from '../utils/pocketbaseClient.js';
 import logger from '../utils/logger.js';
+import { canGenerateLabelForStatus } from '../utils/orderStatus.js';
 import { cancelLabel, generateLabel, getTrackingStatus } from '../utils/dhlService.js';
+import {
+  buildDhlTrackingOrderResponse,
+  persistDhlTrackingForOrder,
+} from '../utils/dhlTrackingConfirmation.js';
 import {
   beginDhlLabelJob,
   cancelDhlLabelJob,
@@ -219,7 +224,7 @@ router.get('/debug/order/:order_id', async (req, res) => {
       shipper,
       recipient,
       missing_fields: missingFields,
-      can_generate_label: order.status === 'paid' && missingFields.length === 0,
+      can_generate_label: canGenerateLabelForStatus(order.status) && missingFields.length === 0,
     });
   } catch (error) {
     if (error.status === 403) {
@@ -277,9 +282,9 @@ router.post('/generate-label', labelGenerationRateLimit, async (req, res) => {
     });
   }
 
-  if (order.status !== 'paid') {
+  if (!canGenerateLabelForStatus(order.status)) {
     return res.status(400).json({
-      error: 'Order is not paid yet',
+      error: 'Order is not in a label-eligible status',
       currentStatus: order.status,
     });
   }
@@ -541,11 +546,20 @@ router.get('/:order_id/tracking', trackingRateLimit, async (req, res) => {
     }
 
     const tracking = await getTrackingStatus(trackingNumber);
+    const persistence = await persistDhlTrackingForOrder({
+      order,
+      tracking,
+      requestedBy: req.auth?.id || '',
+      source: 'dhl_label_tracking_route',
+    });
 
     return res.json({
       order_id: orderIdStr,
       tracking_number: trackingNumber,
       tracking_url: `https://www.dhl.de/de/privatkunden/dhl-sendungsverfolgung.html?piececode=${encodeURIComponent(trackingNumber)}`,
+      delivery_confirmation: persistence.confirmation,
+      status_changed: persistence.status_changed,
+      order: buildDhlTrackingOrderResponse(persistence.order),
       ...tracking,
     });
   } catch (error) {

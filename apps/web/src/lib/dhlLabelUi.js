@@ -15,7 +15,7 @@ export const getOrderLabelStatus = (order) => {
 
 export const canGenerateOrderLabel = (order) => {
   const status = getOrderLabelStatus(order);
-  return order?.status === 'paid'
+  return ['paid', 'waiting_admin_validation', 'validated', 'processing'].includes(order?.status)
     && !hasOrderLabel(order)
     && !getOrderTrackingNumber(order)
     && status !== 'generating'

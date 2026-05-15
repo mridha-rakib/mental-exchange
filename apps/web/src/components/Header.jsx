@@ -7,6 +7,7 @@ import { useFavorites } from '@/contexts/FavoritesContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
 import pb from '@/lib/pocketbaseClient.js';
 import apiServerClient from '@/lib/apiServerClient.js';
+import { getProductImageUrl } from '@/lib/productImages.js';
 import Logo from './Logo.jsx';
 import {
   DropdownMenu,
@@ -268,8 +269,8 @@ const Header = () => {
                           className="flex items-center gap-3 p-3 hover:bg-gray-50 border-b border-gray-100 last:border-0 transition-colors"
                         >
                           <div className="w-10 h-10 bg-gray-100 rounded overflow-hidden shrink-0">
-                            {product.image ? (
-                              <img src={pb.files.getUrl(product, product.image)} alt={product.name} className="w-full h-full object-cover" />
+                            {getProductImageUrl(product) ? (
+                              <img src={getProductImageUrl(product)} alt={product.name} className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">{t('image.placeholder')}</div>
                             )}
@@ -396,6 +397,13 @@ const Header = () => {
                         <Link to="/admin/learning" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">{t('learning.admin_title')}</Link>
                       </DropdownMenuItem>
                     )}
+                    {isAdmin && (
+                      <DropdownMenuItem asChild className="cursor-pointer hover:bg-gray-50 rounded-md focus:bg-gray-50">
+                        <Link to="/admin/filters" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">
+                          {language === 'EN' ? 'Shop filters' : 'Shop-Filter'}
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     
                     <DropdownMenuSeparator className="bg-gray-100 my-1" />
                     <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 hover:bg-red-50 hover:text-red-700 focus:bg-red-50 focus:text-red-700 rounded-md">
@@ -441,7 +449,7 @@ const Header = () => {
                       className="flex items-center gap-3 p-3 hover:bg-gray-50 border-b border-gray-100 last:border-0"
                     >
                       <div className="w-10 h-10 bg-gray-100 rounded overflow-hidden shrink-0">
-                        {product.image && <img src={pb.files.getUrl(product, product.image)} alt={product.name} className="w-full h-full object-cover" />}
+                        {getProductImageUrl(product) && <img src={getProductImageUrl(product)} alt={product.name} className="w-full h-full object-cover" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
@@ -506,6 +514,7 @@ const Header = () => {
                   {isSeller && <Link to="/seller-products" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.seller_items')}</Link>}
                   {isAdmin && <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.admin')}</Link>}
                   {isAdmin && <Link to="/admin/learning" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('learning.admin_title')}</Link>}
+                  {isAdmin && <Link to="/admin/filters" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{language === 'EN' ? 'Shop filters' : 'Shop-Filter'}</Link>}
                   <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="rounded-[8px] px-3.5 py-3 text-left text-[16px] font-medium text-red-600 hover:bg-red-50">{t('nav.logout')}</button>
                 </div>
               ) : (
@@ -540,8 +549,8 @@ const Header = () => {
               cartItems.map((item) => (
                 <div key={item.id} className="flex gap-3 bg-gray-50 p-3 rounded-[8px]">
                   <div className="w-20 h-20 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                    {item.product?.image && (
-                      <img src={pb.files.getUrl(item.product, item.product.image)} alt={item.product.name} className="w-full h-full object-cover" />
+                    {getProductImageUrl(item.product) && (
+                      <img src={getProductImageUrl(item.product)} alt={item.product.name} className="w-full h-full object-cover" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -608,8 +617,8 @@ const Header = () => {
                 return (
                   <div key={fav.id} className="flex gap-3 bg-gray-50 p-3 rounded-[8px] relative">
                     <div className="w-20 h-20 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
-                      {product.image && (
-                        <img src={pb.files.getUrl(product, product.image)} alt={product.name} className="w-full h-full object-cover" />
+                      {getProductImageUrl(product) && (
+                        <img src={getProductImageUrl(product)} alt={product.name} className="w-full h-full object-cover" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-between pr-6">

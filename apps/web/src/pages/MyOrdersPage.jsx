@@ -33,6 +33,19 @@ import {
 
 const primaryActionClass = 'rounded-[8px] bg-[#0000FF] px-4 font-semibold text-white hover:bg-[#0000CC]';
 const secondaryActionClass = 'rounded-[8px] border border-black/15 bg-white px-4 font-semibold text-[#151515] hover:border-[#0000FF]/35 hover:bg-[#f3f3ff]';
+const ORDER_ACTIVE_STATUSES = new Set([
+  'pending',
+  'paid',
+  'waiting_admin_validation',
+  'validated',
+  'processing',
+  'shipped',
+  'dhl_delivered',
+  'delivered',
+  'waiting_payout_release',
+  'payout_available',
+]);
+const ORDER_COMPLETED_STATUSES = new Set(['paid_out', 'completed']);
 
 const parseAddress = (addressData) => {
   if (!addressData) return null;
@@ -151,8 +164,8 @@ const MyOrdersPage = () => {
   const orderStats = useMemo(() => {
     const fallbackSummary = orders.reduce((acc, order) => {
       acc.total += 1;
-      if (['paid', 'pending', 'processing', 'shipped'].includes(order.status)) acc.active += 1;
-      if (['delivered', 'completed'].includes(order.status)) acc.completed += 1;
+      if (ORDER_ACTIVE_STATUSES.has(order.status)) acc.active += 1;
+      if (ORDER_COMPLETED_STATUSES.has(order.status)) acc.completed += 1;
       return acc;
     }, {
       total: 0,
@@ -184,12 +197,19 @@ const MyOrdersPage = () => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'completed':
+      case 'paid_out':
+        return <Badge className="rounded-[8px] border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-50">{getOrderStatusLabel(status)}</Badge>;
+      case 'dhl_delivered':
       case 'delivered':
-        return <Badge className="rounded-[8px] border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-50">{t('orders.status_delivered')}</Badge>;
+      case 'waiting_payout_release':
+      case 'payout_available':
+        return <Badge className="rounded-[8px] border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-50">{getOrderStatusLabel(status)}</Badge>;
       case 'shipped':
         return <Badge className="rounded-[8px] border-sky-200 bg-sky-50 text-sky-800 hover:bg-sky-50">{t('orders.status_shipped')}</Badge>;
       case 'processing':
       case 'paid':
+      case 'waiting_admin_validation':
+      case 'validated':
         return <Badge className="rounded-[8px] border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-50">{t('orders.status_processing')}</Badge>;
       default:
         return <Badge variant="outline" className="rounded-[8px] bg-white">{getOrderStatusLabel(status)}</Badge>;

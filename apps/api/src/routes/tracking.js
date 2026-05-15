@@ -4,6 +4,10 @@ import rateLimit from 'express-rate-limit';
 import pb from '../utils/pocketbaseClient.js';
 import logger from '../utils/logger.js';
 import { getTrackingStatus } from '../utils/dhlService.js';
+import {
+  buildDhlTrackingOrderResponse,
+  persistDhlTrackingForOrder,
+} from '../utils/dhlTrackingConfirmation.js';
 import { auth, requireAuth } from '../middleware/index.js';
 
 const router = express.Router();
@@ -55,11 +59,20 @@ router.get('/orders/:orderId', trackingRateLimit, async (req, res) => {
 
   try {
     const tracking = await getTrackingStatus(trackingNumber);
+    const persistence = await persistDhlTrackingForOrder({
+      order,
+      tracking,
+      requestedBy: req.auth?.id || '',
+      source: 'public_order_tracking_route',
+    });
 
     return res.json({
       order_id: order.id,
       tracking_number: trackingNumber,
       tracking_url: `https://www.dhl.de/de/privatkunden/dhl-sendungsverfolgung.html?piececode=${encodeURIComponent(trackingNumber)}`,
+      delivery_confirmation: persistence.confirmation,
+      status_changed: persistence.status_changed,
+      order: buildDhlTrackingOrderResponse(persistence.order),
       ...tracking,
     });
   } catch (error) {

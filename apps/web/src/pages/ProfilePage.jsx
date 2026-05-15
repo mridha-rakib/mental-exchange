@@ -44,6 +44,20 @@ const getInitials = (name = '', email = '') => {
   return source.slice(0, 2).toUpperCase();
 };
 
+const ORDER_ACTIVE_STATUSES = new Set([
+  'pending',
+  'paid',
+  'waiting_admin_validation',
+  'validated',
+  'processing',
+  'shipped',
+  'dhl_delivered',
+  'delivered',
+  'waiting_payout_release',
+  'payout_available',
+]);
+const ORDER_COMPLETED_STATUSES = new Set(['paid_out', 'completed']);
+
 const primaryActionClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#0000FF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0000CC] disabled:pointer-events-none disabled:opacity-60';
 const secondaryActionClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-black/15 bg-white px-5 py-2.5 text-sm font-semibold text-[#151515] transition-colors hover:border-[#0000FF]/35 hover:bg-[#f3f3ff] disabled:pointer-events-none disabled:opacity-60';
 const inverseActionClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/30 bg-transparent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-[#0000FF]';
@@ -131,8 +145,8 @@ const ProfilePage = () => {
   }, [currentUser?.id, isAdmin]);
 
   const profileStats = useMemo(() => {
-    const activeOrders = orders.filter(order => ['pending', 'processing', 'shipped'].includes(order.status)).length;
-    const completedOrders = orders.filter(order => order.status === 'delivered').length;
+    const activeOrders = orders.filter(order => ORDER_ACTIVE_STATUSES.has(order.status)).length;
+    const completedOrders = orders.filter(order => ORDER_COMPLETED_STATUSES.has(order.status)).length;
 
     return [
       {
@@ -653,7 +667,7 @@ const ProfilePage = () => {
         <title>{t('profile.title')} - Zahnibörse</title>
       </Helmet>
 
-      <AccountLayout activeKey="profile">
+      <AccountLayout activeKey="profile" containerClassName="max-w-none xl:px-9 2xl:px-10">
         <div>
           <section className="mb-5 grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.9fr)]">
             <div className="overflow-hidden rounded-[8px] border border-black/10 bg-white p-6 shadow-[0_18px_44px_-36px_rgba(15,23,42,0.28)] md:p-8">

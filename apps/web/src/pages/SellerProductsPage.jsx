@@ -35,6 +35,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea.jsx';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
+import { getProductImageUrl } from '@/lib/productImages.js';
 import pb from '@/lib/pocketbaseClient.js';
 
 const SUBJECTS = [
@@ -55,6 +56,12 @@ const CONDITIONS = [
   { value: 'Wie neu', key: 'marketplace.condition_like_new' },
   { value: 'Gut', key: 'marketplace.condition_good' },
   { value: 'Befriedigend', key: 'marketplace.condition_satisfactory' },
+];
+
+const SHIPPING_TYPES = [
+  { value: 'dhl_parcel', key: 'product.shipping_dhl_parcel' },
+  { value: 'letter_mail', key: 'product.shipping_letter_mail' },
+  { value: 'pickup', key: 'product.shipping_pickup' },
 ];
 
 const SellerProductsPage = () => {
@@ -128,6 +135,9 @@ const SellerProductsPage = () => {
         product.description,
         product.product_type,
         product.condition,
+        product.brand,
+        product.location,
+        product.shipping_type,
         Array.isArray(product.fachbereich) ? product.fachbereich.join(' ') : product.fachbereich,
       ]
         .filter(Boolean)
@@ -172,6 +182,9 @@ const SellerProductsPage = () => {
       weight_g: product.weight_g ? String(product.weight_g) : '',
       product_type: product.product_type || 'Article',
       condition: product.condition || 'Gut',
+      brand: product.brand || '',
+      location: product.location || '',
+      shipping_type: product.shipping_type || 'dhl_parcel',
       fachbereich: Array.isArray(product.fachbereich) ? product.fachbereich : product.fachbereich ? [product.fachbereich] : [],
       description: product.description || '',
     });
@@ -230,6 +243,14 @@ const SellerProductsPage = () => {
           weight_g: Math.round(parcelWeight),
           product_type: editForm.product_type,
           condition: editForm.condition,
+          brand: editForm.brand.trim(),
+          location: editForm.location.trim(),
+          shipping_type: editForm.shipping_type || 'dhl_parcel',
+          filter_values: {
+            brand: editForm.brand.trim(),
+            location: editForm.location.trim(),
+            shipping_type: editForm.shipping_type || 'dhl_parcel',
+          },
           fachbereich: editForm.fachbereich,
           description: editForm.description.trim(),
         },
@@ -281,8 +302,8 @@ const SellerProductsPage = () => {
 
   const ProductImage = ({ product, className = 'h-14 w-14' }) => (
     <div className={`${className} shrink-0 overflow-hidden rounded-2xl border border-black/5 bg-slate-100`}>
-      {product.image ? (
-        <img src={pb.files.getUrl(product, product.image)} alt={product.name} className="h-full w-full object-cover" />
+      {getProductImageUrl(product) ? (
+        <img src={getProductImageUrl(product)} alt={product.name} className="h-full w-full object-cover" />
       ) : (
         <div className="flex h-full w-full items-center justify-center text-[10px] font-medium uppercase tracking-[0.12em] text-slate-400">
           {t('seller.no_image')}
@@ -351,10 +372,11 @@ const SellerProductsPage = () => {
 
       <main className="flex-1 bg-[linear-gradient(180deg,#f7f7f7_0%,#ffffff_34%,#ffffff_100%)] py-8 md:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="relative mb-8 overflow-hidden rounded-[32px] border border-black/5 bg-slate-950 p-6 text-white shadow-sm md:p-8">
-            <div className="absolute inset-0 opacity-80">
-              <div className="absolute -right-16 -top-20 h-72 w-72 rounded-full bg-[#0000FF]/60 blur-3xl" />
-              <div className="absolute bottom-0 left-1/3 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+          <div className="relative mb-8 overflow-hidden rounded-[32px] border border-[#0000FF]/10 bg-[#0000FF] p-6 text-white shadow-sm md:p-8">
+            <div className="absolute inset-0 bg-[linear-gradient(115deg,#0000FF_0%,#0037FF_54%,#0B63FF_100%)] opacity-95" />
+            <div className="absolute inset-0 opacity-40">
+              <div className="absolute right-0 top-0 h-full w-1/2 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.16)_100%)]" />
+              <div className="absolute bottom-0 left-0 h-px w-full bg-white/35" />
             </div>
 
             <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -364,12 +386,12 @@ const SellerProductsPage = () => {
                   {t('seller.inventory')}
                 </div>
                 <h1 className="text-3xl font-bold tracking-tight md:text-5xl">{t('seller.my_items')}</h1>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-slate-200 md:text-base">
+                <p className="mt-3 max-w-xl text-sm leading-6 text-blue-50 md:text-base">
                   {t('seller.page_subtitle')}
                 </p>
               </div>
 
-              <Button asChild size="lg" className="h-12 rounded-full bg-white px-5 text-slate-950 shadow-none hover:bg-blue-50">
+              <Button asChild size="lg" className="h-12 rounded-full bg-white px-5 text-[#0000FF] shadow-none hover:bg-blue-50">
                 <Link to="/seller/new-product">
                   <Plus className="h-4 w-4" />
                   {t('seller.new_product')}
@@ -380,7 +402,7 @@ const SellerProductsPage = () => {
 
           <section className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { label: t('seller.total_listings'), value: productStats.total, icon: Package, className: 'bg-slate-950 text-white' },
+              { label: t('seller.total_listings'), value: productStats.total, icon: Package, className: 'bg-[#0000FF] text-white' },
               { label: t('seller.active_listings'), value: productStats.active, icon: CheckCircle2, className: 'bg-emerald-50 text-emerald-800' },
               { label: t('seller.pending_listings'), value: productStats.pending, icon: RefreshCw, className: 'bg-amber-50 text-amber-800' },
               { label: t('seller.sold_listings'), value: productStats.sold, icon: Tag, className: 'bg-blue-50 text-blue-800' },
@@ -614,6 +636,42 @@ const SellerProductsPage = () => {
                         {CONDITIONS.map((condition) => (
                           <SelectItem key={condition.value} value={condition.value}>
                             {t(condition.key)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-brand">{t('product.brand')}</Label>
+                    <Input
+                      id="edit-brand"
+                      value={editForm.brand}
+                      onChange={(event) => handleEditFieldChange('brand', event.target.value)}
+                      placeholder={t('product.brand_placeholder')}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-location">{t('product.location')}</Label>
+                    <Input
+                      id="edit-location"
+                      value={editForm.location}
+                      onChange={(event) => handleEditFieldChange('location', event.target.value)}
+                      placeholder={t('product.location_placeholder')}
+                    />
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>{t('product.shipping_type')}</Label>
+                    <Select value={editForm.shipping_type} onValueChange={(value) => handleEditFieldChange('shipping_type', value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SHIPPING_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {t(type.key)}
                           </SelectItem>
                         ))}
                       </SelectContent>

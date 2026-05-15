@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
 import apiServerClient from '@/lib/apiServerClient.js';
 import pb from '@/lib/pocketbaseClient.js';
+import { getProductImageUrl } from '@/lib/productImages.js';
 
 const ProductVerificationAdminPage = () => {
   const { t, language } = useTranslation();
@@ -42,10 +43,17 @@ const ProductVerificationAdminPage = () => {
     return data?.message || data?.error?.message || data?.error || fallback;
   }, [t]);
 
+  const getAuthHeaders = useCallback(() => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${pb.authStore.token}`,
+  }), []);
+
   const fetchPendingProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await apiServerClient.fetch('/admin/verifications');
+      const response = await apiServerClient.fetch('/admin/verifications', {
+        headers: getAuthHeaders(),
+      });
 
       if (!response.ok) {
         throw new Error(await getApiErrorMessage(response, 'admin_verifications.load_error'));
@@ -59,19 +67,22 @@ const ProductVerificationAdminPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [getApiErrorMessage, t]);
+  }, [getApiErrorMessage, getAuthHeaders, t]);
 
   useEffect(() => {
     fetchPendingProducts();
   }, [fetchPendingProducts]);
 
   const handleApprove = async (product) => {
+    const notes = window.prompt(t('admin_verifications.approve_notes_prompt'), '');
+    if (notes === null) return;
+
     setProcessingId(product.id);
     try {
       const response = await apiServerClient.fetch('/admin/approve-product', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: product.id }),
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ productId: product.id, notes }),
       });
 
       if (!response.ok) {
@@ -96,7 +107,7 @@ const ProductVerificationAdminPage = () => {
     try {
       const response = await apiServerClient.fetch('/admin/reject-product', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           productId: product.id,
           reason: reason || t('admin_verifications.default_reject_reason'),
@@ -164,9 +175,9 @@ const ProductVerificationAdminPage = () => {
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="h-12 w-12 overflow-hidden rounded-md border bg-muted">
-                        {product.image ? (
+                        {getProductImageUrl(product) ? (
                           <img
-                            src={pb.files.getUrl(product, product.image)}
+                            src={getProductImageUrl(product)}
                             alt={product.name}
                             className="h-full w-full object-cover"
                           />
@@ -181,6 +192,10 @@ const ProductVerificationAdminPage = () => {
                       <div className="font-medium">{product.name}</div>
                       <div className="max-w-[240px] truncate text-xs text-muted-foreground">
                         {product.description || t('product.no_description')}
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-1 text-xs text-muted-foreground">
+                        {product.brand && <span>{product.brand}</span>}
+                        {product.location && <span>{product.location}</span>}
                       </div>
                     </TableCell>
                     <TableCell>

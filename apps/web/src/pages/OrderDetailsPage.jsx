@@ -185,6 +185,12 @@ const OrderDetailsPage = () => {
     }
   };
 
+  const getOrderStatusLabel = (status) => {
+    const key = `orders.status_${status}`;
+    const translated = t(key);
+    return translated === key ? (status || t('orders.status_processing')) : translated;
+  };
+
   const handleDownloadShippingLabel = () => {
     if (order?.dhl_label_pdf) {
       downloadBase64Pdf(order.dhl_label_pdf, `DHL_Label_${order.order_number || order.id}.pdf`);
@@ -338,7 +344,7 @@ const OrderDetailsPage = () => {
               </p>
             </div>
             <Badge className="text-sm px-3 py-1 bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200">
-              {order.status || t('orders.status_processing')}
+              {getOrderStatusLabel(order.status)}
             </Badge>
           </div>
 

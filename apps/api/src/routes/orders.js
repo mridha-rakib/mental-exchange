@@ -3,6 +3,15 @@ import express from 'express';
 import pb from '../utils/pocketbaseClient.js';
 import logger from '../utils/logger.js';
 import { requireAuth } from '../middleware/index.js';
+import {
+  canTransitionOrderStatus,
+  isOrderActive,
+  isOrderCompleted,
+  isOrderReviewReady,
+  isOrderStatus,
+  ORDER_STATUS_VALUES,
+} from '../utils/orderStatus.js';
+import { startPayoutWaitingPeriodForOrder } from '../utils/payoutWaitingPeriod.js';
 
 const router = express.Router();
 
@@ -22,10 +31,12 @@ const clampPaginationNumber = (value, fallback, { min = 1, max = 100 } = {}) => 
 };
 
 const getProductImageUrl = (product) => {
-  if (!product?.image) return '';
+  const images = Array.isArray(product?.images) ? product.images : product?.images ? [product.images] : [];
+  const image = images[0] || product?.image || '';
+  if (!image) return '';
 
   try {
-    return pb.files.getUrl(product, product.image, { thumb: '300x300' });
+    return pb.files.getUrl(product, image, { thumb: '300x300' });
   } catch {
     return '';
   }
@@ -41,6 +52,7 @@ const sanitizeProduct = (product) => {
     name: product.name || '',
     price: product.price || 0,
     image: product.image || '',
+    images: Array.isArray(product.images) ? product.images : product.images ? [product.images] : [],
     condition: product.condition || '',
     product_type: product.product_type || '',
     fachbereich: product.fachbereich || [],
@@ -53,6 +65,7 @@ const sanitizeProduct = (product) => {
 const sanitizeOrderForList = (order) => {
   const {
     dhl_label_pdf,
+    dhl_tracking_raw,
     ...safeOrder
   } = order;
 
@@ -175,8 +188,8 @@ router.get('/', requireAuth, async (req, res) => {
 
   const summary = items.reduce((acc, order) => {
     acc.total += 1;
-    if (['paid', 'pending', 'processing', 'shipped'].includes(order.status)) acc.active += 1;
-    if (['delivered', 'completed'].includes(order.status)) acc.completed += 1;
+    if (isOrderActive(order.status)) acc.active += 1;
+    if (isOrderCompleted(order.status)) acc.completed += 1;
     if (order.tracking_number || order.dhl_tracking_number) acc.tracked += 1;
     return acc;
   }, {
@@ -228,7 +241,7 @@ router.get('/:orderId', requireAuth, async (req, res) => {
     : null;
   const trackingNumber = order.tracking_number || order.dhl_tracking_number || '';
   const normalizedStatus = String(order.status || '').toLowerCase();
-  const canReview = order.buyer_id === req.auth.id && ['delivered', 'completed'].includes(normalizedStatus) && !review;
+  const canReview = order.buyer_id === req.auth.id && isOrderReviewReady(normalizedStatus) && !review;
 
   res.json({
     ...order,
@@ -382,9 +395,9 @@ router.post('/:orderId/update-status', requireAuth, async (req, res) => {
 
   const orderIdStr = String(orderId);
 
-  if (!status || !['pending', 'paid', 'shipped', 'delivered', 'cancelled'].includes(status)) {
+  if (!status || !isOrderStatus(status)) {
     return res.status(400).json({
-      error: 'Invalid status. Must be one of: pending, paid, shipped, delivered, cancelled',
+      error: `Invalid status. Must be one of: ${ORDER_STATUS_VALUES.join(', ')}`,
     });
   }
 
@@ -399,11 +412,26 @@ router.post('/:orderId/update-status', requireAuth, async (req, res) => {
     throw error;
   }
 
-  await pb.collection('orders').update(orderIdStr, { status });
+  if (!req.auth.is_admin && !['shipped', 'dhl_delivered', 'delivered', 'cancelled'].includes(status)) {
+    return res.status(403).json({
+      error: 'Only admins can set this order status',
+      requestedStatus: status,
+    });
+  }
+
+  if (!canTransitionOrderStatus(order.status, status)) {
+    return res.status(400).json({
+      error: `Invalid order status transition from ${order.status || 'pending'} to ${status}`,
+      currentStatus: order.status || 'pending',
+      requestedStatus: status,
+    });
+  }
+
+  let updatedOrder = await pb.collection('orders').update(orderIdStr, { status });
 
   logger.info(`[ORDERS] Order status updated - Order: ${orderIdStr}, Status: ${status}`);
 
-  if (status === 'delivered') {
+  if (status === 'paid_out') {
     const earnings = await pb.collection('seller_earnings').getFullList({
       filter: `order_id="${orderIdStr}"`,
     });
@@ -414,7 +442,17 @@ router.post('/:orderId/update-status', requireAuth, async (req, res) => {
     }
   }
 
-  res.json({ success: true, message: `Order ${orderIdStr} status updated to ${status}` });
+  if (['dhl_delivered', 'delivered'].includes(status)) {
+    updatedOrder = await startPayoutWaitingPeriodForOrder({
+      order: updatedOrder,
+      deliveredAt: new Date().toISOString(),
+      source: req.auth.is_admin ? 'admin_order_status_route' : 'seller_order_status_route',
+      actorId: req.auth.id,
+    });
+    logger.info(`[ORDERS] Payout waiting period started - Order: ${orderIdStr}, Status: ${updatedOrder.status}`);
+  }
+
+  res.json({ success: true, message: `Order ${orderIdStr} status updated to ${updatedOrder.status}`, order: updatedOrder });
 });
 
 export default router;

@@ -15,9 +15,21 @@ const normalizeProductId = (body = {}) => {
 
 const escapeFilterValue = (value) => String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 
+const getProductImages = (product) => (
+  Array.isArray(product.images) ? product.images : product.images ? [product.images] : []
+);
+
+const getProductImageUrl = (product, imageName = '') => {
+  const resolvedImage = imageName || getProductImages(product)[0] || product.image || '';
+  return resolvedImage ? pb.files.getUrl(product, resolvedImage) : null;
+};
+
 const normalizeMarketplaceProduct = (product) => product ? ({
   ...product,
   product_type: product.product_type || 'Article',
+  images: getProductImages(product),
+  image_urls: getProductImages(product).map((imageName) => getProductImageUrl(product, imageName)).filter(Boolean),
+  image_url: getProductImageUrl(product),
   fachbereich: Array.isArray(product.fachbereich)
     ? product.fachbereich
     : product.fachbereich
@@ -34,7 +46,9 @@ const normalizeShopProduct = (product) => product ? ({
   description: product.description || '',
   price: product.price,
   image: product.image || null,
-  image_url: product.image ? pb.files.getUrl(product, product.image) : null,
+  images: getProductImages(product),
+  image_urls: getProductImages(product).map((imageName) => getProductImageUrl(product, imageName)).filter(Boolean),
+  image_url: getProductImageUrl(product),
   condition: product.condition || null,
   fachbereich: Array.isArray(product.fachbereich)
     ? product.fachbereich

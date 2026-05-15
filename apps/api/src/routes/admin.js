@@ -1,11 +1,25 @@
 import 'dotenv/config';
 import express from 'express';
+import Stripe from 'stripe';
 import pb from '../utils/pocketbaseClient.js';
 import logger from '../utils/logger.js';
 import { auth, requireAuth, admin } from '../middleware/index.js';
 import { DEFAULT_PLATFORM_SETTINGS, normalizePlatformSettings } from '../utils/platformSettings.js';
+import { createProductVerificationAudit } from '../utils/productValidation.js';
+import {
+  canTransitionOrderStatus,
+  isOrderStatus,
+  ORDER_DELIVERED_STATUSES,
+  ORDER_STATUS_VALUES,
+  shouldExcludeOrderFromRevenue,
+} from '../utils/orderStatus.js';
+import {
+  releaseEligiblePayouts,
+  startPayoutWaitingPeriodForOrder,
+} from '../utils/payoutWaitingPeriod.js';
 
 const router = express.Router();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Apply auth and admin middleware to all routes
 router.use(auth);
@@ -123,6 +137,11 @@ const formatAdminProduct = (product, source = 'marketplace', seller = null) => {
   const normalizedSeller = buildAdminProductSeller(product, source, seller);
   const createdAt = product.created_at || product.created || '';
   const updatedAt = product.updated_at || product.updated || createdAt;
+  const images = Array.isArray(product.images)
+    ? product.images
+    : product.images
+      ? [product.images]
+      : [];
 
   return {
     id: product.id,
@@ -137,6 +156,11 @@ const formatAdminProduct = (product, source = 'marketplace', seller = null) => {
     fachbereich: product.fachbereich || [],
     status: source === 'shop' ? 'active' : product.status || 'draft',
     verification_status: resolveProductVerificationStatus(product, source),
+    verification_requested_at: product.verification_requested_at || '',
+    verification_fee_paid: product.verification_fee_paid === true,
+    verification_fee_paid_at: product.verification_fee_paid_at || '',
+    verification_payment_intent_id: product.verification_payment_intent_id || '',
+    verification_checkout_session_id: product.verification_checkout_session_id || '',
     seller_id: normalizedSeller.id,
     seller_username: normalizedSeller.seller_username,
     seller_email: normalizedSeller.email,
@@ -147,6 +171,15 @@ const formatAdminProduct = (product, source = 'marketplace', seller = null) => {
     width_mm: product.width_mm || 0,
     height_mm: product.height_mm || 0,
     image: product.image || null,
+    images,
+    brand: product.brand || '',
+    location: product.location || '',
+    shipping_type: product.shipping_type || 'dhl_parcel',
+    filter_values: safeJsonObject(product.filter_values),
+    validation_requested_at: product.validation_requested_at || '',
+    validation_reviewed_at: product.validation_reviewed_at || '',
+    validation_admin_id: product.validation_admin_id || '',
+    validation_notes: product.validation_notes || '',
     shop_product: source === 'shop' ? true : product.shop_product === true,
     created: product.created || createdAt,
     created_at: createdAt,
@@ -215,6 +248,205 @@ const escapeFilterValue = (value) => String(value ?? '')
   .replace(/\\/g, '\\\\')
   .replace(/"/g, '\\"');
 
+const SHOP_FILTER_TYPES = new Set(['dropdown', 'checkbox_group', 'price_range']);
+const SHOP_FILTER_SCOPES = new Set(['shop', 'marketplace']);
+const SHOP_FILTER_OPERATORS = new Set(['equals', 'contains', 'range']);
+const SHOP_FILTER_PRODUCT_TYPES = new Set(['Article', 'Set', 'Consumable']);
+
+const safeJsonObject = (value, fallback = {}) => {
+  if (value === undefined || value === null || value === '') return fallback;
+  if (typeof value === 'object' && !Array.isArray(value)) return value;
+
+  try {
+    const parsed = JSON.parse(String(value));
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const normalizeString = (value) => String(value ?? '').trim();
+
+const normalizeKey = (value) => normalizeString(value).toLowerCase();
+
+const normalizeStringArray = (value) => {
+  if (Array.isArray(value)) return value.map(normalizeString).filter(Boolean);
+  const normalized = normalizeString(value);
+  return normalized ? [normalized] : [];
+};
+
+const parseBoolean = (value, fallback = true) => {
+  if (value === undefined || value === null || value === '') return fallback;
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return ['true', '1', 'yes', 'on'].includes(value.toLowerCase());
+  return Boolean(value);
+};
+
+const parseSortOrder = (value, fallback = 0) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+};
+
+const serializeAdminShopFilterOption = (record) => ({
+  id: record.id,
+  filterKey: record.filter_key || '',
+  value: record.value || '',
+  label: record.label || record.value || '',
+  labelDe: record.label_de || record.label || record.value || '',
+  labelEn: record.label_en || record.label || record.value || '',
+  active: record.active !== false,
+  sortOrder: Number(record.sort_order || 0),
+  metadata: safeJsonObject(record.metadata),
+  created: record.created,
+  updated: record.updated,
+});
+
+const serializeAdminShopFilter = (record, options = []) => ({
+  id: record.id,
+  key: record.key || '',
+  label: record.label || record.key || '',
+  labelDe: record.label_de || record.label || record.key || '',
+  labelEn: record.label_en || record.label || record.key || '',
+  type: record.type || 'checkbox_group',
+  scope: Array.isArray(record.scope) ? record.scope : record.scope ? [record.scope] : [],
+  parameterKey: record.parameter_key || record.key || '',
+  productField: record.product_field || record.key || '',
+  operator: record.operator || 'equals',
+  appliesToProductType: Array.isArray(record.applies_to_product_type)
+    ? record.applies_to_product_type
+    : record.applies_to_product_type
+      ? [record.applies_to_product_type]
+      : [],
+  active: record.active !== false,
+  sortOrder: Number(record.sort_order || 0),
+  metadata: safeJsonObject(record.metadata),
+  options,
+  created: record.created,
+  updated: record.updated,
+});
+
+const validateShopFilterPayload = (payload, { existingFilter = null } = {}) => {
+  const key = existingFilter ? existingFilter.key : normalizeKey(payload.key);
+  const label = normalizeString(payload.label || payload.labelEn || payload.labelDe || existingFilter?.label);
+  const labelDe = normalizeString(payload.labelDe ?? payload.label_de ?? existingFilter?.label_de ?? label);
+  const labelEn = normalizeString(payload.labelEn ?? payload.label_en ?? existingFilter?.label_en ?? label);
+  const type = normalizeString(payload.type || existingFilter?.type || 'checkbox_group');
+  const scope = normalizeStringArray(payload.scope ?? existingFilter?.scope).filter((item) => SHOP_FILTER_SCOPES.has(item));
+  const parameterKey = normalizeString(payload.parameterKey ?? payload.parameter_key ?? existingFilter?.parameter_key ?? key);
+  const productField = normalizeString(payload.productField ?? payload.product_field ?? existingFilter?.product_field ?? key);
+  const operatorFallback = type === 'price_range' ? 'range' : 'equals';
+  const operator = normalizeString(payload.operator || existingFilter?.operator || operatorFallback);
+  const appliesToProductType = normalizeStringArray(payload.appliesToProductType ?? payload.applies_to_product_type ?? existingFilter?.applies_to_product_type)
+    .filter((item) => SHOP_FILTER_PRODUCT_TYPES.has(item));
+  const metadata = safeJsonObject(payload.metadata ?? existingFilter?.metadata);
+
+  if (!existingFilter && !/^[a-z0-9_]{1,80}$/.test(key)) {
+    return { error: 'Filter key must use lowercase letters, numbers, and underscores only.' };
+  }
+
+  if (!label) {
+    return { error: 'Filter label is required.' };
+  }
+
+  if (!SHOP_FILTER_TYPES.has(type)) {
+    return { error: 'Invalid filter type.' };
+  }
+
+  if (scope.length === 0) {
+    return { error: 'At least one filter scope is required.' };
+  }
+
+  if (!/^[A-Za-z0-9_]{1,80}$/.test(parameterKey)) {
+    return { error: 'Parameter key must use letters, numbers, and underscores only.' };
+  }
+
+  if (!/^[A-Za-z0-9_]{1,80}$/.test(productField)) {
+    return { error: 'Product field must use letters, numbers, and underscores only.' };
+  }
+
+  if (!SHOP_FILTER_OPERATORS.has(operator)) {
+    return { error: 'Invalid filter operator.' };
+  }
+
+  return {
+    data: {
+      key,
+      label,
+      label_de: labelDe,
+      label_en: labelEn,
+      type,
+      scope,
+      parameter_key: parameterKey,
+      product_field: productField,
+      operator,
+      applies_to_product_type: appliesToProductType,
+      active: parseBoolean(payload.active, existingFilter ? existingFilter.active !== false : true),
+      sort_order: parseSortOrder(payload.sortOrder ?? payload.sort_order, existingFilter?.sort_order || 0),
+      metadata,
+    },
+  };
+};
+
+const validateShopFilterOptionPayload = (payload, { existingOption = null, filterKey = null } = {}) => {
+  const resolvedFilterKey = normalizeKey(filterKey || payload.filterKey || payload.filter_key || existingOption?.filter_key);
+  const value = normalizeString(payload.value ?? existingOption?.value);
+  const label = normalizeString(payload.label || payload.labelEn || payload.labelDe || existingOption?.label || value);
+  const labelDe = normalizeString(payload.labelDe ?? payload.label_de ?? label);
+  const labelEn = normalizeString(payload.labelEn ?? payload.label_en ?? label);
+
+  if (!/^[a-z0-9_]{1,80}$/.test(resolvedFilterKey)) {
+    return { error: 'A valid filter key is required for this option.' };
+  }
+
+  if (!value) {
+    return { error: 'Option value is required.' };
+  }
+
+  if (!label) {
+    return { error: 'Option label is required.' };
+  }
+
+  return {
+    data: {
+      filter_key: resolvedFilterKey,
+      value,
+      label,
+      label_de: labelDe,
+      label_en: labelEn,
+      active: parseBoolean(payload.active, existingOption ? existingOption.active !== false : true),
+      sort_order: parseSortOrder(payload.sortOrder ?? payload.sort_order, existingOption?.sort_order || 0),
+      metadata: safeJsonObject(payload.metadata),
+    },
+  };
+};
+
+const getAdminShopFilters = async () => {
+  const [filterRecords, optionRecords] = await Promise.all([
+    pb.collection('shop_filters').getFullList({
+      sort: 'sort_order,label',
+      $autoCancel: false,
+    }),
+    pb.collection('shop_filter_options').getFullList({
+      sort: 'filter_key,sort_order,label',
+      $autoCancel: false,
+    }),
+  ]);
+
+  const optionsByFilterKey = new Map();
+
+  for (const optionRecord of optionRecords) {
+    const option = serializeAdminShopFilterOption(optionRecord);
+    const current = optionsByFilterKey.get(option.filterKey) || [];
+    current.push(option);
+    optionsByFilterKey.set(option.filterKey, current);
+  }
+
+  return filterRecords.map((filterRecord) => serializeAdminShopFilter(
+    filterRecord,
+    optionsByFilterKey.get(filterRecord.key) || [],
+  ));
+};
+
 const parseParcelNumber = (value) => {
   if (value === undefined || value === null || value === '') return undefined;
   const parsed = Number(value);
@@ -254,9 +486,18 @@ const sanitizeProductSummary = (product) => {
     name: product.name || '',
     price: product.price || 0,
     image: product.image || '',
+    images: Array.isArray(product.images) ? product.images : product.images ? [product.images] : [],
     condition: product.condition || '',
     product_type: product.product_type || '',
     fachbereich: product.fachbereich || [],
+    brand: product.brand || '',
+    location: product.location || '',
+    shipping_type: product.shipping_type || 'dhl_parcel',
+    filter_values: safeJsonObject(product.filter_values),
+    validation_requested_at: product.validation_requested_at || '',
+    validation_reviewed_at: product.validation_reviewed_at || '',
+    validation_admin_id: product.validation_admin_id || '',
+    validation_notes: product.validation_notes || '',
     seller_id: product.seller_id || '',
     seller_username: product.seller_username || '',
     weight_g: product.weight_g || 0,
@@ -268,6 +509,7 @@ const sanitizeAdminOrderRecord = (order) => {
 
   const {
     dhl_label_pdf,
+    dhl_tracking_raw,
     ...safeOrder
   } = order;
 
@@ -328,6 +570,172 @@ const fetchLatestReturnRequest = async (orderId) => {
   }).catch(() => []);
 
   return items[0] || null;
+};
+
+const fetchOrderStatusEvents = async (orderId) => {
+  const items = await pb.collection('order_status_events').getFullList({
+    filter: `order_id="${escapeFilterValue(orderId)}"`,
+    sort: '-created',
+    $autoCancel: false,
+  }).catch((error) => {
+    if (!isMissingCollectionError(error)) {
+      logger.warn(`[ADMIN] Failed to load order status events - Order: ${orderId}, Error: ${error.message}`);
+    }
+    return [];
+  });
+
+  return items;
+};
+
+const sanitizeOrderStatusEvent = (event) => ({
+  id: event.id,
+  order_id: event.order_id || '',
+  admin_id: event.admin_id || '',
+  event_type: event.event_type || '',
+  from_status: event.from_status || '',
+  to_status: event.to_status || '',
+  note: event.note || '',
+  metadata: safeJsonObject(event.metadata),
+  created: event.created,
+  updated: event.updated,
+});
+
+const logOrderStatusEvent = async ({ orderId, adminId, eventType, fromStatus, toStatus, note = '', metadata = {} }) => {
+  if (!orderId || !eventType) return null;
+
+  return pb.collection('order_status_events').create({
+    order_id: String(orderId),
+    admin_id: adminId ? String(adminId) : '',
+    event_type: String(eventType),
+    from_status: fromStatus ? String(fromStatus) : '',
+    to_status: toStatus ? String(toStatus) : '',
+    note: note ? String(note) : '',
+    metadata: safeJsonObject(metadata),
+  }, { $autoCancel: false }).catch((error) => {
+    if (!isMissingCollectionError(error)) {
+      logger.warn(`[ADMIN] Failed to log order status event - Order: ${orderId}, Event: ${eventType}, Error: ${error.message}`);
+    }
+    return null;
+  });
+};
+
+const buildAdminRefundIdempotencyKey = (order, amountCents) => [
+  'admin-order-refund',
+  order?.id || '',
+  order?.payment_intent_id || '',
+  amountCents,
+].filter((part) => part !== '').join(':');
+
+const createStripeRefundForOrder = async ({ order, amount, reason, adminId }) => {
+  const paymentIntentId = String(order?.payment_intent_id || '').trim();
+  if (!paymentIntentId) {
+    const error = new Error('Cannot refund an order without a Stripe payment intent');
+    error.status = 400;
+    throw error;
+  }
+
+  const amountCents = Math.round(Number(amount || 0) * 100);
+  if (!Number.isFinite(amountCents) || amountCents <= 0) {
+    const error = new Error('Refund amount must be greater than zero');
+    error.status = 400;
+    throw error;
+  }
+
+  const existingRefundId = String(order?.stripe_refund_id || '').trim();
+  if (existingRefundId) {
+    const existingRefund = await stripe.refunds.retrieve(existingRefundId).catch(() => null);
+    if (existingRefund && !['failed', 'canceled'].includes(String(existingRefund.status || ''))) {
+      return existingRefund;
+    }
+  }
+
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+  const paidAmountCents = Number(paymentIntent.amount_received || paymentIntent.amount || 0);
+  const refundList = await stripe.refunds.list({ payment_intent: paymentIntentId, limit: 100 });
+  const alreadyRefundedCents = (refundList.data || [])
+    .filter((refund) => !['failed', 'canceled'].includes(String(refund.status || '')))
+    .reduce((sum, refund) => sum + Number(refund.amount || 0), 0);
+  const remainingRefundableCents = Math.max(0, paidAmountCents - alreadyRefundedCents);
+
+  if (amountCents > remainingRefundableCents) {
+    const error = new Error(`Refund amount exceeds the remaining refundable payment amount (€${(remainingRefundableCents / 100).toFixed(2)})`);
+    error.status = 400;
+    throw error;
+  }
+
+  return stripe.refunds.create({
+    payment_intent: paymentIntentId,
+    amount: amountCents,
+    reason: 'requested_by_customer',
+    metadata: {
+      order_id: order.id,
+      requested_by_admin: adminId || '',
+      reason: reason || '',
+      product_type: order.product_type || '',
+    },
+  }, {
+    idempotencyKey: buildAdminRefundIdempotencyKey(order, amountCents),
+  });
+};
+
+const updateOrderStatusWithAudit = async ({
+  existingOrder,
+  status,
+  adminId,
+  eventType = 'status_changed',
+  note = '',
+  updateData = {},
+  metadata = {},
+}) => {
+  const orderId = String(existingOrder.id).trim();
+  const fromStatus = existingOrder.status || 'pending';
+
+  if (!canTransitionOrderStatus(fromStatus, status)) {
+    const error = new Error(`Invalid order status transition from ${fromStatus} to ${status}`);
+    error.status = 400;
+    error.currentStatus = fromStatus;
+    error.requestedStatus = status;
+    throw error;
+  }
+
+  let order = await pb.collection('orders').update(orderId, {
+    ...updateData,
+    status,
+  }, { $autoCancel: false });
+
+  await logOrderStatusEvent({
+    orderId,
+    adminId,
+    eventType,
+    fromStatus,
+    toStatus: status,
+    note,
+    metadata,
+  });
+
+  if (status === 'paid_out') {
+    const earnings = await pb.collection('seller_earnings').getFullList({
+      filter: `order_id="${escapeFilterValue(orderId)}"`,
+      $autoCancel: false,
+    }).catch(() => []);
+
+    await Promise.all(
+      earnings
+        .filter((earning) => earning.status !== 'confirmed')
+        .map((earning) => pb.collection('seller_earnings').update(earning.id, { status: 'confirmed' })),
+    );
+  }
+
+  if (['dhl_delivered', 'delivered'].includes(status)) {
+    order = await startPayoutWaitingPeriodForOrder({
+      order,
+      deliveredAt: updateData.delivered_at || updateData.dhl_delivered_at || new Date().toISOString(),
+      source: status === 'dhl_delivered' ? 'admin_dhl_delivered_status' : 'admin_delivered_status',
+      actorId: adminId,
+    });
+  }
+
+  return order;
 };
 
 const toDateKey = (date) => date.toISOString().slice(0, 10);
@@ -406,7 +814,7 @@ const buildAdminAnalyticsResponse = async ({ days = 7 } = {}) => {
 
     bucket.orders += 1;
 
-    if (!['cancelled'].includes(order.status)) {
+    if (!shouldExcludeOrderFromRevenue(order.status)) {
       bucket.revenue += Number(order.total_amount) || 0;
     }
   }
@@ -429,7 +837,7 @@ const buildAdminAnalyticsResponse = async ({ days = 7 } = {}) => {
 
     ordersBySeller.set(sellerId, (ordersBySeller.get(sellerId) || 0) + 1);
 
-    if (!['cancelled'].includes(order.status)) {
+    if (!shouldExcludeOrderFromRevenue(order.status)) {
       revenueBySeller.set(sellerId, (revenueBySeller.get(sellerId) || 0) + (Number(order.total_amount) || 0));
     }
   }
@@ -476,7 +884,7 @@ const buildAdminAnalyticsResponse = async ({ days = 7 } = {}) => {
     summary: {
       totalOrders: orders.length,
       totalRevenue: orders.reduce((sum, order) => (
-        order.status === 'cancelled' ? sum : sum + (Number(order.total_amount) || 0)
+        shouldExcludeOrderFromRevenue(order.status) ? sum : sum + (Number(order.total_amount) || 0)
       ), 0),
       totalProducts: marketplaceProducts.length + shopProducts.length,
       totalSellers: sellerIds.length,
@@ -486,11 +894,17 @@ const buildAdminAnalyticsResponse = async ({ days = 7 } = {}) => {
 };
 
 const buildAdminOrderResponse = async (order) => {
-  const [buyer, seller, product, latestReturnRequest] = await Promise.all([
+  const [buyer, seller, product, latestReturnRequest, statusEvents, sellerEarnings] = await Promise.all([
     order.buyer_id ? pb.collection('users').getOne(String(order.buyer_id)).catch(() => null) : Promise.resolve(null),
     order.seller_id ? pb.collection('users').getOne(String(order.seller_id)).catch(() => null) : Promise.resolve(null),
     fetchOrderProduct(order),
     fetchLatestReturnRequest(order.id),
+    fetchOrderStatusEvents(order.id),
+    pb.collection('seller_earnings').getFullList({
+      filter: `order_id="${escapeFilterValue(order.id)}"`,
+      sort: '-created',
+      $autoCancel: false,
+    }).catch(() => []),
   ]);
 
   return {
@@ -502,6 +916,8 @@ const buildAdminOrderResponse = async (order) => {
     tracking_number: order.tracking_number || order.dhl_tracking_number || '',
     shipping_address_parsed: parseAddress(order.shipping_address),
     return_request: sanitizeReturnRequest(latestReturnRequest),
+    status_events: statusEvents.map(sanitizeOrderStatusEvent),
+    seller_earnings: sellerEarnings,
   };
 };
 
@@ -875,7 +1291,25 @@ router.get('/products/:id', async (req, res) => {
 
 // POST /admin/products - Create new product
 router.post('/products', async (req, res) => {
-  const { name, description, price, image, category, condition, fachbereich, stock_quantity, weight_g, length_mm, width_mm, height_mm } = req.body;
+  const {
+    name,
+    description,
+    price,
+    image,
+    images,
+    category,
+    condition,
+    fachbereich,
+    stock_quantity,
+    weight_g,
+    length_mm,
+    width_mm,
+    height_mm,
+    brand,
+    location,
+    shipping_type,
+    filter_values,
+  } = req.body;
   const parcelWeight = parseParcelNumber(weight_g);
 
   if (!name || price === undefined || !(category || fachbereich) || !condition || !parcelWeight) {
@@ -891,10 +1325,15 @@ router.post('/products', async (req, res) => {
     description: description || '',
     price: parseFloat(price),
     image: image || null,
+    images: Array.isArray(images) ? images : images ? [images] : [],
     condition,
     fachbereich: fachbereich || category,
     stock_quantity: parseParcelNumber(stock_quantity) ?? 1,
     weight_g: parcelWeight,
+    brand: normalizeString(brand),
+    location: normalizeString(location),
+    shipping_type: shipping_type || 'dhl_parcel',
+    filter_values: safeJsonObject(filter_values),
     created_at: new Date().toISOString(),
   };
 
@@ -917,7 +1356,26 @@ router.post('/products', async (req, res) => {
 // PUT /admin/products/:id - Update product
 router.put('/products/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, description, price, image, category, condition, stock_quantity, fachbereich, status, weight_g, length_mm, width_mm, height_mm } = req.body;
+  const {
+    name,
+    description,
+    price,
+    image,
+    images,
+    category,
+    condition,
+    stock_quantity,
+    fachbereich,
+    status,
+    weight_g,
+    length_mm,
+    width_mm,
+    height_mm,
+    brand,
+    location,
+    shipping_type,
+    filter_values,
+  } = req.body;
 
   if (!id) {
     return res.status(400).json({ error: 'Product ID is required' });
@@ -930,8 +1388,13 @@ router.put('/products/:id', async (req, res) => {
   if (description !== undefined) updateData.description = description;
   if (price !== undefined) updateData.price = parseFloat(price);
   if (image !== undefined) updateData.image = image;
+  if (images !== undefined) updateData.images = Array.isArray(images) ? images : images ? [images] : [];
   if (category !== undefined) updateData.category = category;
   if (condition !== undefined) updateData.condition = condition;
+  if (brand !== undefined) updateData.brand = normalizeString(brand);
+  if (location !== undefined) updateData.location = normalizeString(location);
+  if (shipping_type !== undefined) updateData.shipping_type = shipping_type || 'dhl_parcel';
+  if (filter_values !== undefined) updateData.filter_values = safeJsonObject(filter_values);
   const stockQuantity = parseParcelNumber(stock_quantity);
   const parcelWeight = parseParcelNumber(weight_g);
   const parcelLength = parseParcelNumber(length_mm);
@@ -1088,8 +1551,10 @@ router.get('/verifications', async (req, res) => {
   logger.info(`[ADMIN] List pending verifications request - Admin: ${req.auth.id}`);
 
   const products = await pb.collection('products').getList(1, 100, {
-    filter: 'status="pending_verification"',
+    filter: 'status="pending_verification" || verification_status="pending"',
     sort: '-created',
+    expand: 'seller_id',
+    $autoCancel: false,
   });
 
   const sellerIds = [...new Set(products.items.map((product) => product.seller_id).filter(Boolean))];
@@ -1099,6 +1564,7 @@ router.get('/verifications', async (req, res) => {
     const sellerFilter = sellerIds.map((sellerId) => `id="${String(sellerId)}"`).join(' || ');
     const sellers = await pb.collection('users').getFullList({
       filter: sellerFilter,
+      $autoCancel: false,
     });
 
     for (const seller of sellers) {
@@ -1113,25 +1579,7 @@ router.get('/verifications', async (req, res) => {
 
   const items = products.items.map((product) => {
     const seller = sellersById[product.seller_id] || {};
-
-    return {
-      id: product.id,
-      collectionId: product.collectionId,
-      collectionName: product.collectionName,
-      name: product.name || '',
-      description: product.description || '',
-      price: product.price || 0,
-      image: product.image || '',
-      condition: product.condition || '',
-      fachbereich: product.fachbereich || [],
-      product_type: product.product_type || '',
-      seller_id: product.seller_id || '',
-      seller_username: product.seller_username || seller.seller_username || seller.name || '',
-      seller_email: seller.email || '',
-      status: product.status || '',
-      created: product.created,
-      updated: product.updated,
-    };
+    return formatAdminProduct(product, 'marketplace', seller);
   });
 
   logger.info(`[ADMIN] Fetched ${items.length} products awaiting verification`);
@@ -1146,7 +1594,7 @@ router.get('/verifications', async (req, res) => {
 
 // POST /admin/approve-product
 router.post('/approve-product', async (req, res) => {
-  const { productId } = req.body;
+  const { productId, notes } = req.body;
   const adminId = req.auth.id;
 
   logger.info(`[ADMIN] Approve product request - Product: ${productId}, Admin: ${adminId}`);
@@ -1163,14 +1611,25 @@ router.post('/approve-product', async (req, res) => {
     return res.status(404).json({ error: `Product ${productIdStr} not found` });
   }
 
-  await pb.collection('products').update(productIdStr, {
+  const reviewedAt = new Date().toISOString();
+  const updatedProduct = await pb.collection('products').update(productIdStr, {
     status: 'active',
     verification_status: 'approved',
+    validation_reviewed_at: reviewedAt,
+    validation_admin_id: adminId,
+    validation_notes: notes ? String(notes).trim() : '',
+  }, { $autoCancel: false });
+
+  await createProductVerificationAudit({
+    product: updatedProduct,
+    status: 'approved',
+    adminId,
+    adminNotes: notes ? String(notes).trim() : '',
   });
 
   logger.info(`[ADMIN] Product approved - Product: ${productIdStr}, Admin: ${adminId}`);
 
-  const seller = await pb.collection('users').getOne(product.seller_id);
+  const seller = await pb.collection('users').getOne(product.seller_id, { $autoCancel: false });
 
   try {
     await queueVerificationEmail({
@@ -1191,6 +1650,7 @@ router.post('/approve-product', async (req, res) => {
     productId: productIdStr,
     status: 'active',
     verification_status: 'approved',
+    product: formatAdminProduct(updatedProduct, 'marketplace', seller),
     message: `Product ${productIdStr} has been approved`,
   });
 });
@@ -1214,15 +1674,26 @@ router.post('/reject-product', async (req, res) => {
     return res.status(404).json({ error: `Product ${productIdStr} not found` });
   }
 
-  const seller = await pb.collection('users').getOne(product.seller_id);
+  const seller = await pb.collection('users').getOne(product.seller_id, { $autoCancel: false });
+  const rejectionReason = reason || 'Product does not meet verification requirements';
+  const reviewedAt = new Date().toISOString();
 
-  await pb.collection('products').update(productIdStr, {
+  const updatedProduct = await pb.collection('products').update(productIdStr, {
+    status: 'rejected',
     verification_status: 'rejected',
-  }).catch(() => null);
+    validation_reviewed_at: reviewedAt,
+    validation_admin_id: adminId,
+    validation_notes: rejectionReason,
+  }, { $autoCancel: false });
 
-  await pb.collection('products').delete(productIdStr);
+  await createProductVerificationAudit({
+    product: updatedProduct,
+    status: 'rejected',
+    adminId,
+    adminNotes: rejectionReason,
+  });
 
-  logger.info(`[ADMIN] Product rejected and deleted - Product: ${productIdStr}, Admin: ${adminId}`);
+  logger.info(`[ADMIN] Product rejected - Product: ${productIdStr}, Admin: ${adminId}`);
 
   try {
     await queueVerificationEmail({
@@ -1231,7 +1702,7 @@ router.post('/reject-product', async (req, res) => {
       productId: productIdStr,
       productName: product.name,
       sellerEmail: seller.email,
-      reason: reason || 'Product does not meet verification requirements',
+      reason: rejectionReason,
     });
 
     logger.info(`[ADMIN] Rejection email queued for seller - Seller: ${product.seller_id}`);
@@ -1242,7 +1713,10 @@ router.post('/reject-product', async (req, res) => {
   res.json({
     success: true,
     productId: productIdStr,
-    message: `Product ${productIdStr} has been rejected and deleted`,
+    status: 'rejected',
+    verification_status: 'rejected',
+    product: formatAdminProduct(updatedProduct, 'marketplace', seller),
+    message: `Product ${productIdStr} has been rejected`,
   });
 });
 
@@ -1352,9 +1826,16 @@ router.put('/orders/:id', async (req, res) => {
     return res.status(400).json({ error: 'Order ID is required' });
   }
 
-  if (!status || !['pending', 'paid', 'shipped', 'delivered', 'cancelled'].includes(status)) {
+  if (!status || !isOrderStatus(status)) {
     return res.status(400).json({
-      error: 'Invalid status. Must be one of: pending, paid, shipped, delivered, cancelled',
+      error: `Invalid status. Must be one of: ${ORDER_STATUS_VALUES.join(', ')}`,
+    });
+  }
+
+  if (['waiting_admin_validation', 'validated', 'cancelled', 'refunded'].includes(status)) {
+    return res.status(400).json({
+      error: `Use the dedicated admin order action endpoint for ${status}`,
+      requestedStatus: status,
     });
   }
 
@@ -1365,18 +1846,26 @@ router.put('/orders/:id', async (req, res) => {
     return res.status(404).json({ error: 'Order not found' });
   }
 
-  const order = await pb.collection('orders').update(orderId, { status });
+  let order;
+  try {
+    order = await updateOrderStatusWithAudit({
+      existingOrder,
+      status,
+      adminId: req.auth.id,
+      eventType: 'status_changed',
+      note: req.body.note || '',
+      updateData: req.body.note ? { admin_notes: String(req.body.note).trim() } : {},
+    });
+  } catch (error) {
+    if (error.status === 400) {
+      return res.status(400).json({
+        error: error.message,
+        currentStatus: error.currentStatus,
+        requestedStatus: error.requestedStatus,
+      });
+    }
 
-  if (status === 'delivered') {
-    const earnings = await pb.collection('seller_earnings').getFullList({
-      filter: `order_id="${escapeFilterValue(orderId)}"`,
-    }).catch(() => []);
-
-    await Promise.all(
-      earnings
-        .filter((earning) => earning.status !== 'confirmed')
-        .map((earning) => pb.collection('seller_earnings').update(earning.id, { status: 'confirmed' })),
-    );
+    throw error;
   }
 
   const enrichedOrder = await buildAdminOrderResponse(order);
@@ -1386,6 +1875,178 @@ router.put('/orders/:id', async (req, res) => {
     success: true,
     message: `Order ${orderId} status updated to ${status}`,
     order: enrichedOrder,
+  });
+});
+
+router.post('/orders/:id/validate', async (req, res) => {
+  const orderId = String(req.params.id || '').trim();
+  const note = String(req.body?.note || '').trim();
+
+  if (!orderId) {
+    return res.status(400).json({ error: 'Order ID is required' });
+  }
+
+  const existingOrder = await pb.collection('orders').getOne(orderId).catch(() => null);
+
+  if (!existingOrder) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  const now = new Date().toISOString();
+  const order = await updateOrderStatusWithAudit({
+    existingOrder,
+    status: 'validated',
+    adminId: req.auth.id,
+    eventType: 'validated',
+    note,
+    updateData: {
+      admin_validated_at: now,
+      admin_validated_by: req.auth.id,
+      admin_notes: note,
+    },
+  });
+
+  const enrichedOrder = await buildAdminOrderResponse(order);
+  res.json({ success: true, order: enrichedOrder });
+});
+
+router.post('/orders/:id/pause', async (req, res) => {
+  const orderId = String(req.params.id || '').trim();
+  const reason = String(req.body?.reason || req.body?.note || '').trim();
+
+  if (!orderId) {
+    return res.status(400).json({ error: 'Order ID is required' });
+  }
+
+  const existingOrder = await pb.collection('orders').getOne(orderId).catch(() => null);
+
+  if (!existingOrder) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  const now = new Date().toISOString();
+  const order = await updateOrderStatusWithAudit({
+    existingOrder,
+    status: 'waiting_admin_validation',
+    adminId: req.auth.id,
+    eventType: 'paused',
+    note: reason,
+    updateData: {
+      admin_paused_at: now,
+      admin_paused_by: req.auth.id,
+      admin_pause_reason: reason,
+      admin_notes: reason,
+    },
+  });
+
+  const enrichedOrder = await buildAdminOrderResponse(order);
+  res.json({ success: true, order: enrichedOrder });
+});
+
+router.post('/orders/:id/cancel', async (req, res) => {
+  const orderId = String(req.params.id || '').trim();
+  const reason = String(req.body?.reason || req.body?.note || '').trim();
+
+  if (!orderId) {
+    return res.status(400).json({ error: 'Order ID is required' });
+  }
+
+  const existingOrder = await pb.collection('orders').getOne(orderId).catch(() => null);
+
+  if (!existingOrder) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  const now = new Date().toISOString();
+  const order = await updateOrderStatusWithAudit({
+    existingOrder,
+    status: 'cancelled',
+    adminId: req.auth.id,
+    eventType: 'cancelled',
+    note: reason,
+    updateData: {
+      admin_cancelled_at: now,
+      admin_cancelled_by: req.auth.id,
+      admin_cancel_reason: reason,
+      admin_notes: reason,
+    },
+  });
+
+  const enrichedOrder = await buildAdminOrderResponse(order);
+  res.json({ success: true, order: enrichedOrder });
+});
+
+router.post('/orders/:id/refund', async (req, res) => {
+  const orderId = String(req.params.id || '').trim();
+  const reason = String(req.body?.reason || req.body?.note || '').trim();
+
+  if (!orderId) {
+    return res.status(400).json({ error: 'Order ID is required' });
+  }
+
+  const existingOrder = await pb.collection('orders').getOne(orderId).catch(() => null);
+
+  if (!existingOrder) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  if (['paid_out', 'completed'].includes(existingOrder.status)) {
+    return res.status(400).json({ error: 'Cannot refund an order after payout completion' });
+  }
+
+  const refundAmount = req.body?.amount === undefined || req.body?.amount === null || req.body?.amount === ''
+    ? Number(existingOrder.total_amount || 0)
+    : Number(String(req.body.amount).replace(',', '.'));
+
+  if (!Number.isFinite(refundAmount) || refundAmount <= 0) {
+    return res.status(400).json({ error: 'Refund amount must be greater than zero' });
+  }
+
+  const refund = await createStripeRefundForOrder({
+    order: existingOrder,
+    amount: refundAmount,
+    reason,
+    adminId: req.auth.id,
+  });
+
+  const now = refund.created ? new Date(refund.created * 1000).toISOString() : new Date().toISOString();
+  const order = await updateOrderStatusWithAudit({
+    existingOrder,
+    status: 'refunded',
+    adminId: req.auth.id,
+    eventType: 'refunded',
+    note: reason,
+    updateData: {
+      stripe_refund_id: refund.id || '',
+      refund_status: refund.status || 'pending',
+      refund_amount: Number(refund.amount || Math.round(refundAmount * 100)) / 100,
+      refund_processed_at: now,
+      refund_failure: refund.failure_reason || '',
+      refunded_by: req.auth.id,
+      admin_notes: reason,
+    },
+    metadata: {
+      stripe_refund_id: refund.id || '',
+      refund_status: refund.status || '',
+      refund_amount: Number(refund.amount || 0) / 100,
+    },
+  });
+
+  const enrichedOrder = await buildAdminOrderResponse(order);
+  res.json({ success: true, order: enrichedOrder, refund });
+});
+
+router.post('/payouts/release-eligible', async (req, res) => {
+  const limit = Math.min(Math.max(Number.parseInt(req.body?.limit, 10) || 100, 1), 500);
+  const result = await releaseEligiblePayouts({
+    actorId: req.auth.id,
+    limit,
+  });
+
+  logger.info(`[ADMIN] Released eligible payouts by admin ${req.auth.id}: ${result.released} released, ${result.blocked} blocked`);
+  res.json({
+    success: true,
+    ...result,
   });
 });
 
@@ -1564,7 +2225,7 @@ router.get('/sellers', async (req, res) => {
 
     orderCountBySeller.set(sellerId, (orderCountBySeller.get(sellerId) || 0) + 1);
 
-    if (['delivered', 'completed'].includes(order.status)) {
+    if (ORDER_DELIVERED_STATUSES.has(order.status)) {
       deliveredOrderCountBySeller.set(sellerId, (deliveredOrderCountBySeller.get(sellerId) || 0) + 1);
     }
   }
@@ -1576,7 +2237,7 @@ router.get('/sellers', async (req, res) => {
     const netAmount = Number(earning.net_amount ?? earning.gross_amount) || 0;
     revenueTotalBySeller.set(sellerId, (revenueTotalBySeller.get(sellerId) || 0) + netAmount);
 
-    if (earning.status === 'confirmed') {
+    if (['available', 'confirmed'].includes(String(earning.status || '').trim())) {
       availableBalanceBySeller.set(sellerId, (availableBalanceBySeller.get(sellerId) || 0) + netAmount);
     }
   }
@@ -1632,6 +2293,206 @@ router.get('/sellers', async (req, res) => {
     page: pageNum,
     limit: limitNum,
     totalPages,
+  });
+});
+
+// ============================================================================
+// SHOP FILTER MANAGEMENT ENDPOINTS
+// ============================================================================
+
+router.get('/shop-filters', async (req, res) => {
+  const filters = await getAdminShopFilters();
+
+  logger.info(`[ADMIN] Fetched ${filters.length} shop filters by admin ${req.auth.id}`);
+  res.json({
+    items: filters,
+    total: filters.length,
+  });
+});
+
+router.post('/shop-filters', async (req, res) => {
+  const validation = validateShopFilterPayload(req.body || {});
+
+  if (validation.error) {
+    return res.status(400).json({ error: validation.error });
+  }
+
+  const existingFilter = await pb.collection('shop_filters').getFirstListItem(
+    `key="${escapeFilterValue(validation.data.key)}"`,
+    { $autoCancel: false },
+  ).catch(() => null);
+
+  if (existingFilter) {
+    return res.status(409).json({ error: 'A filter with this key already exists.' });
+  }
+
+  const filter = await pb.collection('shop_filters').create(validation.data, { $autoCancel: false });
+
+  logger.info(`[ADMIN] Created shop filter ${filter.key} by admin ${req.auth.id}`);
+  res.status(201).json({
+    success: true,
+    item: serializeAdminShopFilter(filter, []),
+  });
+});
+
+router.put('/shop-filters/:id', async (req, res) => {
+  const filterId = normalizeString(req.params.id);
+
+  if (!filterId) {
+    return res.status(400).json({ error: 'Filter ID is required.' });
+  }
+
+  const existingFilter = await pb.collection('shop_filters').getOne(filterId, { $autoCancel: false }).catch(() => null);
+
+  if (!existingFilter) {
+    return res.status(404).json({ error: 'Filter not found.' });
+  }
+
+  const validation = validateShopFilterPayload(req.body || {}, { existingFilter });
+
+  if (validation.error) {
+    return res.status(400).json({ error: validation.error });
+  }
+
+  const updatedFilter = await pb.collection('shop_filters').update(filterId, validation.data, { $autoCancel: false });
+  const optionRecords = await pb.collection('shop_filter_options').getFullList({
+    filter: `filter_key="${escapeFilterValue(updatedFilter.key)}"`,
+    sort: 'sort_order,label',
+    $autoCancel: false,
+  }).catch(() => []);
+
+  logger.info(`[ADMIN] Updated shop filter ${updatedFilter.key} by admin ${req.auth.id}`);
+  res.json({
+    success: true,
+    item: serializeAdminShopFilter(updatedFilter, optionRecords.map(serializeAdminShopFilterOption)),
+  });
+});
+
+router.delete('/shop-filters/:id', async (req, res) => {
+  const filterId = normalizeString(req.params.id);
+
+  if (!filterId) {
+    return res.status(400).json({ error: 'Filter ID is required.' });
+  }
+
+  const existingFilter = await pb.collection('shop_filters').getOne(filterId, { $autoCancel: false }).catch(() => null);
+
+  if (!existingFilter) {
+    return res.status(404).json({ error: 'Filter not found.' });
+  }
+
+  const optionRecords = await pb.collection('shop_filter_options').getFullList({
+    filter: `filter_key="${escapeFilterValue(existingFilter.key)}"`,
+    $autoCancel: false,
+  }).catch(() => []);
+
+  for (const optionRecord of optionRecords) {
+    await pb.collection('shop_filter_options').delete(optionRecord.id, { $autoCancel: false });
+  }
+
+  await pb.collection('shop_filters').delete(filterId, { $autoCancel: false });
+
+  logger.info(`[ADMIN] Deleted shop filter ${existingFilter.key} and ${optionRecords.length} options by admin ${req.auth.id}`);
+  res.json({
+    success: true,
+    deletedFilterId: filterId,
+    deletedOptions: optionRecords.length,
+  });
+});
+
+router.post('/shop-filter-options', async (req, res) => {
+  const validation = validateShopFilterOptionPayload(req.body || {});
+
+  if (validation.error) {
+    return res.status(400).json({ error: validation.error });
+  }
+
+  const parentFilter = await pb.collection('shop_filters').getFirstListItem(
+    `key="${escapeFilterValue(validation.data.filter_key)}"`,
+    { $autoCancel: false },
+  ).catch(() => null);
+
+  if (!parentFilter) {
+    return res.status(404).json({ error: 'Parent filter not found.' });
+  }
+
+  const existingOption = await pb.collection('shop_filter_options').getFirstListItem(
+    `filter_key="${escapeFilterValue(validation.data.filter_key)}" && value="${escapeFilterValue(validation.data.value)}"`,
+    { $autoCancel: false },
+  ).catch(() => null);
+
+  if (existingOption) {
+    return res.status(409).json({ error: 'An option with this value already exists for the filter.' });
+  }
+
+  const option = await pb.collection('shop_filter_options').create(validation.data, { $autoCancel: false });
+
+  logger.info(`[ADMIN] Created shop filter option ${option.value} for ${option.filter_key} by admin ${req.auth.id}`);
+  res.status(201).json({
+    success: true,
+    item: serializeAdminShopFilterOption(option),
+  });
+});
+
+router.put('/shop-filter-options/:id', async (req, res) => {
+  const optionId = normalizeString(req.params.id);
+
+  if (!optionId) {
+    return res.status(400).json({ error: 'Option ID is required.' });
+  }
+
+  const existingOption = await pb.collection('shop_filter_options').getOne(optionId, { $autoCancel: false }).catch(() => null);
+
+  if (!existingOption) {
+    return res.status(404).json({ error: 'Option not found.' });
+  }
+
+  const validation = validateShopFilterOptionPayload(req.body || {}, {
+    existingOption,
+    filterKey: existingOption.filter_key,
+  });
+
+  if (validation.error) {
+    return res.status(400).json({ error: validation.error });
+  }
+
+  const duplicateOption = await pb.collection('shop_filter_options').getFirstListItem(
+    `filter_key="${escapeFilterValue(validation.data.filter_key)}" && value="${escapeFilterValue(validation.data.value)}"`,
+    { $autoCancel: false },
+  ).catch(() => null);
+
+  if (duplicateOption && duplicateOption.id !== optionId) {
+    return res.status(409).json({ error: 'An option with this value already exists for the filter.' });
+  }
+
+  const option = await pb.collection('shop_filter_options').update(optionId, validation.data, { $autoCancel: false });
+
+  logger.info(`[ADMIN] Updated shop filter option ${option.id} by admin ${req.auth.id}`);
+  res.json({
+    success: true,
+    item: serializeAdminShopFilterOption(option),
+  });
+});
+
+router.delete('/shop-filter-options/:id', async (req, res) => {
+  const optionId = normalizeString(req.params.id);
+
+  if (!optionId) {
+    return res.status(400).json({ error: 'Option ID is required.' });
+  }
+
+  const existingOption = await pb.collection('shop_filter_options').getOne(optionId, { $autoCancel: false }).catch(() => null);
+
+  if (!existingOption) {
+    return res.status(404).json({ error: 'Option not found.' });
+  }
+
+  await pb.collection('shop_filter_options').delete(optionId, { $autoCancel: false });
+
+  logger.info(`[ADMIN] Deleted shop filter option ${optionId} by admin ${req.auth.id}`);
+  res.json({
+    success: true,
+    deletedOptionId: optionId,
   });
 });
 

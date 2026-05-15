@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button.jsx';
 import { Card, CardContent } from '@/components/ui/card.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
 import { toast } from 'sonner';
-import pb from '@/lib/pocketbaseClient.js';
+import { getProductImageUrl } from '@/lib/productImages.js';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useFavorites } from '@/contexts/FavoritesContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
@@ -90,7 +90,7 @@ const FavoritesPage = () => {
                 if (!product) return null;
                 const isShopProduct = product.source === 'shop' || product.collectionName === 'shop_products';
                 const productLink = `/product/${product.id}${isShopProduct ? '?type=shop' : ''}`;
-                const productImageUrl = product.image_url || (product.image ? pb.files.getUrl(product, product.image) : null);
+                const productImageUrl = getProductImageUrl(product);
 
                 return (
                   <Card key={fav.id} className="overflow-hidden hover:shadow-hover transition-all duration-300 border border-[hsl(var(--border))] flex flex-col">

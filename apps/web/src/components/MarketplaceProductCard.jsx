@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingCart } from 'lucide-react';
-import pb from '@/lib/pocketbaseClient.js';
 import { useCart } from '@/contexts/CartContext.jsx';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useFavorites } from '@/contexts/FavoritesContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
+import { getProductImageUrl } from '@/lib/productImages.js';
 import { toast } from 'sonner';
 
 const conditionLabelKeys = {
@@ -31,7 +31,7 @@ const MarketplaceProductCard = ({ product }) => {
 
   const isShopProduct = product.source === 'shop' || product.collectionName === 'shop_products';
   const productLink = `/product/${product.id}${isShopProduct ? '?type=shop' : ''}`;
-  const productImageUrl = product.image_url || (product.image ? pb.files.getUrl(product, product.image) : null);
+  const productImageUrl = getProductImageUrl(product);
   const isSold = !isShopProduct && product.status === 'sold';
   const isFav = isFavorite(product.id);
   const productTitle = product.name || product.title || t('product.untitled');

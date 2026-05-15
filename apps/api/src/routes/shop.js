@@ -7,6 +7,15 @@ const router = express.Router();
 
 const SORT_OPTIONS = new Set(['-created', 'created', 'price', '-price']);
 
+const getProductImages = (product) => (
+  Array.isArray(product.images) ? product.images : product.images ? [product.images] : []
+);
+
+const getProductImageUrl = (product, imageName = '') => {
+  const resolvedImage = imageName || getProductImages(product)[0] || product.image || '';
+  return resolvedImage ? pb.files.getUrl(product, resolvedImage) : null;
+};
+
 const normalizeShopProduct = (product) => ({
   id: product.id,
   collectionId: product.collectionId,
@@ -15,7 +24,9 @@ const normalizeShopProduct = (product) => ({
   description: product.description || '',
   price: product.price,
   image: product.image || null,
-  image_url: product.image ? pb.files.getUrl(product, product.image) : null,
+  images: getProductImages(product),
+  image_urls: getProductImages(product).map((imageName) => getProductImageUrl(product, imageName)).filter(Boolean),
+  image_url: getProductImageUrl(product),
   condition: product.condition || null,
   fachbereich: Array.isArray(product.fachbereich)
     ? product.fachbereich
@@ -23,6 +34,10 @@ const normalizeShopProduct = (product) => ({
       ? [product.fachbereich]
       : [],
   product_type: product.product_type || 'Article',
+  brand: product.brand || '',
+  location: product.location || '',
+  shipping_type: product.shipping_type || 'dhl_parcel',
+  filter_values: product.filter_values || {},
   source: 'shop',
   created: product.created,
   updated: product.updated,

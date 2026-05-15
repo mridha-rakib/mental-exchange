@@ -5,9 +5,56 @@ import pb from '../utils/pocketbaseClient.js';
 import logger from '../utils/logger.js';
 import { requireAuth } from '../middleware/index.js';
 import { getPlatformSettings } from '../utils/platformSettings.js';
+import { createProductVerificationAudit } from '../utils/productValidation.js';
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+router.post('/request-validation', requireAuth, async (req, res) => {
+  const { productId } = req.body;
+  const userId = req.auth.id;
+  const productIdStr = String(productId || '').trim();
+
+  if (!productIdStr) {
+    return res.status(400).json({ error: 'productId is required' });
+  }
+
+  const product = await pb.collection('products').getOne(productIdStr, { $autoCancel: false });
+
+  if (String(product.seller_id || '').trim() !== String(userId).trim()) {
+    const error = new Error('Unauthorized: seller does not own this product');
+    error.status = 403;
+    throw error;
+  }
+
+  if (product.condition === 'Neu' || product.condition === 'Wie neu') {
+    return res.status(400).json({ error: 'Quality verification products must use the verification fee flow' });
+  }
+
+  const requestedAt = new Date().toISOString();
+  const updatedProduct = await pb.collection('products').update(productIdStr, {
+    status: 'pending_verification',
+    verification_status: 'pending',
+    validation_requested_at: requestedAt,
+    validation_reviewed_at: '',
+    validation_admin_id: '',
+    validation_notes: '',
+  }, { $autoCancel: false });
+
+  await createProductVerificationAudit({
+    product: updatedProduct,
+    status: 'pending',
+  });
+
+  logger.info(`[VERIFICATION] Product submitted for admin validation - Product: ${productIdStr}, Seller: ${userId}`);
+
+  res.json({
+    success: true,
+    productId: productIdStr,
+    status: updatedProduct.status,
+    verification_status: updatedProduct.verification_status,
+  });
+});
 
 /**
  * POST /verification/pay-fee

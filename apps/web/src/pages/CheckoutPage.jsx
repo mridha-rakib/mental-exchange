@@ -26,12 +26,11 @@ import { useCart } from '@/contexts/CartContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
 import apiServerClient from '@/lib/apiServerClient.js';
 import pb from '@/lib/pocketbaseClient.js';
+import { getProductImageUrl as resolveProductImageUrl } from '@/lib/productImages.js';
 
 const getProductImageUrl = (product) => {
   if (!product) return '';
-  if (product.image_url) return product.image_url;
-  if (product.image) return pb.files.getUrl(product, product.image);
-  return '';
+  return resolveProductImageUrl(product) || '';
 };
 
 const CheckoutPage = () => {

@@ -44,7 +44,11 @@ const sanitizeProduct = (product) => {
     name: product.name || '',
     price: product.price || 0,
     image: product.image || '',
+    images: Array.isArray(product.images) ? product.images : product.images ? [product.images] : [],
     product_type: product.product_type || '',
+    brand: product.brand || '',
+    location: product.location || '',
+    shipping_type: product.shipping_type || 'dhl_parcel',
     seller_id: product.seller_id || '',
     seller_username: product.seller_username || '',
   };

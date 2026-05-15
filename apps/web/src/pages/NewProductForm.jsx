@@ -21,6 +21,12 @@ const FACHBEREICHE = [
   { id: 'KFO', label: 'Kieferorthopädie' }
 ];
 
+const SHIPPING_TYPES = [
+  { value: 'dhl_parcel', key: 'product.shipping_dhl_parcel' },
+  { value: 'letter_mail', key: 'product.shipping_letter_mail' },
+  { value: 'pickup', key: 'product.shipping_pickup' },
+];
+
 const NewProductForm = () => {
   const { currentUser, isAdmin } = useAuth();
   const { t } = useTranslation();
@@ -39,8 +45,12 @@ const NewProductForm = () => {
     price: '',
     condition: '',
     weight_g: '',
+    brand: '',
+    location: '',
+    shipping_type: 'dhl_parcel',
     fachbereich: [],
     image: null,
+    images: [],
     set_items: [{ name: '', quantity: 1 }]
   });
 
@@ -89,7 +99,7 @@ const NewProductForm = () => {
     
     const parcelWeight = Number(formData.weight_g);
 
-    if (!formData.name || !formData.price || !formData.condition || !formData.image) {
+    if (!formData.name || !formData.price || !formData.condition || formData.images.length === 0) {
       toast.error(t('new_product.required_image_error'));
       return;
     }
@@ -116,6 +126,14 @@ const NewProductForm = () => {
       data.append('price', formData.price);
       data.append('condition', formData.condition);
       data.append('weight_g', String(Math.round(parcelWeight)));
+      data.append('brand', formData.brand.trim());
+      data.append('location', formData.location.trim());
+      data.append('shipping_type', formData.shipping_type || 'dhl_parcel');
+      data.append('filter_values', JSON.stringify({
+        brand: formData.brand.trim(),
+        location: formData.location.trim(),
+        shipping_type: formData.shipping_type || 'dhl_parcel',
+      }));
 
       if (!isAdmin) {
         data.append('seller_id', currentUser.id);
@@ -132,13 +150,17 @@ const NewProductForm = () => {
 
       const needsVerification = !isAdmin && (formData.condition === 'Neu' || formData.condition === 'Wie neu');
       if (!isAdmin) {
-        const status = needsVerification ? 'draft' : 'active';
+        const status = needsVerification ? 'draft' : 'pending_verification';
         data.append('status', status);
+        if (!needsVerification) {
+          data.append('verification_status', 'pending');
+          data.append('validation_requested_at', new Date().toISOString());
+        }
       }
 
-      if (formData.image) {
-        const fileToUpload = Array.isArray(formData.image) ? formData.image[0] : formData.image;
-        data.append('image', fileToUpload);
+      if (formData.images.length > 0) {
+        formData.images.forEach((file) => data.append('images', file));
+        data.append('image', formData.images[0]);
       }
 
       const collectionName = isAdmin ? 'shop_products' : 'products';
@@ -149,7 +171,21 @@ const NewProductForm = () => {
         setRequiresPayment(true);
         setStep(3);
       } else {
-        toast.success(t('new_product.publish_success'));
+        if (!isAdmin) {
+          const authToken = pb.authStore.token;
+          await fetch(`${window.location.origin}/hcgi/api/verification/request-validation`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({ productId: record.id }),
+          }).catch((validationError) => {
+            console.warn('Validation request audit failed:', validationError);
+          });
+        }
+
+        toast.success(isAdmin ? t('new_product.publish_success') : t('new_product.validation_pending_success'));
         navigate(isAdmin ? '/shop' : '/seller-dashboard');
       }
     } catch (error) {
@@ -305,8 +341,12 @@ const NewProductForm = () => {
                     {formData.product_type === 'Set' ? t('new_product.product_images_required') : t('new_product.product_image_required')}
                   </Label>
                   <ImageUploadField 
-                    maxFiles={1}
-                    onFilesSelected={(file) => setFormData(prev => ({ ...prev, image: file }))} 
+                    maxFiles={5}
+                    onFilesSelected={(files) => setFormData(prev => ({
+                      ...prev,
+                      image: Array.isArray(files) ? files[0] || null : files,
+                      images: Array.isArray(files) ? files : files ? [files] : [],
+                    }))}
                   />
                 </div>
 
@@ -427,6 +467,47 @@ const NewProductForm = () => {
                       className="h-12"
                       required
                     />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="brand" className="text-base">{t('product.brand')}</Label>
+                    <Input
+                      id="brand"
+                      name="brand"
+                      value={formData.brand}
+                      onChange={handleChange}
+                      placeholder={t('product.brand_placeholder')}
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="location" className="text-base">{t('product.location')}</Label>
+                    <Input
+                      id="location"
+                      name="location"
+                      value={formData.location}
+                      onChange={handleChange}
+                      placeholder={t('product.location_placeholder')}
+                      className="h-12"
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="shipping_type" className="text-base">{t('product.shipping_type')}</Label>
+                    <Select
+                      value={formData.shipping_type}
+                      onValueChange={(val) => setFormData({ ...formData, shipping_type: val })}
+                    >
+                      <SelectTrigger className="h-12 bg-white">
+                        <SelectValue placeholder={t('common.select')} />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-border shadow-md">
+                        {SHIPPING_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>{t(type.key)}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

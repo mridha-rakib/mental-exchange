@@ -33,6 +33,7 @@ import SuccessPage from './pages/SuccessPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import SellerDashboard from './pages/SellerDashboard.jsx';
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
+import AdminFiltersPage from './pages/AdminFiltersPage.jsx';
 import ProductVerificationAdminPage from './pages/ProductVerificationAdminPage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import NewProductForm from './pages/NewProductForm.jsx';
@@ -207,6 +208,12 @@ function App() {
                     <Route path="/admin/learning" element={
                       <AdminRoute>
                         <LearningAdminPage />
+                      </AdminRoute>
+                    } />
+
+                    <Route path="/admin/filters" element={
+                      <AdminRoute>
+                        <AdminFiltersPage />
                       </AdminRoute>
                     } />
                   </Routes>

@@ -8,6 +8,7 @@ import {
   hasLearningSubscriptionLookupCandidates,
   normalizeZ3TierSlug,
 } from '../utils/learningTierMapping.js';
+import { createProductVerificationAudit } from '../utils/productValidation.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const SUBSCRIPTION_GRACE_DAYS = Math.max(1, Number(process.env.LEARNING_SUBSCRIPTION_GRACE_DAYS || 7));
@@ -823,13 +824,24 @@ const processVerificationFee = async ({ paymentIntentId, session, fallbackMetada
     return;
   }
 
-  await pb.collection('products').update(productId, {
+  const updatedProduct = await pb.collection('products').update(productId, {
     status: 'pending_verification',
+    verification_status: 'pending',
     verification_requested_at: new Date().toISOString(),
+    validation_requested_at: new Date().toISOString(),
+    validation_reviewed_at: '',
+    validation_admin_id: '',
+    validation_notes: '',
     verification_fee_paid: true,
     verification_fee_paid_at: new Date().toISOString(),
     verification_payment_intent_id: paymentIntentId,
     verification_checkout_session_id: session?.id || null,
+  });
+
+  await createProductVerificationAudit({
+    product: updatedProduct,
+    status: 'pending',
+    verificationFee: metadata.verificationFee,
   });
 
   logger.info(`[WEBHOOK] Verification payment processed - Product: ${productId}, Seller: ${sellerId}`);

@@ -27,6 +27,8 @@ import {
 import { toast } from 'sonner';
 
 const sellerTabs = ['products', 'orders', 'earnings', 'settings'];
+const AVAILABLE_EARNING_STATUSES = new Set(['available', 'confirmed']);
+const PENDING_EARNING_STATUSES = new Set(['pending', 'waiting_payout_release', 'blocked']);
 
 const getSellerTabFromParams = (searchParams) => {
   const tab = searchParams.get('tab');
@@ -127,11 +129,11 @@ const SellerDashboard = () => {
         const sold = productsResult.items.filter(p => p.status === 'sold').length;
         
         const totalEarned = earningsResult.items
-          .filter(e => e.status === 'confirmed')
+          .filter(e => AVAILABLE_EARNING_STATUSES.has(e.status))
           .reduce((sum, e) => sum + (e.net_amount || 0), 0);
           
         const pendingEarned = earningsResult.items
-          .filter(e => e.status === 'pending')
+          .filter(e => PENDING_EARNING_STATUSES.has(e.status))
           .reduce((sum, e) => sum + (e.net_amount || 0), 0);
 
         setStats({
@@ -504,7 +506,13 @@ const SellerDashboard = () => {
                           <div className="text-right">
                             <p className="font-bold text-green-600">+ €{earning.net_amount?.toFixed(2)}</p>
                             <p className="text-xs text-muted-foreground">
-                              {earning.status === 'confirmed' ? t('seller_dashboard.available') : t('orders.status_pending')}
+                              {AVAILABLE_EARNING_STATUSES.has(earning.status)
+                                ? t('seller_dashboard.available')
+                                : earning.status === 'waiting_payout_release'
+                                  ? t('orders.status_waiting_payout_release')
+                                  : earning.status === 'blocked'
+                                    ? t('seller_dashboard.blocked')
+                                    : t('orders.status_pending')}
                             </p>
                           </div>
                         </div>

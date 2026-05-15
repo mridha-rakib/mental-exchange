@@ -992,13 +992,13 @@ Use this checklist to work one section at a time.
 - [x] Build dashboard plan sections.
 - [x] Add plan recalculation/behind-state handling.
 - [x] Add dynamic shop filter model.
-- [ ] Build admin filter CRUD.
-- [ ] Extend product fields.
-- [ ] Add admin product validation workflow.
-- [ ] Extend order statuses.
-- [ ] Add admin order validation and pause/cancel/refund actions.
-- [ ] Persist DHL delivery confirmation.
-- [ ] Add two-day payout waiting period.
+- [x] Build admin filter CRUD.
+- [x] Extend product fields.
+- [x] Add admin product validation workflow.
+- [x] Extend order statuses.
+- [x] Add admin order validation and pause/cancel/refund actions.
+- [x] Persist DHL delivery confirmation.
+- [x] Add two-day payout waiting period.
 - [ ] Add seller balance model.
 - [ ] Add seller payout request flow.
 - [ ] Add Stripe Connect seller onboarding/payouts.

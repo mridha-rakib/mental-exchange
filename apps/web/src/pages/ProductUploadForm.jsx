@@ -60,21 +60,34 @@ const ProductUploadForm = () => {
       data.append('seller_id', currentUser.id);
       data.append('seller_username', currentUser.seller_username || currentUser.name);
       
-      // Status logic based on condition
-      const status = (formData.condition === 'Neu' || formData.condition === 'Wie neu') 
-        ? 'pending_verification' 
-        : 'active';
-      data.append('status', status);
+      const needsQualityVerification = formData.condition === 'Neu' || formData.condition === 'Wie neu';
+      data.append('status', needsQualityVerification ? 'draft' : 'pending_verification');
+      if (!needsQualityVerification) {
+        data.append('verification_status', 'pending');
+        data.append('validation_requested_at', new Date().toISOString());
+      }
 
       if (imageFile) {
         data.append('image', imageFile);
       }
 
-      await pb.collection('products').create(data, { $autoCancel: false });
+      const record = await pb.collection('products').create(data, { $autoCancel: false });
+
+      if (!needsQualityVerification) {
+        const authToken = pb.authStore.token;
+        await fetch(`${window.location.origin}/hcgi/api/verification/request-validation`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ productId: record.id }),
+        }).catch((validationError) => {
+          console.warn('Validation request audit failed:', validationError);
+        });
+      }
       
-      toast.success(status === 'pending_verification' 
-        ? 'Produkt eingereicht! Es wird nun geprüft.' 
-        : 'Produkt erfolgreich veröffentlicht!');
+      toast.success(needsQualityVerification ? 'Produkt gespeichert. Bitte nutze den Verifizierungszahlungsfluss.' : 'Produkt eingereicht! Es wird nun geprueft.');
       
       navigate('/seller-dashboard');
     } catch (error) {

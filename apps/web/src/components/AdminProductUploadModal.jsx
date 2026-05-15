@@ -9,11 +9,18 @@ import { toast } from 'sonner';
 import pb from '@/lib/pocketbaseClient.js';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
 
+const SHIPPING_TYPES = [
+  { value: 'dhl_parcel', key: 'product.shipping_dhl_parcel' },
+  { value: 'letter_mail', key: 'product.shipping_letter_mail' },
+  { value: 'pickup', key: 'product.shipping_pickup' },
+];
+
 const AdminProductUploadModal = ({ children, onSuccess }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -22,7 +29,10 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
     category: '',
     condition: '',
     stock_quantity: '1',
-    weight_g: ''
+    weight_g: '',
+    brand: '',
+    location: '',
+    shipping_type: 'dhl_parcel'
   });
 
   const handleChange = (e) => {
@@ -30,9 +40,9 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
   };
 
   const handleImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-    }
+    const files = e.target.files ? Array.from(e.target.files).slice(0, 5) : [];
+    setImageFiles(files);
+    setImageFile(files[0] || null);
   };
 
   const handleSubmit = async (e) => {
@@ -55,10 +65,19 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
       data.append('condition', formData.condition);
       data.append('stock_quantity', formData.stock_quantity);
       data.append('weight_g', String(Math.round(parcelWeight)));
+      data.append('brand', formData.brand.trim());
+      data.append('location', formData.location.trim());
+      data.append('shipping_type', formData.shipping_type || 'dhl_parcel');
+      data.append('filter_values', JSON.stringify({
+        brand: formData.brand.trim(),
+        location: formData.location.trim(),
+        shipping_type: formData.shipping_type || 'dhl_parcel',
+      }));
       
       if (imageFile) {
         data.append('image', imageFile);
       }
+      imageFiles.forEach((file) => data.append('images', file));
 
       await pb.collection('shop_products').create(data, { $autoCancel: false });
       
@@ -73,9 +92,13 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
         category: '',
         condition: '',
         stock_quantity: '1',
-        weight_g: ''
+        weight_g: '',
+        brand: '',
+        location: '',
+        shipping_type: 'dhl_parcel'
       });
       setImageFile(null);
+      setImageFiles([]);
       
       if (onSuccess) onSuccess();
       
@@ -121,6 +144,14 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
               <Label htmlFor="weight_g">{t('product.weight_g')} *</Label>
               <Input id="weight_g" name="weight_g" type="number" min="1" step="1" value={formData.weight_g} onChange={handleChange} required />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="brand">{t('product.brand')}</Label>
+              <Input id="brand" name="brand" value={formData.brand} onChange={handleChange} placeholder={t('product.brand_placeholder')} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="location">{t('product.location')}</Label>
+              <Input id="location" name="location" value={formData.location} onChange={handleChange} placeholder={t('product.location_placeholder')} />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -152,11 +183,24 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="shipping_type">{t('product.shipping_type')}</Label>
+              <Select value={formData.shipping_type} onValueChange={(val) => setFormData({ ...formData, shipping_type: val })}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('common.select')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {SHIPPING_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>{t(type.key)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image">{t('new_product.product_image')}</Label>
-            <Input id="image" type="file" accept="image/*" onChange={handleImageChange} className="cursor-pointer" />
+            <Label htmlFor="image">{t('new_product.product_images_required')}</Label>
+            <Input id="image" type="file" accept="image/*" multiple onChange={handleImageChange} className="cursor-pointer" />
           </div>
 
           <div className="pt-4 flex justify-end gap-3">

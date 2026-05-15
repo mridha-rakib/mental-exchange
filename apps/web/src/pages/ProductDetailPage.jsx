@@ -10,6 +10,7 @@ import { useTranslation } from '@/contexts/TranslationContext.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Label } from '@/components/ui/label.jsx';
 import { Textarea } from '@/components/ui/textarea.jsx';
+import { getProductImageUrls } from '@/lib/productImages.js';
 import { toast } from 'sonner';
 import { createCustomerReview, getProductReviewEligibility, listProductReviews } from '@/lib/reviewsApi.js';
 import { getAuthToken } from '@/lib/getAuthToken.js';
@@ -171,6 +172,28 @@ const ProductDetailPage = () => {
 
   const sellerLabel = isShopProduct ? t('product.shop_seller') : (product.seller_username || t('product.anonymous_seller'));
   const conditionLabel = product.condition ? t(conditionKeys[product.condition]) || product.condition : null;
+  const productImageUrls = getProductImageUrls(product);
+  const productMetaCopy = language === 'EN'
+    ? {
+      brand: 'Brand',
+      location: 'Location',
+      shipping: 'Shipping',
+      shippingTypes: {
+        dhl_parcel: 'DHL parcel',
+        letter_mail: 'Letter mail',
+        pickup: 'Pickup',
+      },
+    }
+    : {
+      brand: 'Marke',
+      location: 'Standort',
+      shipping: 'Versand',
+      shippingTypes: {
+        dhl_parcel: 'DHL-Paket',
+        letter_mail: 'Briefversand',
+        pickup: 'Abholung',
+      },
+    };
 
   const handleFavoriteToggle = async () => {
     if (!currentUser) {
@@ -291,8 +314,8 @@ const ProductDetailPage = () => {
           <div className="grid gap-9 lg:grid-cols-[minmax(0,584px)_minmax(0,584px)] lg:items-start xl:gap-12">
             <section className="overflow-hidden rounded-[12px] border border-[#d8d8d8] bg-white">
               <div className="relative aspect-square overflow-hidden bg-[#f7f7f7]">
-                {product.image ? (
-                  <img src={pb.files.getUrl(product, product.image)} alt={product.name} className="h-full w-full object-cover" />
+                {productImageUrls.length > 0 ? (
+                  <img src={productImageUrls[0]} alt={product.name} className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-sm font-medium text-slate-400">
                     {t('product.no_image')}
@@ -307,6 +330,15 @@ const ProductDetailPage = () => {
                   </div>
                 )}
               </div>
+              {productImageUrls.length > 1 && (
+                <div className="grid grid-cols-4 gap-2 border-t border-[#d8d8d8] bg-white p-2">
+                  {productImageUrls.slice(0, 4).map((imageUrl, index) => (
+                    <div key={imageUrl} className="aspect-square overflow-hidden rounded-[8px] bg-slate-100">
+                      <img src={imageUrl} alt={`${product.name} ${index + 1}`} className="h-full w-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
 
             <section className="flex min-h-full flex-col pb-1 lg:min-h-[584px]">
@@ -338,6 +370,31 @@ const ProductDetailPage = () => {
                 <p className="mt-10 text-base leading-7 text-[#555555]">
                   {product.description || t('product.no_description')}
                 </p>
+
+                {(product.brand || product.location || product.shipping_type) && (
+                  <dl className="mt-8 grid gap-3 rounded-[12px] border border-[#d8d8d8] bg-[#fbfbfb] p-4 text-sm sm:grid-cols-3">
+                    {product.brand && (
+                      <div>
+                        <dt className="font-semibold text-[#666666]">{productMetaCopy.brand}</dt>
+                        <dd className="mt-1 font-medium text-[#151515]">{product.brand}</dd>
+                      </div>
+                    )}
+                    {product.location && (
+                      <div>
+                        <dt className="font-semibold text-[#666666]">{productMetaCopy.location}</dt>
+                        <dd className="mt-1 font-medium text-[#151515]">{product.location}</dd>
+                      </div>
+                    )}
+                    {product.shipping_type && (
+                      <div>
+                        <dt className="font-semibold text-[#666666]">{productMetaCopy.shipping}</dt>
+                        <dd className="mt-1 font-medium text-[#151515]">
+                          {productMetaCopy.shippingTypes[product.shipping_type] || product.shipping_type}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+                )}
 
                 {isPending && (
                   <div className="mt-8 flex items-start gap-3 rounded-[12px] border border-amber-200 bg-amber-50 p-4 text-amber-900">
