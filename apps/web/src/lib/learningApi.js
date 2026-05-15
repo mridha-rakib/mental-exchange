@@ -36,6 +36,24 @@ const withJson = async (response) => {
   return data;
 };
 
+const findModuleInPackage = (packageDetail, topicSlug) => (
+  Array.isArray(packageDetail?.modules)
+    ? packageDetail.modules.find((moduleRecord) => moduleRecord?.slug === topicSlug)
+    : null
+);
+
+const findLessonInModule = (moduleRecord, subtopicSlug) => (
+  Array.isArray(moduleRecord?.lessons)
+    ? moduleRecord.lessons.find((lessonRecord) => lessonRecord?.slug === subtopicSlug)
+    : null
+);
+
+const createLearningNotFoundError = (message) => {
+  const error = new Error(message);
+  error.status = 404;
+  return error;
+};
+
 export const listLearningPackages = async () => {
   const response = await apiServerClient.fetch('/learning/packages');
   return withJson(response);
@@ -141,13 +159,13 @@ export const getLearningModule = async ({ token, moduleId }) => {
 };
 
 export const getLearningModuleBySlug = async ({ token, packageSlug, topicSlug }) => {
-  const response = await apiServerClient.fetch(`/learning/topics/${encodeURIComponent(packageSlug)}/${encodeURIComponent(topicSlug)}`, {
-    headers: token ? {
-      Authorization: `Bearer ${token}`,
-    } : undefined,
-  });
+  const packageDetail = await getLearningPackage(packageSlug);
+  const moduleRecord = findModuleInPackage(packageDetail, topicSlug);
+  if (!moduleRecord?.id) {
+    throw createLearningNotFoundError('Learning topic not found');
+  }
 
-  return withJson(response);
+  return getLearningModule({ token, moduleId: moduleRecord.id });
 };
 
 export const getLearningLesson = async ({ token, lessonId }) => {
@@ -166,13 +184,14 @@ export const getLearningLessonBySlug = async ({
   topicSlug,
   subtopicSlug,
 }) => {
-  const response = await apiServerClient.fetch(`/learning/topics/${encodeURIComponent(packageSlug)}/${encodeURIComponent(topicSlug)}/subtopics/${encodeURIComponent(subtopicSlug)}`, {
-    headers: token ? {
-      Authorization: `Bearer ${token}`,
-    } : undefined,
-  });
+  const packageDetail = await getLearningPackage(packageSlug);
+  const moduleRecord = findModuleInPackage(packageDetail, topicSlug);
+  const lessonRecord = findLessonInModule(moduleRecord, subtopicSlug);
+  if (!lessonRecord?.id) {
+    throw createLearningNotFoundError('Learning lesson not found');
+  }
 
-  return withJson(response);
+  return getLearningLesson({ token, lessonId: lessonRecord.id });
 };
 
 export const updateLearningLessonProgress = async ({ token, lessonId, status, progressPercentage }) => {

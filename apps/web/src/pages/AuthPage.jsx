@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
+import { getAuthErrorMessage } from '@/lib/authErrors.js';
+import { getPostLoginRedirectPath } from '@/lib/authRedirects.js';
 import { Button } from '@/components/ui/button.jsx';
 import { Input } from '@/components/ui/input.jsx';
 import { Label } from '@/components/ui/label.jsx';
@@ -48,9 +50,6 @@ const AuthPage = () => {
   const location = useLocation();
 
   const fromLocation = location.state?.from;
-  const from = fromLocation?.pathname
-    ? `${fromLocation.pathname}${fromLocation.search || ''}${fromLocation.hash || ''}`
-    : '/';
 
   const [formData, setFormData] = useState({
     email: '',
@@ -63,26 +62,6 @@ const AuthPage = () => {
 
   const handleChange = (event) => {
     setFormData((current) => ({ ...current, [event.target.name]: event.target.value }));
-  };
-
-  const getErrorMessage = (error) => {
-    const fieldErrors = error?.response?.data;
-
-    if (fieldErrors && typeof fieldErrors === 'object') {
-      const firstFieldError = Object.values(fieldErrors).find(
-        (value) => value && typeof value === 'object' && typeof value.message === 'string'
-      );
-
-      if (firstFieldError?.message) {
-        return firstFieldError.message;
-      }
-    }
-
-    if (typeof error?.message === 'string' && error.message.trim()) {
-      return error.message;
-    }
-
-    return t('auth.generic_error');
   };
 
   const handleModeChange = (nextIsLogin) => {
@@ -100,8 +79,15 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        await login(formData.email, formData.password);
+        const authData = await login(formData.email, formData.password);
         toast.success(t('auth.login_success'));
+        const redirectPath = await getPostLoginRedirectPath({
+          user: authData?.record,
+          token: authData?.token,
+          fromLocation,
+        });
+        navigate(redirectPath, { replace: true });
+        return;
       } else {
         if (formData.password !== formData.passwordConfirm) {
           throw new Error(t('auth.password_mismatch'));
@@ -114,19 +100,31 @@ const AuthPage = () => {
           throw new Error(t('auth.select_university_error'));
         }
 
-        await signup({
+        const signupResult = await signup({
           email: formData.email.trim(),
           password: formData.password,
           passwordConfirm: formData.passwordConfirm,
           name: formData.name.trim(),
           university: finalUniversity.trim(),
         });
-        toast.success(t('auth.signup_success'));
-      }
 
-      navigate(from, { replace: true });
+        if (signupResult?.requiresVerification) {
+          toast.success(t('auth.signup_verify_required'));
+          navigate(`/auth/verify-email?email=${encodeURIComponent(formData.email.trim())}`, { replace: true });
+          return;
+        }
+
+        toast.success(signupResult?.verificationSent ? t('auth.signup_success_verify_sent') : t('auth.signup_success'));
+        const redirectPath = await getPostLoginRedirectPath({
+          user: signupResult?.record,
+          token: signupResult?.token,
+          fromLocation,
+        });
+        navigate(redirectPath, { replace: true });
+        return;
+      }
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(getAuthErrorMessage(error, { t, mode: isLogin ? 'login' : 'signup' }));
     } finally {
       setLoading(false);
     }
@@ -272,9 +270,13 @@ const AuthPage = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">{t('auth.password')}</Label>
-                    <span className="text-xs text-[hsl(var(--secondary-text))]">
-                      {isLogin ? t('auth.login') : 'Min. 8'}
-                    </span>
+                    {isLogin ? (
+                      <Link to="/auth/reset-password" className="text-xs font-medium text-[#0000FF] hover:underline">
+                        {t('auth.forgot_password')}
+                      </Link>
+                    ) : (
+                      <span className="text-xs text-[hsl(var(--secondary-text))]">Min. 8</span>
+                    )}
                   </div>
                   <Input
                     id="password"
@@ -323,6 +325,13 @@ const AuthPage = () => {
                   {isLogin ? t('auth.register_now') : t('auth.login_here')}
                 </button>
               </div>
+              {isLogin && (
+                <div className="mt-3 text-center text-sm">
+                  <Link to="/auth/verify-email" className="font-medium text-[#0000FF] transition hover:underline">
+                    {t('auth.need_verification_email')}
+                  </Link>
+                </div>
+              )}
         </section>
       </main>
     </>

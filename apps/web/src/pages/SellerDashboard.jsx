@@ -58,7 +58,22 @@ const SellerDashboard = () => {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [earnings, setEarnings] = useState([]);
+  const [balance, setBalance] = useState(null);
+  const [payoutRequests, setPayoutRequests] = useState([]);
+  const [stripeConnectStatus, setStripeConnectStatus] = useState({
+    onboarding_status: 'not_started',
+    payouts_enabled: false,
+  });
+  const [payoutSummary, setPayoutSummary] = useState({
+    open_request_amount: 0,
+    requestable_amount: 0,
+    available_amount: 0,
+    currency: 'EUR',
+  });
   const [labelActionId, setLabelActionId] = useState('');
+  const [payoutActionId, setPayoutActionId] = useState('');
+  const [stripeConnectAction, setStripeConnectAction] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
   const accountSection = searchParams.get('account');
   const accountActiveKey = accountSection === 'payouts'
     ? 'payouts'
@@ -76,6 +91,20 @@ const SellerDashboard = () => {
       generateError: 'The shipping label could not be created.',
       generateSuccess: 'DHL label created.',
       trackingColumn: 'Tracking',
+      payoutRequestSuccess: 'Payout request submitted.',
+      payoutRequestError: 'Payout request could not be submitted.',
+      payoutCancelSuccess: 'Payout request cancelled.',
+      payoutCancelError: 'Payout request could not be cancelled.',
+      requestableBalance: 'Requestable',
+      openPayoutRequests: 'Open requests',
+      payoutRequests: 'Payout requests',
+      noPayoutRequests: 'No payout requests yet.',
+      cancelRequest: 'Cancel',
+      connectStripe: 'Connect Stripe',
+      continueStripeOnboarding: 'Continue Stripe onboarding',
+      openStripeDashboard: 'Open Stripe dashboard',
+      stripeReady: 'Stripe payouts ready',
+      stripeNotReady: 'Connect Stripe to request payouts.',
     }
     : {
       labelReady: 'Label bereit',
@@ -86,6 +115,20 @@ const SellerDashboard = () => {
       generateError: 'Das Versandlabel konnte nicht erstellt werden.',
       generateSuccess: 'DHL-Label wurde erstellt.',
       trackingColumn: 'Tracking',
+      payoutRequestSuccess: 'Auszahlungsanfrage wurde eingereicht.',
+      payoutRequestError: 'Auszahlungsanfrage konnte nicht eingereicht werden.',
+      payoutCancelSuccess: 'Auszahlungsanfrage wurde storniert.',
+      payoutCancelError: 'Auszahlungsanfrage konnte nicht storniert werden.',
+      requestableBalance: 'Anforderbar',
+      openPayoutRequests: 'Offene Anfragen',
+      payoutRequests: 'Auszahlungsanfragen',
+      noPayoutRequests: 'Noch keine Auszahlungsanfragen.',
+      cancelRequest: 'Stornieren',
+      connectStripe: 'Stripe verbinden',
+      continueStripeOnboarding: 'Stripe-Onboarding fortsetzen',
+      openStripeDashboard: 'Stripe-Dashboard oeffnen',
+      stripeReady: 'Stripe-Auszahlungen bereit',
+      stripeNotReady: 'Verbinde Stripe, um Auszahlungen anzufordern.',
     };
 
   useEffect(() => {
@@ -118,21 +161,56 @@ const SellerDashboard = () => {
           sort: '-created',
           $autoCancel: false
         });
+        const balanceResponse = await apiServerClient.fetch('/seller/balance', {
+          headers: {
+            Authorization: `Bearer ${pb.authStore.token}`,
+          },
+        });
+        const balance = balanceResponse.ok ? await balanceResponse.json() : null;
+        const payoutRequestsResponse = await apiServerClient.fetch('/seller/payout-requests', {
+          headers: {
+            Authorization: `Bearer ${pb.authStore.token}`,
+          },
+        });
+        const payoutRequestsData = payoutRequestsResponse.ok
+          ? await payoutRequestsResponse.json()
+          : { items: [], summary: {} };
+        const stripeConnectResponse = await apiServerClient.fetch('/seller/stripe-connect/status', {
+          headers: {
+            Authorization: `Bearer ${pb.authStore.token}`,
+          },
+        });
+        const stripeConnectData = stripeConnectResponse.ok
+          ? await stripeConnectResponse.json()
+          : { onboarding_status: 'not_started', payouts_enabled: false };
 
         setProducts(productsResult.items);
         setOrders(ordersResult.items);
         setEarnings(earningsResult.items);
+        setBalance(balance);
+        setPayoutRequests(Array.isArray(payoutRequestsData.items) ? payoutRequestsData.items : []);
+        setStripeConnectStatus(stripeConnectData);
+        setPayoutSummary({
+          open_request_amount: Number(payoutRequestsData.summary?.open_request_amount) || 0,
+          requestable_amount: Number(payoutRequestsData.summary?.requestable_amount) || 0,
+          available_amount: Number(payoutRequestsData.summary?.available_amount ?? balance?.available_amount) || 0,
+          currency: payoutRequestsData.summary?.currency || balance?.currency || 'EUR',
+        });
 
         // Calculate Stats
         const pending = productsResult.items.filter(p => p.status === 'pending_verification').length;
         const active = productsResult.items.filter(p => p.status === 'active').length;
         const sold = productsResult.items.filter(p => p.status === 'sold').length;
         
-        const totalEarned = earningsResult.items
+        const totalEarned = balance
+          ? Number(balance.available_amount || 0)
+          : earningsResult.items
           .filter(e => AVAILABLE_EARNING_STATUSES.has(e.status))
           .reduce((sum, e) => sum + (e.net_amount || 0), 0);
           
-        const pendingEarned = earningsResult.items
+        const pendingEarned = balance
+          ? Number(balance.pending_amount || 0) + Number(balance.waiting_amount || 0) + Number(balance.blocked_amount || 0)
+          : earningsResult.items
           .filter(e => PENDING_EARNING_STATUSES.has(e.status))
           .reduce((sum, e) => sum + (e.net_amount || 0), 0);
 
@@ -153,7 +231,7 @@ const SellerDashboard = () => {
     };
 
     fetchDashboardData();
-  }, [currentUser]);
+  }, [currentUser, refreshKey]);
 
   const handleTabChange = (value) => {
     setActiveTab(value);
@@ -238,6 +316,129 @@ const SellerDashboard = () => {
       toast.error(error.message || dashboardCopy.downloadError);
     } finally {
       setLabelActionId('');
+    }
+  };
+
+  const handleRequestPayout = async () => {
+    const maxAmount = Number(payoutSummary.requestable_amount || 0);
+    if (!stripeConnectStatus?.payouts_enabled) {
+      toast.error(dashboardCopy.stripeNotReady);
+      return;
+    }
+    if (maxAmount <= 0) return;
+
+    const amountInput = window.prompt(
+      language === 'EN' ? 'Payout amount in EUR:' : 'Auszahlungsbetrag in EUR:',
+      maxAmount.toFixed(2),
+    );
+    if (amountInput === null) return;
+
+    const amount = Number(String(amountInput).replace(',', '.'));
+    if (!Number.isFinite(amount) || amount <= 0 || amount > maxAmount) {
+      toast.error(language === 'EN' ? 'Enter a valid payout amount.' : 'Bitte gib einen gueltigen Auszahlungsbetrag ein.');
+      return;
+    }
+
+    const sellerNotes = window.prompt(
+      language === 'EN' ? 'Optional note for admin:' : 'Optionale Notiz fuer Admin:',
+      '',
+    );
+    if (sellerNotes === null) return;
+
+    setPayoutActionId('create');
+    try {
+      const response = await apiServerClient.fetch('/seller/payout-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${pb.authStore.token}`,
+        },
+        body: JSON.stringify({
+          amount,
+          seller_notes: sellerNotes,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || dashboardCopy.payoutRequestError);
+      }
+
+      toast.success(dashboardCopy.payoutRequestSuccess);
+      setRefreshKey((value) => value + 1);
+    } catch (error) {
+      console.error('Payout request failed:', error);
+      toast.error(error.message || dashboardCopy.payoutRequestError);
+    } finally {
+      setPayoutActionId('');
+    }
+  };
+
+  const handleStripeConnectOnboarding = async () => {
+    setStripeConnectAction('onboarding');
+    try {
+      const response = await apiServerClient.fetch('/seller/stripe-connect/onboarding-link', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${pb.authStore.token}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || dashboardCopy.stripeNotReady);
+      }
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Stripe Connect onboarding failed:', error);
+      toast.error(error.message || dashboardCopy.stripeNotReady);
+      setStripeConnectAction('');
+    }
+  };
+
+  const handleStripeConnectDashboard = async () => {
+    setStripeConnectAction('dashboard');
+    try {
+      const response = await apiServerClient.fetch('/seller/stripe-connect/login-link', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${pb.authStore.token}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || dashboardCopy.stripeNotReady);
+      }
+      window.open(data.url, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error('Stripe dashboard link failed:', error);
+      toast.error(error.message || dashboardCopy.stripeNotReady);
+    } finally {
+      setStripeConnectAction('');
+    }
+  };
+
+  const handleCancelPayoutRequest = async (request) => {
+    if (!request?.id) return;
+
+    setPayoutActionId(request.id);
+    try {
+      const response = await apiServerClient.fetch(`/seller/payout-requests/${request.id}/cancel`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${pb.authStore.token}`,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || dashboardCopy.payoutCancelError);
+      }
+
+      toast.success(dashboardCopy.payoutCancelSuccess);
+      setRefreshKey((value) => value + 1);
+    } catch (error) {
+      console.error('Payout cancel failed:', error);
+      toast.error(error.message || dashboardCopy.payoutCancelError);
+    } finally {
+      setPayoutActionId('');
     }
   };
 
@@ -478,16 +679,101 @@ const SellerDashboard = () => {
                   <div className="flex flex-col sm:flex-row gap-6 mb-8 p-6 bg-muted/30 rounded-[8px] border">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground mb-1">{t('seller_dashboard.available_balance')}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {dashboardCopy.requestableBalance}: EUR {Number(payoutSummary.requestable_amount || 0).toFixed(2)}
+                      </p>
                       <p className="text-3xl font-bold text-primary">€{stats.totalEarnings.toFixed(2)}</p>
                     </div>
                     <div className="hidden sm:block w-px bg-border"></div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground mb-1">{t('seller_dashboard.pending_escrow')}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {dashboardCopy.openPayoutRequests}: EUR {Number(payoutSummary.open_request_amount || 0).toFixed(2)}
+                      </p>
                       <p className="text-3xl font-bold text-muted-foreground">€{stats.pendingEarnings.toFixed(2)}</p>
                     </div>
                     <div className="sm:ml-auto flex items-center">
-                      <Button disabled={stats.totalEarnings <= 0}>{t('seller_dashboard.request_payout')}</Button>
+                      <Button
+                        disabled={!stripeConnectStatus?.payouts_enabled || Number(payoutSummary.requestable_amount || 0) <= 0 || payoutActionId === 'create'}
+                        onClick={handleRequestPayout}
+                      >
+                        {t('seller_dashboard.request_payout')}
+                      </Button>
                     </div>
+                  </div>
+
+                  <div className="mb-8 flex flex-col gap-3 rounded-[8px] border p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="font-medium">{stripeConnectStatus?.payouts_enabled ? dashboardCopy.stripeReady : dashboardCopy.stripeNotReady}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {stripeConnectStatus?.onboarding_status || 'not_started'}
+                        {stripeConnectStatus?.disabled_reason ? ` - ${stripeConnectStatus.disabled_reason}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={stripeConnectStatus?.payouts_enabled ? 'outline' : 'default'}
+                        onClick={handleStripeConnectOnboarding}
+                        disabled={stripeConnectAction === 'onboarding'}
+                      >
+                        {stripeConnectStatus?.account_id ? dashboardCopy.continueStripeOnboarding : dashboardCopy.connectStripe}
+                      </Button>
+                      {stripeConnectStatus?.account_id && (
+                        <Button
+                          variant="outline"
+                          onClick={handleStripeConnectDashboard}
+                          disabled={stripeConnectAction === 'dashboard'}
+                        >
+                          {dashboardCopy.openStripeDashboard}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mb-8 rounded-[8px] border p-4">
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h3 className="font-medium">{dashboardCopy.payoutRequests}</h3>
+                        {balance?.last_synced_at && (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {new Date(balance.last_synced_at).toLocaleString(language === 'EN' ? 'en-US' : 'de-DE')}
+                          </p>
+                        )}
+                      </div>
+                      <Badge variant="outline">{payoutRequests.length}</Badge>
+                    </div>
+                    {payoutRequests.length > 0 ? (
+                      <div className="space-y-3">
+                        {payoutRequests.slice(0, 5).map((request) => (
+                          <div key={request.id} className="flex flex-col gap-3 rounded-[8px] border bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <p className="font-medium">EUR {Number(request.amount || 0).toFixed(2)}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(request.requested_at || request.created).toLocaleDateString(language === 'EN' ? 'en-US' : 'de-DE')}
+                              </p>
+                              {request.seller_notes && (
+                                <p className="mt-1 text-sm text-muted-foreground">{request.seller_notes}</p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 self-start sm:self-center">
+                              <Badge variant="outline">{request.status}</Badge>
+                              {['requested', 'reviewing'].includes(request.status) && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleCancelPayoutRequest(request)}
+                                  disabled={payoutActionId === request.id}
+                                >
+                                  {dashboardCopy.cancelRequest}
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">{dashboardCopy.noPayoutRequests}</p>
+                    )}
                   </div>
 
                   <h3 className="font-medium mb-4">{t('seller_dashboard.transaction_history')}</h3>

@@ -32,6 +32,22 @@ export const AuthProvider = ({ children }) => {
     return authData;
   };
 
+  const requestPasswordReset = async (email) => (
+    pb.collection('users').requestPasswordReset(email.trim(), { $autoCancel: false })
+  );
+
+  const confirmPasswordReset = async ({ token, password, passwordConfirm }) => (
+    pb.collection('users').confirmPasswordReset(token, password, passwordConfirm, { $autoCancel: false })
+  );
+
+  const requestEmailVerification = async (email) => (
+    pb.collection('users').requestVerification(email.trim(), { $autoCancel: false })
+  );
+
+  const confirmEmailVerification = async (token) => (
+    pb.collection('users').confirmVerification(token, { $autoCancel: false })
+  );
+
   const signup = async (data) => {
     const payload = {
       ...data,
@@ -45,8 +61,29 @@ export const AuthProvider = ({ children }) => {
     const record = await pb.collection('users').create({
       ...payload,
     }, { $autoCancel: false });
-    await login(payload.email, data.password);
-    return record;
+
+    const verificationSent = await requestEmailVerification(payload.email)
+      .then(() => true)
+      .catch(() => false);
+
+    let authData = null;
+    try {
+      authData = await login(payload.email, data.password);
+    } catch (error) {
+      const message = `${error?.message || ''} ${error?.response?.message || ''}`.toLowerCase();
+      if (message.includes('verified') || message.includes('confirm') || message.includes('verification')) {
+        return { record, verificationSent, requiresVerification: true };
+      }
+
+      throw error;
+    }
+
+    return {
+      record,
+      token: authData?.token || '',
+      verificationSent,
+      requiresVerification: false,
+    };
   };
 
   const logout = () => {
@@ -67,6 +104,10 @@ export const AuthProvider = ({ children }) => {
     currentUser,
     login,
     signup,
+    requestPasswordReset,
+    confirmPasswordReset,
+    requestEmailVerification,
+    confirmEmailVerification,
     logout,
     refreshUser,
     isSeller,

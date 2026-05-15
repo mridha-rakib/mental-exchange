@@ -17,6 +17,14 @@ import {
   releaseEligiblePayouts,
   startPayoutWaitingPeriodForOrder,
 } from '../utils/payoutWaitingPeriod.js';
+import { buildSellerBalanceFromEarnings, syncSellerBalancesForOrder } from '../utils/sellerBalance.js';
+import { PAYOUT_REQUEST_STATUSES, sanitizePayoutRequest } from '../utils/sellerPayoutRequests.js';
+import { executeStripeConnectPayoutRequest } from '../utils/stripeConnect.js';
+import {
+  createPayoutConflict,
+  listPayoutConflicts,
+  resolvePayoutConflict,
+} from '../utils/payoutConflicts.js';
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -721,9 +729,31 @@ const updateOrderStatusWithAudit = async ({
 
     await Promise.all(
       earnings
-        .filter((earning) => earning.status !== 'confirmed')
-        .map((earning) => pb.collection('seller_earnings').update(earning.id, { status: 'confirmed' })),
+        .filter((earning) => earning.status !== 'paid_out')
+        .map((earning) => pb.collection('seller_earnings').update(earning.id, {
+          status: 'paid_out',
+          released_at: new Date().toISOString(),
+          payout_release_blocked_reason: '',
+        })),
     );
+    await syncSellerBalancesForOrder(orderId);
+  }
+
+  if (['cancelled', 'refunded'].includes(status)) {
+    const earnings = await pb.collection('seller_earnings').getFullList({
+      filter: `order_id="${escapeFilterValue(orderId)}"`,
+      $autoCancel: false,
+    }).catch(() => []);
+
+    await Promise.all(
+      earnings
+        .filter((earning) => !['paid_out'].includes(String(earning.status || '').trim()))
+        .map((earning) => pb.collection('seller_earnings').update(earning.id, {
+          status: 'blocked',
+          payout_release_blocked_reason: status,
+        }, { $autoCancel: false })),
+    );
+    await syncSellerBalancesForOrder(orderId);
   }
 
   if (['dhl_delivered', 'delivered'].includes(status)) {
@@ -1077,6 +1107,9 @@ const hardDeleteUser = async (userId, deletedByAdminId) => {
     productVerifications,
     returns,
     sellerEarnings,
+    sellerBalances,
+    sellerPayoutRequests,
+    sellerPayoutConflicts,
     newsletterSignups,
     emails,
   ] = await Promise.all([
@@ -1086,6 +1119,9 @@ const hardDeleteUser = async (userId, deletedByAdminId) => {
     getRecordsByFields('product_verifications', ['seller_id', 'product_id'], [id, ...productIds]),
     getRecordsByFields('returns', ['buyer_id', 'seller_id', 'product_id', 'order_id'], [id, ...productIds, ...orderIds]),
     getRecordsByFields('seller_earnings', ['seller_id', 'order_id'], [id, ...orderIds]),
+    getRecordsByFields('seller_balances', 'seller_id', id, { optional: true }),
+    getRecordsByFields('seller_payout_requests', 'seller_id', id, { optional: true }),
+    getRecordsByFields('seller_payout_conflicts', ['seller_id', 'order_id'], [id, ...orderIds], { optional: true }),
     getRecordsByFields('newsletter_signups', 'email', user.email),
     getAssociatedEmails({ user, productIds, orderIds }),
   ]);
@@ -1096,6 +1132,9 @@ const hardDeleteUser = async (userId, deletedByAdminId) => {
   await deleteRecords('product_verifications', productVerifications, summary);
   await deleteRecords('returns', returns, summary);
   await deleteRecords('seller_earnings', sellerEarnings, summary);
+  await deleteRecords('seller_balances', sellerBalances, summary);
+  await deleteRecords('seller_payout_requests', sellerPayoutRequests, summary);
+  await deleteRecords('seller_payout_conflicts', sellerPayoutConflicts, summary);
   await deleteRecords('newsletter_signups', newsletterSignups, summary);
   await deleteRecords('emails', emails, summary);
   await deleteRecords('orders', orders, summary);
@@ -2050,6 +2089,168 @@ router.post('/payouts/release-eligible', async (req, res) => {
   });
 });
 
+router.get('/payout-requests', async (req, res) => {
+  const status = String(req.query?.status || '').trim();
+  const sellerId = String(req.query?.seller_id || '').trim();
+  const limit = Math.min(Math.max(Number.parseInt(req.query?.limit, 10) || 100, 1), 200);
+  const filters = [];
+
+  if (status && status !== 'all') {
+    filters.push(`status="${escapeFilterValue(status)}"`);
+  }
+
+  if (sellerId) {
+    filters.push(`seller_id="${escapeFilterValue(sellerId)}"`);
+  }
+
+  const requests = await pb.collection('seller_payout_requests').getList(1, limit, {
+    filter: filters.join(' && ') || undefined,
+    sort: '-created',
+    $autoCancel: false,
+  }).catch(() => ({ items: [], totalItems: 0 }));
+
+  const sellerIds = [...new Set(requests.items.map((item) => String(item.seller_id || '').trim()).filter(Boolean))];
+  const sellers = await Promise.all(
+    sellerIds.map((id) => pb.collection('users').getOne(id, { $autoCancel: false }).catch(() => null)),
+  );
+  const sellerById = new Map(sellers.filter(Boolean).map((seller) => [seller.id, sanitizeUserSummary(seller)]));
+
+  res.json({
+    items: requests.items.map((request) => ({
+      ...sanitizePayoutRequest(request),
+      seller: sellerById.get(request.seller_id) || null,
+    })),
+    total: requests.totalItems || requests.items.length,
+  });
+});
+
+router.put('/payout-requests/:id', async (req, res) => {
+  const requestId = String(req.params.id || '').trim();
+  const status = String(req.body?.status || '').trim();
+  const adminNotes = String(req.body?.admin_notes || req.body?.notes || '').trim();
+
+  if (!requestId) {
+    return res.status(400).json({ error: 'Payout request ID is required' });
+  }
+
+  if (!PAYOUT_REQUEST_STATUSES.has(status)) {
+    return res.status(400).json({ error: 'Invalid payout request status' });
+  }
+
+  if (['processing', 'paid'].includes(status)) {
+    return res.status(400).json({
+      error: 'Use the dedicated payout payment endpoint for processing or paid payouts',
+      requestedStatus: status,
+    });
+  }
+
+  const updateData = {
+    status,
+    admin_notes: adminNotes,
+  };
+
+  if (['reviewing', 'approved', 'rejected', 'failed'].includes(status)) {
+    updateData.reviewed_at = new Date().toISOString();
+    updateData.reviewed_by = req.auth.id;
+  }
+
+  if (status === 'failed') {
+    updateData.failure_reason = adminNotes;
+  }
+
+  const request = await pb.collection('seller_payout_requests').update(requestId, updateData, { $autoCancel: false });
+  logger.info(`[ADMIN] Payout request ${requestId} updated to ${status} by admin ${req.auth.id}`);
+
+  res.json({
+    success: true,
+    request: sanitizePayoutRequest(request),
+  });
+});
+
+router.get('/payout-conflicts', async (req, res) => {
+  const status = String(req.query?.status || 'open').trim();
+  const sellerId = String(req.query?.seller_id || '').trim();
+  const limit = Math.min(Math.max(Number.parseInt(req.query?.limit, 10) || 100, 1), 200);
+  const result = await listPayoutConflicts({ status, sellerId, limit });
+
+  res.json(result);
+});
+
+router.post('/payout-conflicts', async (req, res) => {
+  try {
+    const conflict = await createPayoutConflict({
+      earningId: req.body?.earning_id,
+      orderId: req.body?.order_id,
+      payoutRequestId: req.body?.payout_request_id,
+      reason: req.body?.reason,
+      adminNotes: req.body?.admin_notes,
+      adminId: req.auth.id,
+    });
+
+    logger.info(`[ADMIN] Payout conflict created - Conflict: ${conflict.id}, Seller: ${conflict.seller_id}, Admin: ${req.auth.id}`);
+    res.status(201).json({ success: true, conflict });
+  } catch (error) {
+    res.status(error.status || 400).json({ error: error.message });
+  }
+});
+
+router.post('/payout-conflicts/:id/resolve', async (req, res) => {
+  try {
+    const conflict = await resolvePayoutConflict({
+      conflictId: req.params.id,
+      adminId: req.auth.id,
+      adminNotes: req.body?.admin_notes,
+      restore: req.body?.restore !== false,
+    });
+
+    logger.info(`[ADMIN] Payout conflict ${conflict.id} ${conflict.status} by admin ${req.auth.id}`);
+    res.json({ success: true, conflict });
+  } catch (error) {
+    res.status(error.status || 400).json({ error: error.message });
+  }
+});
+
+router.post('/payout-requests/:id/pay', async (req, res) => {
+  const requestId = String(req.params.id || '').trim();
+  if (!requestId) {
+    return res.status(400).json({ error: 'Payout request ID is required' });
+  }
+
+  try {
+    const result = await executeStripeConnectPayoutRequest({
+      requestId,
+      adminId: req.auth.id,
+    });
+
+    logger.info(`[ADMIN] Stripe Connect payout paid - Request: ${requestId}, Transfer: ${result.transfer.id}, Admin: ${req.auth.id}`);
+    res.json({
+      success: true,
+      request: sanitizePayoutRequest(result.request),
+      transfer: {
+        id: result.transfer.id,
+        amount: result.transfer.amount,
+        currency: result.transfer.currency,
+        destination: result.transfer.destination,
+      },
+    });
+  } catch (error) {
+    if (requestId && error.status !== 409) {
+      await pb.collection('seller_payout_requests').update(requestId, {
+        status: 'failed',
+        failure_reason: error.message || 'Stripe Connect payout failed',
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: req.auth.id,
+      }, { $autoCancel: false }).catch(() => null);
+    }
+
+    res.status(error.status || 400).json({
+      error: error.message,
+      connectStatus: error.connectStatus,
+      conflicts: error.conflicts,
+    });
+  }
+});
+
 // ============================================================================
 // USERS ENDPOINTS
 // ============================================================================
@@ -2141,6 +2342,7 @@ router.get('/sellers', async (req, res) => {
     shopProducts,
     allOrders,
     sellerEarnings,
+    sellerBalances,
   ] = await Promise.all([
     pb.collection('users').getFullList({
       sort: '-created',
@@ -2166,6 +2368,16 @@ router.get('/sellers', async (req, res) => {
     }).catch(() => []),
     pb.collection('seller_earnings').getFullList({
       sort: '-created',
+      $autoCancel: false,
+    }).catch((error) => {
+      if (isMissingCollectionError(error)) {
+        return [];
+      }
+
+      throw error;
+    }),
+    pb.collection('seller_balances').getFullList({
+      sort: '-updated',
       $autoCancel: false,
     }).catch((error) => {
       if (isMissingCollectionError(error)) {
@@ -2207,6 +2419,8 @@ router.get('/sellers', async (req, res) => {
   const deliveredOrderCountBySeller = new Map();
   const revenueTotalBySeller = new Map();
   const availableBalanceBySeller = new Map();
+  const balanceBySeller = new Map(sellerBalances.map((balance) => [String(balance.seller_id || ''), balance]));
+  const earningsBySeller = new Map();
 
   for (const product of [...marketplaceProducts, ...shopProducts]) {
     const sellerId = String(product.seller_id || '').trim();
@@ -2233,6 +2447,7 @@ router.get('/sellers', async (req, res) => {
   for (const earning of sellerEarnings) {
     const sellerId = String(earning.seller_id || '').trim();
     if (!sellerId) continue;
+    earningsBySeller.set(sellerId, [...(earningsBySeller.get(sellerId) || []), earning]);
 
     const netAmount = Number(earning.net_amount ?? earning.gross_amount) || 0;
     revenueTotalBySeller.set(sellerId, (revenueTotalBySeller.get(sellerId) || 0) + netAmount);
@@ -2244,6 +2459,7 @@ router.get('/sellers', async (req, res) => {
 
   const items = pagedSellers.map((seller) => {
     const sellerId = seller.id;
+    const balance = balanceBySeller.get(sellerId) || buildSellerBalanceFromEarnings(sellerId, earningsBySeller.get(sellerId) || []);
 
     return {
       id: sellerId,
@@ -2260,8 +2476,12 @@ router.get('/sellers', async (req, res) => {
       active_listings_count: activeListingCountBySeller.get(sellerId) || 0,
       order_count: orderCountBySeller.get(sellerId) || 0,
       delivered_order_count: deliveredOrderCountBySeller.get(sellerId) || 0,
-      revenue_total: revenueTotalBySeller.get(sellerId) || 0,
-      available_balance: availableBalanceBySeller.get(sellerId) || 0,
+      revenue_total: balance.lifetime_net_amount || revenueTotalBySeller.get(sellerId) || 0,
+      pending_balance: balance.pending_amount || 0,
+      waiting_balance: balance.waiting_amount || 0,
+      available_balance: balance.available_amount ?? availableBalanceBySeller.get(sellerId) ?? 0,
+      blocked_balance: balance.blocked_amount || 0,
+      paid_out_balance: balance.paid_out_amount || 0,
       status: seller.is_deleted ? 'deleted' : 'active',
     };
   });
@@ -2273,8 +2493,13 @@ router.get('/sellers', async (req, res) => {
     acc.totalListings += productCountBySeller.get(sellerId) || 0;
     acc.activeListings += activeListingCountBySeller.get(sellerId) || 0;
     acc.totalOrders += orderCountBySeller.get(sellerId) || 0;
-    acc.availableBalance += availableBalanceBySeller.get(sellerId) || 0;
-    acc.revenueTotal += revenueTotalBySeller.get(sellerId) || 0;
+    const balance = balanceBySeller.get(sellerId) || buildSellerBalanceFromEarnings(sellerId, earningsBySeller.get(sellerId) || []);
+    acc.availableBalance += balance.available_amount ?? availableBalanceBySeller.get(sellerId) ?? 0;
+    acc.pendingBalance += balance.pending_amount || 0;
+    acc.waitingBalance += balance.waiting_amount || 0;
+    acc.blockedBalance += balance.blocked_amount || 0;
+    acc.paidOutBalance += balance.paid_out_amount || 0;
+    acc.revenueTotal += balance.lifetime_net_amount || revenueTotalBySeller.get(sellerId) || 0;
     return acc;
   }, {
     totalSellers: 0,
@@ -2282,6 +2507,10 @@ router.get('/sellers', async (req, res) => {
     activeListings: 0,
     totalOrders: 0,
     availableBalance: 0,
+    pendingBalance: 0,
+    waitingBalance: 0,
+    blockedBalance: 0,
+    paidOutBalance: 0,
     revenueTotal: 0,
   });
 

@@ -1,6 +1,7 @@
 import pb from './pocketbaseClient.js';
 import logger from './logger.js';
 import { canTransitionOrderStatus } from './orderStatus.js';
+import { syncSellerBalances } from './sellerBalance.js';
 
 export const PAYOUT_WAITING_PERIOD_DAYS = 2;
 export const PAYOUT_WAITING_PERIOD_MS = PAYOUT_WAITING_PERIOD_DAYS * 24 * 60 * 60 * 1000;
@@ -35,6 +36,7 @@ const updateSellerEarningsForOrder = async (orderId, updateData, predicate = () 
       })),
   );
 
+  await syncSellerBalances(earnings.map((earning) => earning.seller_id));
   return earnings.length;
 };
 

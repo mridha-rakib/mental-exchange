@@ -36,6 +36,8 @@ import AdminDashboardPage from './pages/AdminDashboardPage.jsx';
 import AdminFiltersPage from './pages/AdminFiltersPage.jsx';
 import ProductVerificationAdminPage from './pages/ProductVerificationAdminPage.jsx';
 import AuthPage from './pages/AuthPage.jsx';
+import PasswordResetPage from './pages/PasswordResetPage.jsx';
+import EmailVerificationPage from './pages/EmailVerificationPage.jsx';
 import NewProductForm from './pages/NewProductForm.jsx';
 import FavoritesPage from './pages/FavoritesPage.jsx';
 import SellerInfoPage from './pages/SellerInfoPage.jsx';
@@ -84,6 +86,10 @@ function App() {
                     <Route path="/product/:id" element={<ProductDetailPage />} />
                     <Route path="/reviews" element={<ReviewsPage />} />
                     <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/auth/reset-password" element={<PasswordResetPage />} />
+                    <Route path="/reset-password" element={<PasswordResetPage />} />
+                    <Route path="/auth/verify-email" element={<EmailVerificationPage />} />
+                    <Route path="/verify-email" element={<EmailVerificationPage />} />
                     
                     {/* Static Pages */}
                     <Route path="/impressum" element={<ImpressumPage />} />

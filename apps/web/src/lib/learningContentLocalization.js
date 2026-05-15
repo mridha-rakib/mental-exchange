@@ -258,8 +258,8 @@ const PACKAGE_COPY = {
         EN: 'Guided modules with clear lesson order',
       },
       {
-        DE: 'Videos und herunterladbare Materialien',
-        EN: 'Video and downloadable material mix',
+        DE: 'Videos und Materialvorschauen direkt auf der Seite',
+        EN: 'Video and in-page material previews',
       },
       {
         DE: 'Fortschrittsanzeige, Lernbereich und Abo-Zugriff',

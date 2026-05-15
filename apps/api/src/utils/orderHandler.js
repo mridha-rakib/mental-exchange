@@ -14,6 +14,7 @@ import {
 } from './emailService.js';
 import { getPlatformSettings, getSellerFeeRate, normalizePlatformSettings } from './platformSettings.js';
 import { normalizeCountryCode } from './countryCodes.js';
+import { syncSellerBalance } from './sellerBalance.js';
 
 const parseShippingAddress = (addressData) => {
   if (!addressData) return {};
@@ -475,6 +476,7 @@ export const orderHandler = async (paymentData) => {
       net_amount: sellerEarnings,
       status: 'pending',
     });
+    await syncSellerBalance(sellerIdStr);
     } catch (error) {
       logger.warn(`[ORDER-HANDLER] Failed to create seller earnings: ${error.message}`);
     }

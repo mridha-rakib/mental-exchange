@@ -148,6 +148,12 @@ const AdminDashboardPage = () => {
     summary: null,
   });
   const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(false);
+  const [payoutRequests, setPayoutRequests] = useState([]);
+  const [payoutConflicts, setPayoutConflicts] = useState([]);
+  const [isPayoutsLoading, setIsPayoutsLoading] = useState(false);
+  const [payoutStatusFilter, setPayoutStatusFilter] = useState('requested');
+  const [payoutConflictStatusFilter, setPayoutConflictStatusFilter] = useState('open');
+  const [payoutActionLoadingId, setPayoutActionLoadingId] = useState('');
 
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -324,6 +330,48 @@ const AdminDashboardPage = () => {
     }
   }, [t]);
 
+  const fetchPayouts = useCallback(async () => {
+    setIsPayoutsLoading(true);
+    try {
+      const token = pb.authStore.token;
+      const requestParams = new URLSearchParams({ limit: '100' });
+      const conflictParams = new URLSearchParams({ limit: '100' });
+      if (payoutStatusFilter !== 'all') requestParams.append('status', payoutStatusFilter);
+      if (payoutConflictStatusFilter !== 'all') conflictParams.append('status', payoutConflictStatusFilter);
+
+      const [requestsRes, conflictsRes] = await Promise.all([
+        apiServerClient.fetch(`/admin/payout-requests?${requestParams.toString()}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        }),
+        apiServerClient.fetch(`/admin/payout-conflicts?${conflictParams.toString()}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        }),
+      ]);
+
+      const requestsData = await requestsRes.json().catch(() => ({}));
+      const conflictsData = await conflictsRes.json().catch(() => ({}));
+      if (!requestsRes.ok) throw new Error(requestsData.error || `Failed to fetch payout requests (${requestsRes.status})`);
+      if (!conflictsRes.ok) throw new Error(conflictsData.error || `Failed to fetch payout conflicts (${conflictsRes.status})`);
+
+      setPayoutRequests(Array.isArray(requestsData.items) ? requestsData.items : []);
+      setPayoutConflicts(Array.isArray(conflictsData.items) ? conflictsData.items : []);
+      setLastRefresh(new Date());
+    } catch (error) {
+      console.error('Error fetching payouts:', error);
+      toast.error(error.message || t('admin_dashboard.payout_load_error'));
+    } finally {
+      setIsPayoutsLoading(false);
+    }
+  }, [payoutStatusFilter, payoutConflictStatusFilter, t]);
+
   useEffect(() => {
     fetchData();
 
@@ -416,6 +464,15 @@ const AdminDashboardPage = () => {
     fetchAnalytics();
     return undefined;
   }, [activeTab, fetchAnalytics]);
+
+  useEffect(() => {
+    if (activeTab !== 'payouts') {
+      return undefined;
+    }
+
+    fetchPayouts();
+    return undefined;
+  }, [activeTab, fetchPayouts]);
 
   const stats = useMemo(() => {
     const totalRevenue = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
@@ -518,6 +575,27 @@ const AdminDashboardPage = () => {
         return 'border-slate-200 bg-slate-100 text-slate-700';
       case 'sold':
         return 'border-blue-200 bg-blue-50 text-blue-700';
+      default:
+        return 'border-slate-200 bg-slate-50 text-slate-700';
+    }
+  };
+
+  const getPayoutStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'approved':
+      case 'paid':
+      case 'resolved':
+        return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+      case 'requested':
+      case 'reviewing':
+      case 'open':
+      case 'processing':
+        return 'border-amber-200 bg-amber-50 text-amber-700';
+      case 'rejected':
+      case 'failed':
+      case 'cancelled':
+      case 'dismissed':
+        return 'border-red-200 bg-red-50 text-red-700';
       default:
         return 'border-slate-200 bg-slate-50 text-slate-700';
     }
@@ -851,6 +929,142 @@ const AdminDashboardPage = () => {
       toast.error(error.message || t('admin_dashboard.payout_release_error'));
     } finally {
       setOrderActionLoadingId('');
+    }
+  };
+
+  const handlePayoutRequestStatus = async (request, status) => {
+    if (!request?.id) return;
+
+    const adminNotes = window.prompt(t('admin_dashboard.payout_request_note_prompt'), request.admin_notes || '');
+    if (adminNotes === null) return;
+
+    setPayoutActionLoadingId(request.id);
+    try {
+      const response = await apiServerClient.fetch(`/admin/payout-requests/${request.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${pb.authStore.token}`,
+        },
+        body: JSON.stringify({ status, admin_notes: adminNotes }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Payout request update failed (${response.status})`);
+      }
+
+      toast.success(t('admin_dashboard.payout_request_updated'));
+      fetchPayouts();
+      fetchData(true);
+    } catch (error) {
+      console.error('Failed to update payout request:', error);
+      toast.error(error.message || t('admin_dashboard.payout_request_error'));
+    } finally {
+      setPayoutActionLoadingId('');
+    }
+  };
+
+  const handlePayPayoutRequest = async (request) => {
+    if (!request?.id || !window.confirm(t('admin_dashboard.payout_request_pay_confirm'))) return;
+
+    setPayoutActionLoadingId(request.id);
+    try {
+      const response = await apiServerClient.fetch(`/admin/payout-requests/${request.id}/pay`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${pb.authStore.token}`,
+        },
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Payout payment failed (${response.status})`);
+      }
+
+      toast.success(t('admin_dashboard.payout_request_paid'));
+      fetchPayouts();
+      fetchData(true);
+    } catch (error) {
+      console.error('Failed to pay payout request:', error);
+      toast.error(error.message || t('admin_dashboard.payout_request_error'));
+      fetchPayouts();
+    } finally {
+      setPayoutActionLoadingId('');
+    }
+  };
+
+  const handleCreatePayoutConflict = async () => {
+    const orderId = window.prompt(t('admin_dashboard.payout_conflict_order_prompt'));
+    if (!orderId) return;
+
+    const reason = window.prompt(t('admin_dashboard.payout_conflict_reason_prompt'));
+    if (!reason) return;
+
+    const adminNotes = window.prompt(t('admin_dashboard.payout_conflict_note_prompt'), '') || '';
+
+    setPayoutActionLoadingId('create-conflict');
+    try {
+      const response = await apiServerClient.fetch('/admin/payout-conflicts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${pb.authStore.token}`,
+        },
+        body: JSON.stringify({
+          order_id: orderId.trim(),
+          reason: reason.trim(),
+          admin_notes: adminNotes.trim(),
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Payout conflict creation failed (${response.status})`);
+      }
+
+      toast.success(t('admin_dashboard.payout_conflict_created'));
+      fetchPayouts();
+      fetchData(true);
+    } catch (error) {
+      console.error('Failed to create payout conflict:', error);
+      toast.error(error.message || t('admin_dashboard.payout_conflict_error'));
+    } finally {
+      setPayoutActionLoadingId('');
+    }
+  };
+
+  const handleResolvePayoutConflict = async (conflict, restore = true) => {
+    if (!conflict?.id) return;
+
+    const adminNotes = window.prompt(t('admin_dashboard.payout_conflict_resolve_note_prompt'), conflict.admin_notes || '');
+    if (adminNotes === null) return;
+
+    setPayoutActionLoadingId(conflict.id);
+    try {
+      const response = await apiServerClient.fetch(`/admin/payout-conflicts/${conflict.id}/resolve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${pb.authStore.token}`,
+        },
+        body: JSON.stringify({ admin_notes: adminNotes, restore }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Payout conflict update failed (${response.status})`);
+      }
+
+      toast.success(t('admin_dashboard.payout_conflict_resolved'));
+      fetchPayouts();
+      fetchData(true);
+    } catch (error) {
+      console.error('Failed to resolve payout conflict:', error);
+      toast.error(error.message || t('admin_dashboard.payout_conflict_error'));
+    } finally {
+      setPayoutActionLoadingId('');
     }
   };
 
@@ -1373,6 +1587,10 @@ const AdminDashboardPage = () => {
       fetchTableSellers();
     }
 
+    if (activeTab === 'payouts') {
+      fetchPayouts();
+    }
+
     if (activeTab === 'analytics') {
       fetchAnalytics();
     }
@@ -1435,6 +1653,7 @@ const AdminDashboardPage = () => {
                 <TabsTrigger value="users" className="gap-2"><Users className="w-4 h-4" /> {t('admin_dashboard.users')}</TabsTrigger>
                 <TabsTrigger value="sellers" className="gap-2"><Store className="w-4 h-4" /> {t('admin_dashboard.sellers')}</TabsTrigger>
                 <TabsTrigger value="returns" className="gap-2"><RotateCcw className="w-4 h-4" /> {t('admin_dashboard.returns')}</TabsTrigger>
+                <TabsTrigger value="payouts" className="gap-2"><DollarSign className="w-4 h-4" /> {t('admin_dashboard.payouts')}</TabsTrigger>
                 <TabsTrigger value="analytics" className="gap-2"><BarChart3 className="w-4 h-4" /> {t('admin_dashboard.analytics')}</TabsTrigger>
                 <TabsTrigger value="settings" className="gap-2"><Settings className="w-4 h-4" /> {t('admin_dashboard.settings')}</TabsTrigger>
               </TabsList>
@@ -2265,8 +2484,13 @@ const AdminDashboardPage = () => {
                       </p>
                       <p className="mt-3 text-3xl font-semibold text-slate-900">{formatCurrency(sellerSummary.availableBalance)}</p>
                       <p className="mt-2 text-sm text-slate-500">
-                        {t('admin_dashboard.total_revenue')}: {formatCurrency(sellerSummary.revenueTotal)}
+                        {t('seller_dashboard.pending_escrow')}: {formatCurrency((sellerSummary.pendingBalance || 0) + (sellerSummary.waitingBalance || 0))}
                       </p>
+                      {sellerSummary.blockedBalance > 0 && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {t('seller_dashboard.blocked')}: {formatCurrency(sellerSummary.blockedBalance)}
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -2353,7 +2577,19 @@ const AdminDashboardPage = () => {
                                   </span>
                                 </div>
                               </TableCell>
-                              <TableCell className="font-medium">{formatCurrency(seller.available_balance)}</TableCell>
+                              <TableCell>
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-slate-900">{formatCurrency(seller.available_balance)}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {t('seller_dashboard.pending_escrow')}: {formatCurrency((seller.pending_balance || 0) + (seller.waiting_balance || 0))}
+                                  </span>
+                                  {seller.blocked_balance > 0 && (
+                                    <span className="text-xs text-red-600">
+                                      {t('seller_dashboard.blocked')}: {formatCurrency(seller.blocked_balance)}
+                                    </span>
+                                  )}
+                                </div>
+                              </TableCell>
                               <TableCell>
                                 <Badge
                                   variant="outline"
@@ -2436,6 +2672,259 @@ const AdminDashboardPage = () => {
                         ))}
                         {returns.length === 0 && (
                           <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground">{t('admin_dashboard.no_returns')}</TableCell></TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* PAYOUTS */}
+            <TabsContent value="payouts" className="space-y-4">
+              <Card className="border-slate-200 bg-white shadow-sm">
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <CardTitle>{t('admin_dashboard.payout_requests')}</CardTitle>
+                      <CardDescription>{t('admin_dashboard.payout_requests_description')}</CardDescription>
+                    </div>
+                    <Select value={payoutStatusFilter} onValueChange={setPayoutStatusFilter}>
+                      <SelectTrigger className="w-full lg:w-[220px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{t('admin_dashboard.payout_status_all')}</SelectItem>
+                        <SelectItem value="requested">{t('admin_dashboard.payout_status_requested')}</SelectItem>
+                        <SelectItem value="reviewing">{t('admin_dashboard.payout_status_reviewing')}</SelectItem>
+                        <SelectItem value="approved">{t('admin_dashboard.payout_status_approved')}</SelectItem>
+                        <SelectItem value="paid">{t('admin_dashboard.payout_status_paid')}</SelectItem>
+                        <SelectItem value="rejected">{t('admin_dashboard.payout_status_rejected')}</SelectItem>
+                        <SelectItem value="failed">{t('admin_dashboard.payout_status_failed')}</SelectItem>
+                        <SelectItem value="cancelled">{t('admin_dashboard.payout_status_cancelled')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-hidden rounded-[8px] border border-slate-200">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t('admin_dashboard.shop_seller')}</TableHead>
+                          <TableHead>{t('orders.total')}</TableHead>
+                          <TableHead>{t('seller.status')}</TableHead>
+                          <TableHead>{t('admin_dashboard.registered_at')}</TableHead>
+                          <TableHead>{t('admin_dashboard.stripe_transfer')}</TableHead>
+                          <TableHead className="w-[260px] text-right">{t('seller.actions')}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {isPayoutsLoading ? (
+                          Array.from({ length: 4 }).map((_, index) => (
+                            <TableRow key={index}>
+                              <TableCell><Skeleton className="h-10 w-[220px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[90px]" /></TableCell>
+                              <TableCell><Skeleton className="h-8 w-[100px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[140px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
+                              <TableCell><Skeleton className="ml-auto h-9 w-[240px]" /></TableCell>
+                            </TableRow>
+                          ))
+                        ) : payoutRequests.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
+                              {t('admin_dashboard.no_payout_requests')}
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          payoutRequests.map((request) => (
+                            <TableRow key={request.id}>
+                              <TableCell>
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-slate-900">
+                                    {request.seller?.seller_username || request.seller?.name || request.seller?.email || request.seller_id}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground break-all">{request.id}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="font-medium">{formatCurrency(request.amount)}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={getPayoutStatusBadgeClass(request.status)}>
+                                  {t(`admin_dashboard.payout_status_${request.status}`)}
+                                </Badge>
+                                {request.failure_reason && (
+                                  <p className="mt-1 max-w-[220px] truncate text-xs text-red-600">{request.failure_reason}</p>
+                                )}
+                              </TableCell>
+                              <TableCell>{formatDateTime(request.created)}</TableCell>
+                              <TableCell className="max-w-[160px] truncate">{request.stripe_transfer_id || '-'}</TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex flex-wrap justify-end gap-2">
+                                  {['requested'].includes(request.status) && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={payoutActionLoadingId === request.id}
+                                      onClick={() => handlePayoutRequestStatus(request, 'reviewing')}
+                                    >
+                                      {t('admin_dashboard.payout_request_review')}
+                                    </Button>
+                                  )}
+                                  {['requested', 'reviewing'].includes(request.status) && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                                      disabled={payoutActionLoadingId === request.id}
+                                      onClick={() => handlePayoutRequestStatus(request, 'approved')}
+                                    >
+                                      {t('admin_dashboard.payout_request_approve')}
+                                    </Button>
+                                  )}
+                                  {['requested', 'reviewing', 'approved'].includes(request.status) && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-red-200 text-red-700 hover:bg-red-50"
+                                      disabled={payoutActionLoadingId === request.id}
+                                      onClick={() => handlePayoutRequestStatus(request, 'rejected')}
+                                    >
+                                      {t('admin_dashboard.payout_request_reject')}
+                                    </Button>
+                                  )}
+                                  {request.status === 'approved' && (
+                                    <Button
+                                      size="sm"
+                                      disabled={payoutActionLoadingId === request.id}
+                                      onClick={() => handlePayPayoutRequest(request)}
+                                    >
+                                      {t('admin_dashboard.payout_request_pay')}
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-slate-200 bg-white shadow-sm">
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <CardTitle>{t('admin_dashboard.payout_conflicts')}</CardTitle>
+                      <CardDescription>{t('admin_dashboard.payout_conflicts_description')}</CardDescription>
+                    </div>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Select value={payoutConflictStatusFilter} onValueChange={setPayoutConflictStatusFilter}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">{t('admin_dashboard.payout_status_all')}</SelectItem>
+                          <SelectItem value="open">{t('admin_dashboard.payout_conflict_status_open')}</SelectItem>
+                          <SelectItem value="resolved">{t('admin_dashboard.payout_conflict_status_resolved')}</SelectItem>
+                          <SelectItem value="dismissed">{t('admin_dashboard.payout_conflict_status_dismissed')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="outline"
+                        disabled={payoutActionLoadingId === 'create-conflict'}
+                        onClick={handleCreatePayoutConflict}
+                      >
+                        <AlertCircle className="mr-2 h-4 w-4" />
+                        {t('admin_dashboard.payout_conflict_create')}
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-hidden rounded-[8px] border border-slate-200">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t('admin_dashboard.order_id')}</TableHead>
+                          <TableHead>{t('admin_dashboard.seller_id')}</TableHead>
+                          <TableHead>{t('admin_dashboard.blocked_amount')}</TableHead>
+                          <TableHead>{t('admin_dashboard.reason')}</TableHead>
+                          <TableHead>{t('seller.status')}</TableHead>
+                          <TableHead className="text-right">{t('seller.actions')}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {isPayoutsLoading ? (
+                          Array.from({ length: 3 }).map((_, index) => (
+                            <TableRow key={index}>
+                              <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                              <TableCell><Skeleton className="h-4 w-[220px]" /></TableCell>
+                              <TableCell><Skeleton className="h-8 w-[90px]" /></TableCell>
+                              <TableCell><Skeleton className="ml-auto h-9 w-[170px]" /></TableCell>
+                            </TableRow>
+                          ))
+                        ) : payoutConflicts.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
+                              {t('admin_dashboard.no_payout_conflicts')}
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          payoutConflicts.map((conflict) => (
+                            <TableRow key={conflict.id}>
+                              <TableCell>
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-slate-900">{conflict.order_id || conflict.earning_id || '-'}</span>
+                                  <span className="text-xs text-muted-foreground">{formatDateTime(conflict.created)}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-[150px] truncate">{conflict.seller_id || '-'}</TableCell>
+                              <TableCell className="font-medium">{formatCurrency(conflict.blocked_amount)}</TableCell>
+                              <TableCell>
+                                <div className="max-w-[320px]">
+                                  <p className="truncate font-medium text-slate-900">{conflict.reason || '-'}</p>
+                                  {conflict.admin_notes && (
+                                    <p className="mt-1 truncate text-xs text-muted-foreground">{conflict.admin_notes}</p>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={getPayoutStatusBadgeClass(conflict.status)}>
+                                  {t(`admin_dashboard.payout_conflict_status_${conflict.status}`)}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {conflict.status === 'open' ? (
+                                  <div className="flex flex-wrap justify-end gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                                      disabled={payoutActionLoadingId === conflict.id}
+                                      onClick={() => handleResolvePayoutConflict(conflict, true)}
+                                    >
+                                      {t('admin_dashboard.payout_conflict_resolve')}
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={payoutActionLoadingId === conflict.id}
+                                      onClick={() => handleResolvePayoutConflict(conflict, false)}
+                                    >
+                                      {t('admin_dashboard.payout_conflict_dismiss')}
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">{formatDateTime(conflict.resolved_at)}</span>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))
                         )}
                       </TableBody>
                     </Table>

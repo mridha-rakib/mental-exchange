@@ -999,14 +999,14 @@ Use this checklist to work one section at a time.
 - [x] Add admin order validation and pause/cancel/refund actions.
 - [x] Persist DHL delivery confirmation.
 - [x] Add two-day payout waiting period.
-- [ ] Add seller balance model.
-- [ ] Add seller payout request flow.
-- [ ] Add Stripe Connect seller onboarding/payouts.
-- [ ] Add admin payout/conflict/refund management.
-- [ ] Improve login error mapping.
-- [ ] Add password reset flow.
-- [ ] Add email verification flow.
-- [ ] Add role/subscription-aware redirects.
+- [x] Add seller balance model.
+- [x] Add seller payout request flow.
+- [x] Add Stripe Connect seller onboarding/payouts.
+- [x] Add admin payout/conflict/refund management.
+- [x] Improve login error mapping.
+- [x] Add password reset flow.
+- [x] Add email verification flow.
+- [x] Add role/subscription-aware redirects.
 
 ## 10. Risk Notes
 

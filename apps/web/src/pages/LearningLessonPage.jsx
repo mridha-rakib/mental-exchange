@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CheckCircle2, Download, FileText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, FileText, Image as ImageIcon, PlayCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import {
@@ -31,6 +31,119 @@ const getLearningTextBlocks = (value) => String(value || '')
   .map((block) => block.trim())
   .filter(Boolean);
 
+const getPreviewKindFromMime = (mimeType = '') => {
+  const normalized = String(mimeType || '').toLowerCase();
+  if (normalized.includes('pdf')) return 'pdf';
+  if (normalized.startsWith('image/')) return 'image';
+  if (normalized.startsWith('video/')) return 'video';
+  return 'unknown';
+};
+
+const LearningAssetPreview = ({
+  assetUrl,
+  kind,
+  label,
+  t,
+  className = '',
+}) => {
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [previewError, setPreviewError] = useState(false);
+  const [resolvedKind, setResolvedKind] = useState(kind);
+
+  useEffect(() => {
+    if (!assetUrl) {
+      setPreviewUrl('');
+      setPreviewError(false);
+      setResolvedKind(kind);
+      return undefined;
+    }
+
+    let active = true;
+    let objectUrl = '';
+
+    const loadPreview = async () => {
+      setPreviewError(false);
+      setPreviewUrl('');
+      setResolvedKind(kind);
+
+      try {
+        const response = await fetch(assetUrl, { method: 'GET' });
+        if (!response.ok) {
+          throw new Error(`Asset preview failed (${response.status})`);
+        }
+
+        const blob = await response.blob();
+        const nextKind = kind === 'unknown' ? getPreviewKindFromMime(blob.type) : kind;
+        objectUrl = URL.createObjectURL(blob);
+        if (active) {
+          setResolvedKind(nextKind);
+          setPreviewUrl(objectUrl);
+        } else {
+          URL.revokeObjectURL(objectUrl);
+        }
+      } catch (error) {
+        console.error('Failed to load learning asset preview:', error);
+        if (active) {
+          setPreviewError(true);
+        }
+      }
+    };
+
+    loadPreview();
+
+    return () => {
+      active = false;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [assetUrl, kind]);
+
+  if (previewError || resolvedKind === 'unknown') {
+    return (
+      <div className="rounded-[8px] border border-dashed border-black/15 bg-slate-50 p-5 text-sm text-slate-500">
+        {t('learning.preview_unavailable')}
+      </div>
+    );
+  }
+
+  if (!previewUrl) {
+    return (
+      <div className={`flex items-center justify-center rounded-[8px] border border-black/10 bg-slate-50 text-sm text-slate-500 ${className || 'h-40'}`}>
+        {t('common.loading')}
+      </div>
+    );
+  }
+
+  if (resolvedKind === 'pdf') {
+    return (
+      <iframe
+        title={label}
+        src={`${previewUrl}#toolbar=0&navpanes=0`}
+        className={`w-full rounded-[8px] border border-black/10 bg-white ${className || 'h-[520px]'}`}
+      />
+    );
+  }
+
+  if (resolvedKind === 'image') {
+    return (
+      <div className="overflow-hidden rounded-[8px] border border-black/10 bg-white">
+        <img src={previewUrl} alt={label} className="max-h-[620px] w-full object-contain" />
+      </div>
+    );
+  }
+
+  return (
+    <video
+      controls
+      controlsList="nodownload"
+      disablePictureInPicture
+      src={previewUrl}
+      className={`w-full rounded-[8px] border border-black/10 bg-[#eef2ff] ${className || 'aspect-video'}`}
+    />
+  );
+};
+
 const LearningLessonPage = () => {
   const {
     lessonId,
@@ -45,7 +158,6 @@ const LearningLessonPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
-  const [downloadingAsset, setDownloadingAsset] = useState('');
   const [accessDenied, setAccessDenied] = useState(null);
 
   useEffect(() => {
@@ -223,64 +335,61 @@ const LearningLessonPage = () => {
   const textBlocks = getLearningTextBlocks(data.lesson.textContent);
   const hasTextContent = textBlocks.length > 0;
   const contentTypeLabel = getLearningContentTypeLabel(t, data.lesson.contentType);
-  const handleResourceDownload = async (assetUrl, label) => {
-    if (!assetUrl) return;
 
-    setDownloadingAsset(assetUrl);
-    try {
-      const response = await fetch(assetUrl, { method: 'GET' });
-      if (!response.ok) {
-        throw new Error(`Download failed (${response.status})`);
-      }
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${String(label || 'learning-resource').replace(/\.pdf$/i, '')}.pdf`;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (error) {
-      console.error('Failed to download learning resource:', error);
-      toast.error(t('learning.download_error'));
-    } finally {
-      setDownloadingAsset('');
-    }
+  const getPreviewKind = (assetUrl, label = '') => {
+    const cleanUrl = String(assetUrl || '').split('?')[0].split('#')[0].toLowerCase();
+    const source = `${cleanUrl} ${String(label || '').toLowerCase()}`;
+    if (cleanUrl.includes('/assets/video')) return 'video';
+    if (cleanUrl.includes('/assets/pdf')) return 'pdf';
+    if (/\.(png|jpe?g|gif|webp|avif|svg)$/.test(source)) return 'image';
+    if (/\.(mp4|webm|ogg|mov|m4v)$/.test(source)) return 'video';
+    if (/\.pdf$/.test(source) || String(label).toLowerCase().includes('pdf')) return 'pdf';
+    if (String(label).toLowerCase().includes('video')) return 'video';
+    return 'unknown';
   };
 
-  const renderResourceButton = ({ assetUrl, label, Icon = FileText }) => (
-    <button
-      type="button"
-      onClick={() => handleResourceDownload(assetUrl, label)}
-      disabled={downloadingAsset === assetUrl}
-      className="learning-inline-card flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-slate-700 transition-colors hover:border-[#0000FF]/25 hover:text-[#0000FF] disabled:cursor-wait disabled:opacity-70"
-    >
-      <span className="flex items-center gap-2">
-        <Icon className="size-4" />
-        {label}
-      </span>
-      <ArrowRight className="size-4" />
-    </button>
-  );
+  const getPreviewIcon = (kind) => {
+    if (kind === 'image') return ImageIcon;
+    if (kind === 'video') return PlayCircle;
+    return FileText;
+  };
+
+  const renderResourcePreview = ({ assetUrl, label }) => {
+    if (!assetUrl) return null;
+
+    const kind = getPreviewKind(assetUrl, label);
+    const Icon = getPreviewIcon(kind);
+
+    return (
+      <article key={`${label}-${assetUrl}`} className="learning-inline-card overflow-hidden p-4">
+        <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800">
+          <Icon className="size-4 text-[#0000FF]" />
+          <span>{label}</span>
+        </div>
+
+        <LearningAssetPreview assetUrl={assetUrl} kind={kind} label={label} t={t} />
+      </article>
+    );
+  };
 
   const renderResources = (isTop = false) => (
     <div className={`learning-subtle-card ${isTop ? '' : 'mt-8'} p-6`}>
       <h2 className="text-2xl font-semibold text-slate-900">{t('learning.resources')}</h2>
       <div className="mt-5 space-y-3">
         {hasPdf && (
-          renderResourceButton({ assetUrl: pdfAssetUrl, label: 'PDF', Icon: FileText })
+          renderResourcePreview({ assetUrl: pdfAssetUrl, label: 'PDF' })
         )}
         {hasDownload && (
-          renderResourceButton({ assetUrl: downloadAssetUrl, label: t('learning.download'), Icon: Download })
+          renderResourcePreview({ assetUrl: downloadAssetUrl, label: t('learning.material_preview') })
         )}
         {attachments.map((item) => (
-          <React.Fragment key={`${item.label}-${item.url}`}>
-            {renderResourceButton({ assetUrl: getLearningAssetUrl(item.url), label: item.label, Icon: FileText })}
-          </React.Fragment>
+          renderResourcePreview({ assetUrl: getLearningAssetUrl(item.url), label: item.label })
         ))}
       </div>
     </div>
   );
+
+  const shouldPreviewVideoAsset = getPreviewKind(videoAssetUrl, 'video') === 'video';
 
   return (
     <>
@@ -301,11 +410,13 @@ const LearningLessonPage = () => {
               {hasVideo && (
                 <div className="learning-subtle-card overflow-hidden p-3">
                   <div className="overflow-hidden rounded-[8px] border border-black/6 bg-[#eef2ff]">
-                    {data.lesson.videoPresentation === 'stream' ? (
-                      <video
-                        controls
-                        className="aspect-video h-full w-full bg-[#eef2ff]"
-                        src={videoAssetUrl}
+                    {data.lesson.videoPresentation === 'stream' || shouldPreviewVideoAsset ? (
+                      <LearningAssetPreview
+                        assetUrl={videoAssetUrl}
+                        kind="video"
+                        label={data.lesson.title}
+                        t={t}
+                        className="aspect-video"
                       />
                     ) : (
                       <iframe

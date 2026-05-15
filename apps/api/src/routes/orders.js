@@ -12,6 +12,7 @@ import {
   ORDER_STATUS_VALUES,
 } from '../utils/orderStatus.js';
 import { startPayoutWaitingPeriodForOrder } from '../utils/payoutWaitingPeriod.js';
+import { syncSellerBalancesForOrder } from '../utils/sellerBalance.js';
 
 const router = express.Router();
 
@@ -437,9 +438,28 @@ router.post('/:orderId/update-status', requireAuth, async (req, res) => {
     });
 
     if (earnings.length > 0) {
-      await pb.collection('seller_earnings').update(earnings[0].id, { status: 'confirmed' });
+      await Promise.all(earnings.map((earning) => pb.collection('seller_earnings').update(earning.id, {
+        status: 'paid_out',
+        released_at: new Date().toISOString(),
+        payout_release_blocked_reason: '',
+      })));
+      await syncSellerBalancesForOrder(orderIdStr);
       logger.info(`[ORDERS] Seller earnings confirmed - Order: ${orderIdStr}`);
     }
+  }
+
+  if (['cancelled', 'refunded'].includes(status)) {
+    const earnings = await pb.collection('seller_earnings').getFullList({
+      filter: `order_id="${orderIdStr}"`,
+    }).catch(() => []);
+
+    await Promise.all(earnings
+      .filter((earning) => earning.status !== 'paid_out')
+      .map((earning) => pb.collection('seller_earnings').update(earning.id, {
+        status: 'blocked',
+        payout_release_blocked_reason: status,
+      })));
+    await syncSellerBalancesForOrder(orderIdStr);
   }
 
   if (['dhl_delivered', 'delivered'].includes(status)) {
