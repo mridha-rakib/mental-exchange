@@ -21,6 +21,26 @@ const router = express.Router();
 // Apply auth middleware to all routes
 router.use(auth);
 
+const resolveFrontendUrlFromRequest = (req) => {
+  const candidates = [
+    req.headers.origin,
+    req.headers.referer,
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    try {
+      const url = new URL(candidate);
+      if (url.protocol === 'http:' || url.protocol === 'https:') {
+        return url.origin;
+      }
+    } catch {
+      // Ignore invalid header values and continue to fallback candidates.
+    }
+  }
+
+  return process.env.FRONTEND_URL || 'https://zahniboerse.com';
+};
+
 // Validate username format
 const validateUsername = (username) => {
   if (!username || typeof username !== 'string') return false;
@@ -157,11 +177,13 @@ router.post('/stripe-connect/onboarding-link', requireAuth, async (req, res) => 
   }
 
   try {
-    const result = await createSellerStripeOnboardingLink(user);
+    const frontendUrl = resolveFrontendUrlFromRequest(req);
+    const result = await createSellerStripeOnboardingLink(user, frontendUrl);
     logger.info(`[SELLER] Stripe Connect onboarding link created for seller ${req.auth.id}`);
     res.json(result);
   } catch (error) {
-    res.status(error.status || 400).json({ error: error.message });
+    logger.warn(`[SELLER] Stripe Connect onboarding link failed for seller ${req.auth.id}: ${error.message}`);
+    res.status(error.status || 400).json({ error: error.message, code: error.code || '' });
   }
 });
 

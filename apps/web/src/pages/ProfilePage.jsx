@@ -463,7 +463,7 @@ const ProfilePage = () => {
           <title>{t('profile.admin_title')} - Zahnibörse</title>
         </Helmet>
 
-        <AccountLayout activeKey="profile" contentClassName="max-w-6xl">
+        <AccountLayout activeKey="profile">
           <div>
             <section className="overflow-hidden rounded-[32px] border border-black/10 bg-white text-[#151515]">
               <div className="grid gap-8 p-6 md:p-10 lg:grid-cols-[1fr_360px] lg:items-center">

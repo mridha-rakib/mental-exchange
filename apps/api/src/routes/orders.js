@@ -13,6 +13,7 @@ import {
 } from '../utils/orderStatus.js';
 import { startPayoutWaitingPeriodForOrder } from '../utils/payoutWaitingPeriod.js';
 import { syncSellerBalancesForOrder } from '../utils/sellerBalance.js';
+import { getPublicPocketBaseFileUrl } from '../utils/fileUrls.js';
 
 const router = express.Router();
 
@@ -36,11 +37,7 @@ const getProductImageUrl = (product) => {
   const image = images[0] || product?.image || '';
   if (!image) return '';
 
-  try {
-    return pb.files.getUrl(product, image, { thumb: '300x300' });
-  } catch {
-    return '';
-  }
+  return getPublicPocketBaseFileUrl(product, image, { thumb: '300x300' }) || '';
 };
 
 const sanitizeProduct = (product) => {

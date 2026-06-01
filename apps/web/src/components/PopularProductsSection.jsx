@@ -4,6 +4,7 @@ import { ShoppingCart, ShieldCheck, PackageSearch } from 'lucide-react';
 import apiServerClient from '@/lib/apiServerClient.js';
 import { useCart } from '@/contexts/CartContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
+import { getProductImageUrl } from '@/lib/productImages.js';
 import { toast } from 'sonner';
 const PopularProductsSection = () => {
   const [products, setProducts] = useState([]);
@@ -59,10 +60,11 @@ const PopularProductsSection = () => {
             {[...Array(4)].map((_, i) => <div key={i} className="animate-pulse bg-[hsl(var(--muted))] rounded-[8px] aspect-[3/4]"></div>)}
           </div> : products.length > 0 ? <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {products.map(product => {
+          const productImageUrl = getProductImageUrl(product);
           return <Link to={`/product/${product.id}?type=shop`} key={product.id} className="flex flex-col h-full bg-white border border-[rgba(224,224,224,0.5)] rounded-[8px] overflow-hidden hover:shadow-hover transition-smooth group relative">
                   {/* Image Area */}
                   <div className="relative aspect-square overflow-hidden bg-[rgba(247,247,247,0.2)]">
-                    {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center text-[hsl(var(--secondary))]">
+                    {productImageUrl ? <img src={productImageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center text-[hsl(var(--secondary))]">
                         {t('product.no_image')}
                       </div>}
                     

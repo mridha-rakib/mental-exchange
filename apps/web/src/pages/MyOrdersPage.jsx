@@ -294,7 +294,7 @@ const MyOrdersPage = () => {
         <title>{t('orders.title')} - Zahnibörse</title>
       </Helmet>
 
-      <AccountLayout activeKey="orders" contentClassName="max-w-6xl">
+      <AccountLayout activeKey="orders">
         <div className="w-full">
           <header className="mb-7 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>

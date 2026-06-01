@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils.js';
 import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
 
-const accountNavBaseClass = 'group inline-flex min-h-11 shrink-0 items-center gap-3 rounded-[8px] px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0000FF]/30 lg:w-full';
+const accountNavBaseClass = 'group inline-flex min-h-11 shrink-0 items-center gap-3 rounded-[8px] px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0000FF]/30 lg:flex lg:w-full';
 const accountNavInactiveClass = 'text-[#4f4f4f] hover:bg-[#f3f3ff] hover:text-[#0000FF]';
 const accountNavActiveClass = 'bg-[#0000FF] text-white shadow-sm hover:bg-[#0000CC] hover:text-white';
 
@@ -108,7 +108,7 @@ const AccountLayout = ({
 
   return (
     <main className={cn('flex-1 bg-[#f6f7f9] py-6 md:py-10', className)}>
-      <div className={cn('mx-auto grid w-full max-w-7xl gap-5 px-4 sm:px-6 lg:grid-cols-[244px_minmax(0,1fr)] lg:px-8', containerClassName)}>
+      <div className={cn('mx-auto grid w-full max-w-none gap-5 px-4 sm:px-6 lg:grid-cols-[244px_minmax(0,1fr)] lg:px-8', containerClassName)}>
         <aside className="min-w-0">
           <div className="sticky top-24 rounded-[8px] border border-black/10 bg-white p-3 shadow-sm">
             <div className="mb-3 hidden border-b border-black/10 px-2 pb-3 lg:block">

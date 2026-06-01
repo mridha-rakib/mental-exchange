@@ -136,6 +136,26 @@ const SellerDashboard = () => {
   }, [searchParams]);
 
   useEffect(() => {
+    const stripeConnectState = searchParams.get('stripe_connect');
+    if (!stripeConnectState) return;
+
+    if (stripeConnectState === 'return') {
+      toast.success(language === 'EN'
+        ? 'Stripe onboarding updated. Refreshing payout status.'
+        : 'Stripe-Onboarding wurde aktualisiert. Auszahlungsstatus wird aktualisiert.');
+      setRefreshKey((value) => value + 1);
+    } else if (stripeConnectState === 'refresh') {
+      toast.message(language === 'EN'
+        ? 'Stripe requested a refresh. Continue onboarding to finish setup.'
+        : 'Stripe benoetigt eine Aktualisierung. Bitte fuehre das Onboarding weiter aus.');
+    }
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('stripe_connect');
+    setSearchParams(nextParams, { replace: true });
+  }, [language, searchParams, setSearchParams]);
+
+  useEffect(() => {
     const fetchDashboardData = async () => {
       if (!currentUser?.id) return;
       

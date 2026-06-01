@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpenText, CheckCircle2, LockKeyhole, PlayCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
-import { getLearningPackage } from '@/lib/learningApi.js';
-import { localizeLearningPackage } from '@/lib/learningContentLocalization.js';
+import { getLearningDashboard, getLearningPackage } from '@/lib/learningApi.js';
+import { localizeLearningDashboard, localizeLearningPackage } from '@/lib/learningContentLocalization.js';
 import {
   formatLearningPrice,
   getBillingIntervalLabel,
@@ -13,14 +13,20 @@ import {
   getPriceIntervalLabel,
 } from '@/lib/learningPresentation.js';
 import { getLearningTopicPath } from '@/lib/learningRoutes.js';
+import { getSubscriptionStatusHintKey, getSubscriptionStatusLabel, getSubscriptionStatusToneClass } from '@/lib/subscriptionStatus.js';
+import { useAuth } from '@/contexts/AuthContext.jsx';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
+import pb from '@/lib/pocketbaseClient.js';
 
 const getCurrentUrl = () => (typeof window !== 'undefined' ? window.location.href : '');
 
 const LearningPackagePage = () => {
   const { slug } = useParams();
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const { t, language } = useTranslation();
   const [packageData, setPackageData] = useState(null);
+  const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [billingCycle, setBillingCycle] = useState('month');
 
@@ -29,14 +35,20 @@ const LearningPackagePage = () => {
 
     const loadPackage = async () => {
       try {
-        const data = await getLearningPackage(slug);
+        const token = pb.authStore.token;
+        const [data, dashboardData] = await Promise.all([
+          getLearningPackage(slug),
+          token ? getLearningDashboard(token).catch(() => null) : Promise.resolve(null),
+        ]);
         if (active) {
           setPackageData(localizeLearningPackage(data, language));
+          setDashboard(localizeLearningDashboard(dashboardData, language));
         }
       } catch (error) {
         console.error('Failed to load learning package:', error);
         if (active) {
           setPackageData(null);
+          setDashboard(null);
         }
       } finally {
         if (active) {
@@ -50,7 +62,7 @@ const LearningPackagePage = () => {
     return () => {
       active = false;
     };
-  }, [language, slug]);
+  }, [isAuthenticated, language, slug]);
 
   const locale = language === 'DE' ? 'de-DE' : 'en-US';
   const modules = packageData?.modules || [];
@@ -58,6 +70,32 @@ const LearningPackagePage = () => {
   const activePrice = activeBillingOption?.priceAmount || packageData?.priceAmount || 0;
   const activeInterval = activeBillingOption?.interval || billingCycle;
   const checkoutEnabled = packageData?.checkoutEnabled !== false;
+  const managedSubscription = dashboard?.subscription && packageData?.id && dashboard.subscription.packageId === packageData.id
+    ? dashboard.subscription
+    : null;
+  const hasManagedSubscription = Boolean(managedSubscription);
+  const managedSubscriptionStatus = managedSubscription?.status || '';
+  const hasManagedAccess = Boolean(managedSubscription?.hasAccess);
+  const statusLabel = useMemo(() => getSubscriptionStatusLabel(t, managedSubscriptionStatus), [managedSubscriptionStatus, t]);
+  const statusHintKey = getSubscriptionStatusHintKey(managedSubscriptionStatus);
+  const canStartCheckout = checkoutEnabled
+    && (!hasManagedSubscription || ['expired', 'unpaid', 'paused', 'incomplete', 'incomplete_expired'].includes(managedSubscriptionStatus));
+  const primaryCtaLabel = !checkoutEnabled && !hasManagedSubscription
+    ? t('learning.checkout_disabled_cta')
+    : !isAuthenticated
+      ? t('learning.register_to_subscribe')
+      : canStartCheckout
+        ? (hasManagedSubscription ? t('learning.subscribe_again') : t('learning.subscribe'))
+        : hasManagedAccess
+          ? t('learning.open_dashboard')
+          : t('learning.manage_subscription');
+  const primaryCtaTo = !isAuthenticated
+    ? '/auth'
+    : canStartCheckout
+      ? `/learning/subscribe/${packageData?.slug}?cycle=${billingCycle}`
+      : hasManagedAccess
+        ? '/learning/dashboard'
+        : '/learning/subscription';
 
   const lessonTotals = useMemo(() => modules.reduce((sum, moduleRecord) => sum + moduleRecord.lessons.length, 0), [modules]);
   const totalEstimatedMinutes = useMemo(
@@ -175,6 +213,18 @@ const LearningPackagePage = () => {
                     })}
                   </p>
 
+                  {hasManagedSubscription && (
+                    <div className={`mt-4 rounded-[8px] border p-4 text-sm ${getSubscriptionStatusToneClass(managedSubscriptionStatus)}`}>
+                      <p className="font-semibold">{t('learning.current_subscription_title')}</p>
+                      <p className="mt-1">
+                        {hasManagedAccess
+                          ? t('learning.current_subscription_active_body')
+                          : t('learning.current_subscription_inactive_body', { status: statusLabel })}
+                      </p>
+                      {statusHintKey && <p className="mt-2">{t(statusHintKey)}</p>}
+                    </div>
+                  )}
+
                   {packageData.billingOptions?.length > 1 && (
                     <div className="mt-4 grid grid-cols-2 gap-2 rounded-[8px] border border-black/6 bg-[#f7f7f7] p-2">
                       {packageData.billingOptions.map((option) => (
@@ -194,9 +244,11 @@ const LearningPackagePage = () => {
                     </div>
                   )}
 
-                  {checkoutEnabled ? (
+                  {checkoutEnabled || hasManagedSubscription ? (
                     <Button asChild className="mt-6 h-11 w-full rounded-[8px] bg-[#0000FF] text-white shadow-none hover:bg-[#0000CC]">
-                      <Link to={`/learning/subscribe/${packageData.slug}?cycle=${billingCycle}`}>{t('learning.subscribe')}</Link>
+                      <Link to={primaryCtaTo} state={!isAuthenticated ? { from: location } : undefined}>
+                        {primaryCtaLabel}
+                      </Link>
                     </Button>
                   ) : (
                     <Button
@@ -362,10 +414,17 @@ const LearningPackagePage = () => {
                     interval: getBillingIntervalLabel(t, activeInterval),
                   })}
                 </p>
-                {checkoutEnabled ? (
+                {hasManagedSubscription && (
+                  <p className="mt-3 text-sm text-slate-600">
+                    {hasManagedAccess
+                      ? t('learning.current_subscription_active_body')
+                      : t('learning.current_subscription_inactive_body', { status: statusLabel })}
+                  </p>
+                )}
+                {checkoutEnabled || hasManagedSubscription ? (
                   <Button asChild className="mt-5 h-11 rounded-[8px] bg-[#0000FF] px-6 text-white shadow-none hover:bg-[#0000CC]">
-                    <Link to={`/learning/subscribe/${packageData.slug}?cycle=${billingCycle}`}>
-                      {t('learning.subscribe')}
+                    <Link to={primaryCtaTo} state={!isAuthenticated ? { from: location } : undefined}>
+                      {primaryCtaLabel}
                       <ArrowRight className="size-4" />
                     </Link>
                   </Button>

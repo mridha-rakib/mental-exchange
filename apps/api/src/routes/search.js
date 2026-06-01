@@ -1,5 +1,6 @@
 import express from 'express';
 import pb from '../utils/pocketbaseClient.js';
+import { getPublicPocketBaseFileUrl } from '../utils/fileUrls.js';
 import logger from '../utils/logger.js';
 
 const router = express.Router();
@@ -12,7 +13,7 @@ const getProductImages = (record) => (
 
 const getProductImageUrl = (record) => {
   const image = getProductImages(record)[0] || record.image || '';
-  return image ? pb.files.getUrl(record, image) : null;
+  return getPublicPocketBaseFileUrl(record, image);
 };
 
 const formatProduct = (record, source) => ({

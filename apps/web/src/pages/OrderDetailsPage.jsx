@@ -322,7 +322,7 @@ const OrderDetailsPage = () => {
       </Helmet>
 
       <main className="flex-1 bg-[hsl(var(--muted-bg))] py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link to="/my-orders" className="inline-flex items-center text-sm text-muted-foreground hover:text-[#0000FF] mb-6 transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
             {t('order_details.back_orders')}

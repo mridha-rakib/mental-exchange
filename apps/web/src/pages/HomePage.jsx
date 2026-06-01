@@ -14,6 +14,8 @@ import { listLearningPackages } from '@/lib/learningApi.js';
 import { localizeLearningPackage } from '@/lib/learningContentLocalization.js';
 import { getPriceIntervalLabel } from '@/lib/learningPresentation.js';
 
+const HOME_HERO_BACKGROUND_IMAGE = '/images/home-hero-bg.webp';
+
 const HomePage = () => {
   const navigate = useNavigate();
   const { t, language } = useTranslation();
@@ -69,7 +71,7 @@ const HomePage = () => {
         <section className="relative min-h-[90vh] md:min-h-[100vh] flex items-center justify-center overflow-hidden">
           {/* Background Image & Overlay */}
           <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat" style={{
-          backgroundImage: 'url("https://horizons-cdn.hostinger.com/ee44c44d-e3d6-46f2-a1fd-aa631a0ae621/26ed7fd00031da8fdf628fedafde213f.jpg")'
+          backgroundImage: `url("${HOME_HERO_BACKGROUND_IMAGE}")`
         }}>
             <div className="absolute inset-0 bg-black opacity-40"></div>
           </div>

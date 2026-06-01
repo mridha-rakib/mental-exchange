@@ -13,6 +13,24 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 const allDeps = Object.keys(pkg.dependencies || {});
 
 const isDev = process.env.NODE_ENV !== 'production';
+const enableHorizonsDevtools = isDev && process.env.ENABLE_HORIZONS_DEVTOOLS === 'true';
+const publicDevUrl = process.env.VITE_PUBLIC_DEV_URL || '';
+const parsedPublicDevUrl = publicDevUrl
+	? (() => {
+		try {
+			return new URL(publicDevUrl);
+		} catch {
+			return null;
+		}
+	})()
+	: null;
+const hmrConfig = parsedPublicDevUrl
+	? {
+		protocol: parsedPublicDevUrl.protocol === 'https:' ? 'wss' : 'ws',
+		host: parsedPublicDevUrl.hostname,
+		clientPort: Number(parsedPublicDevUrl.port || (parsedPublicDevUrl.protocol === 'https:' ? 443 : 80)),
+	}
+	: undefined;
 
 const configHorizonsViteErrorHandler = `
 const observer = new MutationObserver((mutations) => {
@@ -218,38 +236,42 @@ if (window.navigation && window.self !== window.top) {
 const addTransformIndexHtml = {
 	name: 'add-transform-index-html',
 	transformIndexHtml(html) {
-		const tags = [
-			{
-				tag: 'script',
-				attrs: { type: 'module' },
-				children: configHorizonsRuntimeErrorHandler,
-				injectTo: 'head',
-			},
-			{
-				tag: 'script',
-				attrs: { type: 'module' },
-				children: configHorizonsViteErrorHandler,
-				injectTo: 'head',
-			},
-			{
-				tag: 'script',
-				attrs: { type: 'module' },
-				children: configHorizonsConsoleErrorHandler,
-				injectTo: 'head',
-			},
-			{
-				tag: 'script',
-				attrs: { type: 'module' },
-				children: configWindowFetchMonkeyPatch,
-				injectTo: 'head',
-			},
-			{
-				tag: 'script',
-				attrs: { type: 'module' },
-				children: configNavigationHandler,
-				injectTo: 'head',
-			},
-		];
+		const tags = [];
+
+		if (enableHorizonsDevtools) {
+			tags.push(
+				{
+					tag: 'script',
+					attrs: { type: 'module' },
+					children: configHorizonsRuntimeErrorHandler,
+					injectTo: 'head',
+				},
+				{
+					tag: 'script',
+					attrs: { type: 'module' },
+					children: configHorizonsViteErrorHandler,
+					injectTo: 'head',
+				},
+				{
+					tag: 'script',
+					attrs: { type: 'module' },
+					children: configHorizonsConsoleErrorHandler,
+					injectTo: 'head',
+				},
+				{
+					tag: 'script',
+					attrs: { type: 'module' },
+					children: configWindowFetchMonkeyPatch,
+					injectTo: 'head',
+				},
+				{
+					tag: 'script',
+					attrs: { type: 'module' },
+					children: configNavigationHandler,
+					injectTo: 'head',
+				},
+			);
+		}
 
 		if (!isDev && process.env.TEMPLATE_BANNER_SCRIPT_URL && process.env.TEMPLATE_REDIRECT_URL) {
 			tags.push(
@@ -290,12 +312,13 @@ export default defineConfig({
 	},
 	customLogger: logger,
 	plugins: [
-		...(isDev ? [inlineEditPlugin(), editModeDevPlugin(), selectionModePlugin(), iframeRouteRestorationPlugin(), pocketbaseAuthPlugin()] : []),
+		...(enableHorizonsDevtools ? [inlineEditPlugin(), editModeDevPlugin(), selectionModePlugin(), iframeRouteRestorationPlugin(), pocketbaseAuthPlugin()] : []),
 		react(),
 		addTransformIndexHtml
 	],
 	server: {
 		port: 3000,
+		hmr: hmrConfig,
 		cors: true,
 		proxy: {
 			'/hcgi/platform': {

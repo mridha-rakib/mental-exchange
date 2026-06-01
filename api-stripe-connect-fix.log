@@ -1,0 +1,1569 @@
+
+> api@0.0.0 dev
+> node src/main.js
+
+[INFO] Connecting to PocketBase at http://127.0.0.1:8090
+[INFO] [CHECKOUT] Configuration loaded from environment variables
+[INFO] [CHECKOUT] Frontend URL: https://android-immature-scarring.ngrok-free.dev
+[INFO] [DHL-SERVICE] DHL Configuration loaded from environment variables
+[INFO] [DHL-SERVICE] Token URL: https://api-eu.dhl.com/parcel/de/account/auth/ropc/v1/token
+[INFO] [DHL-SERVICE] Shipping URL: https://api-eu.dhl.com/parcel/de/shipping/v2/orders
+[INFO] [DHL-SERVICE] Warehouse: Patrick Tchoquessi, Angelika-machinek-Straße 12, 60486 Frankfurt, DE
+[INFO] [MAIN] Registering Stripe webhook handler
+[INFO] [MAIN] Registering auth middleware BEFORE routes
+[INFO] [MAIN] Mounting routes
+[INFO] [ROUTES] Registering /checkout routes
+[INFO] [ROUTES] Registering /dhl-labels routes
+[INFO] [ROUTES] Registering /tracking routes
+[INFO] [ROUTES] Registering /favorites routes
+[INFO] [ROUTES] Registering /admin routes
+[INFO] [ROUTES] Registering /email routes
+[INFO] [ROUTES] Registering /verification routes
+[INFO] [ROUTES] Registering /orders routes
+[INFO] [ROUTES] Registering /returns routes
+[INFO] [ROUTES] Registering /search routes
+[INFO] [ROUTES] Registering /settings routes
+[INFO] [ROUTES] Registering /seller routes
+[INFO] [ROUTES] Registering /learning routes
+[INFO] [ROUTES] Registering /marketplace routes
+[INFO] [ROUTES] Registering /shop routes
+[INFO] [ROUTES] Registering /reviews routes
+[INFO] [ROUTES] Stripe webhook is registered in main.js with express.raw() middleware
+[INFO] [ROUTES] All routes registered successfully
+[INFO] 🚀 API Server running on http://localhost:3001
+[INFO] PocketBase client initialized successfully
+::ffff:127.0.0.1 - - [15/May/2026:23:07:53 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:07:53 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:07:53 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:07:53 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:08:00 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:08:00 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:08:00 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:08:02 +0000] "GET /settings/fees HTTP/1.1" 200 93 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [SELLER] Stripe Connect onboarding link created for seller n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:08:06 +0000] "POST /seller/stripe-connect/onboarding-link HTTP/1.1" 200 418 "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:08:29 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:08:29 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:08:29 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:08:29 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:08:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:08:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:08:31 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:08:31 +0000] "GET /settings/fees HTTP/1.1" 200 93 "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:08:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:08:32 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:00 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:00 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:00 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:09:02 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:09:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:09:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:09:31 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:09:32 +0000] "GET /seller/balance HTTP/1.1" 200 396 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:09:32 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:09:32 +0000] "GET /seller/payout-requests HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:32 +0000] "GET /seller/balance HTTP/1.1" 200 396 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:09:32 +0000] "GET /seller/payout-requests HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:34 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:34 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:34 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:34 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:09:34 +0000] "GET /seller/stripe-connect/status HTTP/1.1" 200 227 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:09:35 +0000] "GET /seller/stripe-connect/status HTTP/1.1" 200 227 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [SELLER] Stripe Connect onboarding link created for seller n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:09:50 +0000] "POST /seller/stripe-connect/onboarding-link HTTP/1.1" 200 316 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:10:02 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:09 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:09 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:09 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:09 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:10:11 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:11 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:10:11 +0000] "GET /seller/balance HTTP/1.1" 200 396 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:10:11 +0000] "GET /seller/payout-requests HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:11 +0000] "GET /seller/balance HTTP/1.1" 200 396 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:10:12 +0000] "GET /seller/payout-requests HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:13 +0000] "GET /seller/stripe-connect/status HTTP/1.1" 200 227 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:10:13 +0000] "GET /seller/stripe-connect/status HTTP/1.1" 200 227 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:10:19 +0000] "POST /seller/stripe-connect/login-link HTTP/1.1" 200 79 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+::ffff:127.0.0.1 - - [15/May/2026:23:10:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+::ffff:127.0.0.1 - - [15/May/2026:23:10:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:10:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:10:32 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:10:41 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=payouts" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:44 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:44 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:45 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:10:45 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [15/May/2026:23:10:53 +0000] "GET /orders?limit=100 HTTP/1.1" 200 21895 "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [15/May/2026:23:10:55 +0000] "GET /orders?limit=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [15/May/2026:23:10:58 +0000] "GET /orders?limit=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:02 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:11 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:18 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:18 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:18 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:18 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:11:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:11:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:11:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:32 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:11:35 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] [ORDERS] List buyer orders request - Buyer: gi1r7haxydr1cyh, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [15/May/2026:23:11:35 +0000] "GET /orders?limit=100 HTTP/1.1" 200 119 "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:11:36 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] [ORDERS] List buyer orders request - Buyer: gi1r7haxydr1cyh, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [15/May/2026:23:11:37 +0000] "GET /orders?limit=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:11:38 +0000] "GET /learning/dashboard HTTP/1.1" 200 10852 "https://android-immature-scarring.ngrok-free.dev/learning/dashboard" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [15/May/2026:23:11:40 +0000] "GET /admin/dashboard HTTP/1.1" 200 56924 "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:11:41 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:11:51 +0000] "GET /seller/balance HTTP/1.1" 200 396 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:11:51 +0000] "GET /seller/payout-requests HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:11:51 +0000] "GET /seller/stripe-connect/status HTTP/1.1" 200 188 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:11:55 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:55 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:55 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:11:55 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [SELLER] Stripe Connect onboarding link created for seller gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:11:57 +0000] "POST /seller/stripe-connect/onboarding-link HTTP/1.1" 200 418 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:12:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:12:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:12:02 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:12:07 +0000] "GET /seller/balance HTTP/1.1" 200 396 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:12:07 +0000] "GET /seller/payout-requests HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:12:08 +0000] "GET /seller/stripe-connect/status HTTP/1.1" 200 329 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:12:12 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:12:12 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:12:12 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:12:13 +0000] "GET /seller/balance HTTP/1.1" 200 396 "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:12:13 +0000] "GET /seller/payout-requests HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:12:14 +0000] "GET /seller/stripe-connect/status HTTP/1.1" 200 227 "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:12:30 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:12:30 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:12:30 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:12:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:12:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:12:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:12:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:12:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:12:32 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:12:37 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:13:02 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:04 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:04 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:04 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:04 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:13:07 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:13:18 +0000] "GET /seller/balance HTTP/1.1" 200 396 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:13:18 +0000] "GET /seller/payout-requests HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:13:19 +0000] "GET /seller/stripe-connect/status HTTP/1.1" 200 329 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Dashboard overview request - Admin: gi1r7haxydr1cyh
+[WARN] [ADMIN] Product lookup failed in products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7wqxdbqh6p062jq, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: ajc7weyumdnnogt, Error: The requested resource wasn't found.
+[WARN] [ADMIN] Product lookup failed in shop_products - Product: 7c0iavoglerby5j, Error: The requested resource wasn't found.
+::ffff:127.0.0.1 - - [15/May/2026:23:13:29 +0000] "GET /admin/dashboard HTTP/1.1" 200 57068 "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:13:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:13:32 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:13:35 +0000] "GET /admin/payout-conflicts?limit=100&status=open HTTP/1.1" 200 22 "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:35 +0000] "GET /admin/payout-requests?limit=100&status=requested HTTP/1.1" 200 22 "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:35 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:35 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:35 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:35 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:13:37 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Analytics request - Admin: gi1r7haxydr1cyh, Days: 7
+::ffff:127.0.0.1 - - [15/May/2026:23:13:37 +0000] "GET /admin/analytics?days=7 HTTP/1.1" 200 1411 "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Fetched 5 sellers by admin gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:13:39 +0000] "GET /admin/sellers?limit=200 HTTP/1.1" 200 2806 "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Fetched 8 users by admin gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:13:40 +0000] "GET /admin/users?limit=200 HTTP/1.1" 200 6146 "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] List products request - Search: undefined, Category: undefined, Status: undefined, Type: undefined
+[INFO] [ADMIN] Fetched 9 products
+::ffff:127.0.0.1 - - [15/May/2026:23:13:40 +0000] "GET /admin/products HTTP/1.1" 200 13839 "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Fetched 5 sellers by admin gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:13:48 +0000] "GET /admin/sellers?limit=200 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] List products request - Search: undefined, Category: undefined, Status: undefined, Type: undefined
+[INFO] [ADMIN] Fetched 9 products
+::ffff:127.0.0.1 - - [15/May/2026:23:13:53 +0000] "GET /admin/products HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Fetched 8 users by admin gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:13:53 +0000] "GET /admin/users?limit=200 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Fetched 5 sellers by admin gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:13:53 +0000] "GET /admin/sellers?limit=200 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:13:54 +0000] "GET /admin/payout-requests?limit=100&status=requested HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:54 +0000] "GET /admin/payout-conflicts?limit=100&status=open HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:13:58 +0000] "GET /admin/payout-conflicts?limit=100&status=open HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:13:58 +0000] "GET /admin/payout-requests?limit=100 HTTP/1.1" 200 22 "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:14:02 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Analytics request - Admin: gi1r7haxydr1cyh, Days: 7
+::ffff:127.0.0.1 - - [15/May/2026:23:14:06 +0000] "GET /admin/analytics?days=7 HTTP/1.1" 200 1411 "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:14:07 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Fetched 5 sellers by admin gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:14:09 +0000] "GET /admin/sellers?limit=200 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/admin" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:10 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:10 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:10 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:10 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+[INFO] Admin access granted for user: gi1r7haxydr1cyh
+[INFO] [ADMIN] Fetched 4 shop filters by admin gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:14:13 +0000] "GET /admin/shop-filters HTTP/1.1" 200 4440 "https://android-immature-scarring.ngrok-free.dev/admin/filters" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:14:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:14:32 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:14:37 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:14:37 +0000] "GET /seller/balance HTTP/1.1" 200 396 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:14:37 +0000] "GET /seller/payout-requests HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+[INFO] [AUTH] Authenticated user proceeding - ID: gi1r7haxydr1cyh
+::ffff:127.0.0.1 - - [15/May/2026:23:14:38 +0000] "GET /seller/stripe-connect/status HTTP/1.1" 200 329 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:14:44 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:14:45 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:45 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:14:45 +0000] "GET /seller/balance HTTP/1.1" 200 396 "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:14:45 +0000] "GET /seller/payout-requests HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [15/May/2026:23:14:46 +0000] "GET /orders?limit=100 HTTP/1.1" 200 21895 "http://localhost:3000/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:46 +0000] "GET /seller/stripe-connect/status HTTP/1.1" 200 227 "http://localhost:3000/seller-dashboard?tab=earnings&account=revenue" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:46 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:46 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:46 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:46 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:14:51 +0000] "GET /seller/balance HTTP/1.1" 200 396 "http://localhost:3000/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:14:51 +0000] "GET /seller/payout-requests HTTP/1.1" 304 - "http://localhost:3000/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:14:51 +0000] "GET /seller/stripe-connect/status HTTP/1.1" 200 227 "http://localhost:3000/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:14:54 +0000] "GET /shop/products?page=1&perPage=100&sort=-created HTTP/1.1" 200 3682 "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:14:54 +0000] "GET /shop/products?page=1&perPage=100&sort=-created HTTP/1.1" 304 - "http://localhost:3000/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:14:55 +0000] "GET /reviews/product/n0k9v2tl3kn1y3x?type=shop&limit=10&page=1 HTTP/1.1" 200 99 "http://localhost:3000/product/n0k9v2tl3kn1y3x?type=shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:14:55 +0000] "GET /reviews/product/n0k9v2tl3kn1y3x/eligibility?type=shop HTTP/1.1" 200 63 "http://localhost:3000/product/n0k9v2tl3kn1y3x?type=shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:15:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:15:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:15:02 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:15:07 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Create session request received - Timestamp: 2026-05-15T23:15:13.644Z
+[INFO] [CHECKOUT] Request body keys: buyer_id, buyer_name, buyer_email, shipping_address, cart_items, acceptedTerms, acceptedPrivacy, newsletterOptIn
+[INFO] [CHECKOUT] STEP 1: Validating required fields...
+[INFO] [CHECKOUT] All required fields present
+[INFO] [CHECKOUT] Buyer details - ID: n26x9nq6xos9g63, Name: Rakib Mahmud Mridha, Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] STEP 2: Normalizing cart items...
+[INFO] [CHECKOUT] Normalizing 1 cart items
+[INFO] [CHECKOUT] Normalizing cart item 1 - Keys: collectionId, collectionName, created, id, product_id, product_type, quantity, updated, user_id, product
+[INFO] [CHECKOUT] Extracting from nested product object at index 1
+[INFO] [CHECKOUT] Cart item normalized successfully at index 1 - Product: n0k9v2tl3kn1y3x, Price: €34, Quantity: 1
+[INFO] [CHECKOUT] All 1 cart items normalized successfully
+[INFO] [CHECKOUT] Cart items normalized successfully - Count: 1
+[INFO] [CHECKOUT] STEP 3: Building Stripe line items...
+[INFO] [CHECKOUT] Processing line item 1/1 - Product: n0k9v2tl3kn1y3x, Name: admin p-4, Price: €34.00, Quantity: 1, Total: €34.00
+[INFO] [CHECKOUT] Calculating totals - Subtotal: EUR 34.00, Shipping: EUR 4.99, Service: EUR 1.99, Total: EUR 40.98
+[INFO] [CHECKOUT] Stripe line items built - Count: 3
+[INFO] [CHECKOUT] STEP 4: Preparing metadata...
+[INFO] [CHECKOUT] Metadata prepared - Keys: buyer_id, buyer_name, buyer_email, shipping_address, cart_item_ids, type, shipping_fee, service_fee, transaction_fee_percentage, accepted_terms, accepted_privacy, legal_accepted_at, newsletter_opt_in
+[INFO] [CHECKOUT] Metadata object: {
+  "buyer_id": "n26x9nq6xos9g63",
+  "buyer_name": "Rakib Mahmud Mridha",
+  "buyer_email": "rakibmahmudmridha28@gmail.com",
+  "shipping_address": "{\"name\":\"Rakib Mahmud Mridha\",\"email\":\"rakibmahmudmridha28@gmail.com\",\"street\":\"HOuse: 397, Vill: Salday, PO: Ghagotiia-1730, PS: Kapasia\",\"city\":\"Dhaka\",\"postal_code\":\"1730\",\"country\":\"DE\"}",
+  "cart_item_ids": "nu8s2rlp80pxsjp",
+  "type": "marketplace_order",
+  "shipping_fee": "4.99",
+  "service_fee": "1.99",
+  "transaction_fee_percentage": "7",
+  "accepted_terms": "true",
+  "accepted_privacy": "true",
+  "legal_accepted_at": "2026-05-15T23:15:13.644Z",
+  "newsletter_opt_in": "false"
+}
+[INFO] [CHECKOUT] STEP 5: Validating metadata field sizes...
+[INFO] [CHECKOUT] Metadata field 'buyer_id' - Length: 15 characters
+[INFO] [CHECKOUT] Metadata field 'buyer_name' - Length: 19 characters
+[INFO] [CHECKOUT] Metadata field 'buyer_email' - Length: 29 characters
+[INFO] [CHECKOUT] Metadata field 'shipping_address' - Length: 190 characters
+[INFO] [CHECKOUT] Metadata field 'cart_item_ids' - Length: 15 characters
+[INFO] [CHECKOUT] Metadata field 'type' - Length: 17 characters
+[INFO] [CHECKOUT] Metadata field 'shipping_fee' - Length: 4 characters
+[INFO] [CHECKOUT] Metadata field 'service_fee' - Length: 4 characters
+[INFO] [CHECKOUT] Metadata field 'transaction_fee_percentage' - Length: 1 characters
+[INFO] [CHECKOUT] Metadata field 'accepted_terms' - Length: 4 characters
+[INFO] [CHECKOUT] Metadata field 'accepted_privacy' - Length: 4 characters
+[INFO] [CHECKOUT] Metadata field 'legal_accepted_at' - Length: 24 characters
+[INFO] [CHECKOUT] Metadata field 'newsletter_opt_in' - Length: 5 characters
+[INFO] [CHECKOUT] All metadata fields validated - All under 500 characters
+[INFO] [CHECKOUT] STEP 6: Creating Stripe checkout session...
+[INFO] [CHECKOUT] Stripe session parameters - Items: 3, Total: €40.98, Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Stripe checkout session created successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session URL: https://checkout.stripe.com/c/pay/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8nZmprcXdqaScpJ2R1bE5gfCc%2FJ3VuWnFgdnFaMDRRPEFfa0NgV1RHSH9pbjJLYHdsT2kzMHRGXHxEbWNBbzZrV3R1VWxpRldjfD00fU9GaWtiU0dObVVoVE5JUn92ZFZLXDBmMX10QEowRkpTYzJVak5XQ041NUswVEJGUFY9JyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJmNjY2NjYycpJ2lkfGpwcVF8dWAnPydocGlxbFpscWBoJyknYGtkZ2lgVWlkZmBtamlhYHd2Jz9xd3BgeCUl
+[INFO] [CHECKOUT] Payment Status: unpaid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Checkout session creation completed successfully
+[INFO] [CHECKOUT] Session: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Buyer: n26x9nq6xos9g63
+[INFO] [CHECKOUT] Items: 1
+[INFO] [CHECKOUT] Total: €40.98
+::ffff:127.0.0.1 - - [15/May/2026:23:15:14 +0000] "POST /checkout/create-session HTTP/1.1" 200 577 "http://localhost:3000/checkout" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:15:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/checkout" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:15:20 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:15:20 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:15:20 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:15:20 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:15:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:15:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:15:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [WEBHOOK] Ignoring event type: charge.succeeded
+::1 - - [15/May/2026:23:15:31 +0000] "POST /stripe/webhook HTTP/1.1" 200 17 "-" "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+[INFO] [ORDER-HANDLER] Order handler started - Timestamp: 2026-05-15T23:15:31.774Z
+[INFO] [ORDER-HANDLER] Buyer: n26x9nq6xos9g63
+[INFO] [ORDER-HANDLER] Seller: platform
+[INFO] [ORDER-HANDLER] Product: n0k9v2tl3kn1y3x
+[INFO] [ORDER-HANDLER] Product type: shop
+[INFO] [ORDER-HANDLER] Quantity: 1
+[INFO] [ORDER-HANDLER] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+[INFO] [WEBHOOK] Ignoring event type: payment_intent.created
+::1 - - [15/May/2026:23:15:31 +0000] "POST /stripe/webhook HTTP/1.1" 200 17 "-" "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+[INFO] [ORDER-HANDLER] Product fetched - admin p-4
+[WARN] [ORDER-HANDLER] Order create collided with existing record - PaymentIntent: pi_3TXUx4FeRQBMzlk71BF5xnk0, Product: n0k9v2tl3kn1y3x, Existing order: 7598v5rub6200u4
+[INFO] [ORDER-HANDLER] Starting DHL label generation - Order: 7598v5rub6200u4, Shipper country: DE, Recipient country: DE
+[INFO] [DHL-SERVICE] generateLabel() called - Order: ORD-1778886931795-ENPHI42
+[INFO] [DHL-SERVICE] Order data summary: {"id":"7598v5rub6200u4","order_number":"ORD-1778886931795-ENPHI42","hasShipper":true,"hasRecipient":true,"hasParcel":true}
+[INFO] [DHL-SERVICE] STEP 1: Validating shipper and recipient addresses...
+[INFO] [DHL-SERVICE] Validating shipper address...
+[INFO] [DHL-SERVICE] shipper address fields - Name: OK, Street: OK, PostalCode: OK, City: OK, Country: OK
+[INFO] [DHL-SERVICE] shipper address validation passed - Name: Patrick Tchoquessi, City: Frankfurt, Country: DE
+[INFO] [DHL-SERVICE] Validating recipient address...
+[INFO] [DHL-SERVICE] recipient address fields - Name: OK, Street: OK, PostalCode: OK, City: OK, Country: OK
+[INFO] [DHL-SERVICE] recipient address validation passed - Name: Rakib Mahmud Mridha, City: Dhaka, Country: DE
+[INFO] [DHL-SERVICE] Shipper validated - Name: Patrick Tchoquessi, City: Frankfurt
+[INFO] [DHL-SERVICE] Recipient validated - Name: Rakib Mahmud Mridha, City: Dhaka
+[INFO] [DHL-SERVICE] STEP 2: Getting valid OAuth2 access token...
+[INFO] [DHL-SERVICE] getValidToken() called
+[INFO] [DHL-SERVICE] Token cache check - No cached token available
+[INFO] [DHL-SERVICE] Cached token invalid or missing - fetching new token from DHL
+[INFO] [DHL-SERVICE] OAuth2 Token Request - URL: https://api-eu.dhl.com/parcel/de/account/auth/ropc/v1/token
+[INFO] [DHL-SERVICE] OAuth2 Credentials - Username: tchoquesipatrick@yahoo.com, Client ID: U2qL17...jySm
+[INFO] [DHL-SERVICE] Sending OAuth2 ROPC token request...
+[INFO] [WEBHOOK] Marketplace order processing already in progress for PI pi_3TXUx4FeRQBMzlk71BF5xnk0; waiting for existing run
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:15:32 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [DHL-SERVICE] OAuth2 token response received - Status: 200
+[INFO] [DHL-SERVICE] OAuth2 token received successfully - Expires in 1799s
+[INFO] [DHL-SERVICE] Token cached successfully with 60s expiration buffer
+[INFO] [DHL-SERVICE] Access token obtained - Length: 28
+[INFO] [DHL-SERVICE] STEP 3: Selecting DHL product based on destination...
+[INFO] [DHL-SERVICE] Selecting DHL product for destination: DE
+[INFO] [DHL-SERVICE] Domestic shipment detected - Using product: V01PAK
+[INFO] [DHL-SERVICE] Product selected - Product: V01PAK, Destination: DE
+[INFO] [DHL-SERVICE] STEP 4: Building DHL shipment payload...
+[WARN] [ORDER-HANDLER] DHL label generation failed: DHL parcel validation failed: weight is required. Set product weight_g or configure DHL_DEFAULT_PARCEL_WEIGHT_G after business approval.
+::1 - - [15/May/2026:23:15:34 +0000] "POST /stripe/webhook HTTP/1.1" 200 17 "-" "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+::1 - - [15/May/2026:23:15:34 +0000] "POST /stripe/webhook HTTP/1.1" 200 17 "-" "Stripe/1.0 (+https://stripe.com/docs/webhooks)"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:15:37 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:15:53 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:15:53 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:15:53 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:15:53 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:00.346Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:16:00 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:16:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:00 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 200 827 "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:16:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:16:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:01.229Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:01 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:02.056Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:16:02 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:02 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:02.818Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:03 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:03.719Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:04 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:04.600Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:04 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:05.514Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:05 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:06.647Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:06 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:07.553Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:07 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:08.516Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:08 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:09.404Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:09 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:10.312Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:10 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:11.204Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:11 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:12.103Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:12 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:16:12 +0000] "GET /orders?limit=100 HTTP/1.1" 200 24240 "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:12.884Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:13 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [CHECKOUT] Retrieve session request - Timestamp: 2026-05-15T23:16:13.800Z
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Fetching session from Stripe - ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Session retrieved successfully
+[INFO] [CHECKOUT] Session ID: cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3
+[INFO] [CHECKOUT] Payment Status: paid
+[INFO] [CHECKOUT] Amount Total: 40.98 EUR
+[INFO] [CHECKOUT] Customer Email: rakibmahmudmridha28@gmail.com
+[INFO] [CHECKOUT] Payment Intent: pi_3TXUx4FeRQBMzlk71BF5xnk0
+::ffff:127.0.0.1 - - [15/May/2026:23:16:14 +0000] "GET /checkout/session/cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/success?session_id=cs_test_b1R5sH3kHaeov9zX0OU1DsPdkBeH1teydjjCsUYaFo1L9AZfAE5vxRSGH3" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [15/May/2026:23:16:21 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:16:21 +0000] "GET /orders?limit=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:16:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:16:27 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:16:29 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:16:29 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:16:29 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:16:29 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:16:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:16:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:16:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:16:32 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:16:37 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller/new-product" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:16:52 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:17:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:17:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:17:02 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:17:05 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:17:05 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:17:06 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:17:06 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:17:07 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller/new-product" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [15/May/2026:23:17:10 +0000] "GET /orders?limit=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:17:10 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:17:10 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:17:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:17:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:17:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:17:37 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller/new-product" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:17:39 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:17:39 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:17:39 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:17:39 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [15/May/2026:23:17:46 +0000] "GET /orders?limit=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:17:46 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:17:46 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:17:48 +0000] "GET /shop/products?page=1&perPage=100&sort=-created HTTP/1.1" 200 4558 "https://android-immature-scarring.ngrok-free.dev/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:17:48 +0000] "GET /shop/products?page=1&perPage=100&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:18:07 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:15 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:15 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:15 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 200 4556 "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [15/May/2026:23:18:19 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:19 +0000] "GET /orders?limit=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:18:19 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:18:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:18:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:18:37 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:47 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:47 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:47 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:47 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:18:55 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:18:55 +0000] "GET /orders?limit=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:18:56 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:19:05 +0000] "GET /shop/products?page=1&perPage=100&sort=-created&productTypes=Article HTTP/1.1" 200 3884 "https://android-immature-scarring.ngrok-free.dev/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:19:06 +0000] "GET /shop/products?page=1&perPage=100&sort=-created&productTypes=Article&productTypes=Consumable HTTP/1.1" 200 3884 "https://android-immature-scarring.ngrok-free.dev/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:19:07 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [15/May/2026:23:19:14 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:14 +0000] "GET /orders?limit=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:19:15 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [ORDERS] List buyer orders request - Buyer: n26x9nq6xos9g63, Page: 1, Limit: 100
+::ffff:127.0.0.1 - - [15/May/2026:23:19:17 +0000] "GET /orders?limit=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/my-orders" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:21 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:21 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:22 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:22 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:19:29 +0000] "GET /seller/balance HTTP/1.1" 200 396 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:19:29 +0000] "GET /seller/payout-requests HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:19:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:19:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:19:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:32 +0000] "GET /seller/stripe-connect/status HTTP/1.1" 200 227 "https://android-immature-scarring.ngrok-free.dev/seller-dashboard?tab=orders&account=sales" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:19:37 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:19:44 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller/new-product" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:19:49 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller/new-product" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:19:49 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller/new-product" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:54 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:54 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:54 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:19:54 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:20:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:20:00 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:20:04 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 200 4556 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:20:04 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:20:04 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:20:04 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:20:04 +0000] "GET /learning/packages HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:20:07 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/shop" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:20:19 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller/new-product" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+[INFO] [AUTH] Authenticated user proceeding - ID: n26x9nq6xos9g63
+::ffff:127.0.0.1 - - [15/May/2026:23:20:25 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller/new-product" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:20:25 +0000] "GET /favorites?perPage=100 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/seller/new-product" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:20:30 +0000] "GET /reviews?featured=false&limit=3&page=1 HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:20:30 +0000] "GET /shop/products?perPage=4&sort=-created HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:20:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:20:30 +0000] "GET /learning/packages HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:20:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+::ffff:127.0.0.1 - - [15/May/2026:23:20:30 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/learning/packages/z3-start" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:20:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/admin/learning" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: gi1r7haxydr1cyh, Email: admin@zahniboerse.com, Admin: true
+::ffff:127.0.0.1 - - [15/May/2026:23:20:31 +0000] "GET /settings/fees HTTP/1.1" 304 - "https://android-immature-scarring.ngrok-free.dev/auth" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"
+[INFO] [AUTH] Authorization header received: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2...
+[INFO] [AUTH] Token extracted. Length: 224
+[INFO] [AUTH] SUCCESS via PocketBase authRefresh - User ID: n26x9nq6xos9g63, Email: rakibmahmudmridha28@gmail.com, Admin: false
+::ffff:127.0.0.1 - - [15/May/2026:23:20:35 +0000] "GET /settings/fees HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36"

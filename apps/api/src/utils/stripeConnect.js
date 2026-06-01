@@ -5,7 +5,9 @@ import { syncSellerBalance } from './sellerBalance.js';
 import { getOpenPayoutConflictsForSeller, sanitizePayoutConflict } from './payoutConflicts.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://zahniboerse.com';
+const DEFAULT_FRONTEND_URL = 'https://zahniboerse.com';
+const FRONTEND_URL = process.env.FRONTEND_URL || DEFAULT_FRONTEND_URL;
+const STRIPE_CONNECT_BUSINESS_URL = process.env.STRIPE_CONNECT_BUSINESS_URL || DEFAULT_FRONTEND_URL;
 
 const cents = (amount) => Math.round((Number(amount) || 0) * 100);
 const money = (amountCents) => Math.round((Number(amountCents) || 0)) / 100;
@@ -13,12 +15,75 @@ const escapeFilterValue = (value) => String(value || '').replace(/\\/g, '\\\\').
 
 const stripeConfigured = () => Boolean(process.env.STRIPE_SECRET_KEY);
 
+const normalizeBaseUrl = (value, fallback = DEFAULT_FRONTEND_URL) => {
+  try {
+    const url = new URL(String(value || '').trim());
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return fallback;
+    }
+    return url.origin;
+  } catch {
+    return fallback;
+  }
+};
+
+const isLocalDevUrl = (value) => {
+  try {
+    const url = new URL(value);
+    return ['localhost', '127.0.0.1', '::1'].includes(url.hostname);
+  } catch {
+    return false;
+  }
+};
+
+const isPublicHttpsUrl = (value) => {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && !isLocalDevUrl(value);
+  } catch {
+    return false;
+  }
+};
+
+const getStripeRedirectBaseUrl = (frontendUrl) => {
+  const requestedUrl = normalizeBaseUrl(frontendUrl, FRONTEND_URL);
+  if (isPublicHttpsUrl(requestedUrl)) {
+    return requestedUrl;
+  }
+
+  const configuredUrl = normalizeBaseUrl(FRONTEND_URL);
+  return isPublicHttpsUrl(configuredUrl) ? configuredUrl : DEFAULT_FRONTEND_URL;
+};
+
+const getStripeBusinessProfileUrl = (frontendUrl) => {
+  const requestedUrl = normalizeBaseUrl(frontendUrl, FRONTEND_URL);
+  if (isPublicHttpsUrl(requestedUrl)) {
+    return requestedUrl;
+  }
+  const configuredBusinessUrl = normalizeBaseUrl(STRIPE_CONNECT_BUSINESS_URL);
+  return isPublicHttpsUrl(configuredBusinessUrl) ? configuredBusinessUrl : DEFAULT_FRONTEND_URL;
+};
+
 const requireStripe = () => {
   if (!stripeConfigured()) {
     const error = new Error('Stripe is not configured');
     error.status = 503;
     throw error;
   }
+};
+
+const isStripeConnectSetupError = (error) => (
+  /signed up for Connect|dashboard\.stripe\.com\/connect/i.test(String(error?.message || ''))
+);
+
+const createStripeConnectSetupError = (cause) => {
+  const error = new Error(
+    'Stripe Connect is not enabled for this Stripe account. Open https://dashboard.stripe.com/connect, finish the platform setup, then try again.'
+  );
+  error.status = 503;
+  error.code = 'stripe_connect_not_enabled';
+  error.cause = cause;
+  return error;
 };
 
 const normalizeAccountStatus = (account) => {
@@ -77,8 +142,9 @@ export const getSellerStripeConnectStatus = async (user) => {
   return status;
 };
 
-export const ensureSellerStripeAccount = async (user) => {
+export const ensureSellerStripeAccount = async (user, frontendUrl = FRONTEND_URL) => {
   requireStripe();
+  const businessProfileUrl = getStripeBusinessProfileUrl(frontendUrl);
 
   const existingAccountId = String(user?.stripe_connect_account_id || '').trim();
   if (existingAccountId) {
@@ -88,30 +154,42 @@ export const ensureSellerStripeAccount = async (user) => {
     return { account, status };
   }
 
-  const account = await stripe.accounts.create({
-    type: 'express',
-    country: 'DE',
-    email: user.email || undefined,
-    capabilities: {
-      transfers: { requested: true },
-    },
-    business_profile: {
-      url: FRONTEND_URL,
-    },
-    metadata: {
-      user_id: user.id,
-      seller_username: user.seller_username || '',
-    },
-  });
+  let account;
+  try {
+    account = await stripe.accounts.create({
+      type: 'express',
+      country: 'DE',
+      email: user.email || undefined,
+      capabilities: {
+        transfers: { requested: true },
+      },
+      tos_acceptance: {
+        service_agreement: 'recipient',
+      },
+      business_profile: {
+        url: businessProfileUrl,
+      },
+      metadata: {
+        user_id: user.id,
+        seller_username: user.seller_username || '',
+      },
+    });
+  } catch (error) {
+    if (isStripeConnectSetupError(error)) {
+      throw createStripeConnectSetupError(error);
+    }
+    throw error;
+  }
   const status = normalizeAccountStatus(account);
   await persistAccountStatus(user.id, status);
   return { account, status };
 };
 
-export const createSellerStripeOnboardingLink = async (user) => {
-  const { account, status } = await ensureSellerStripeAccount(user);
-  const returnUrl = `${FRONTEND_URL}/seller-dashboard?tab=earnings&account=payouts&stripe_connect=return`;
-  const refreshUrl = `${FRONTEND_URL}/seller-dashboard?tab=earnings&account=payouts&stripe_connect=refresh`;
+export const createSellerStripeOnboardingLink = async (user, frontendUrl = FRONTEND_URL) => {
+  const { account, status } = await ensureSellerStripeAccount(user, frontendUrl);
+  const redirectBaseUrl = getStripeRedirectBaseUrl(frontendUrl);
+  const returnUrl = `${redirectBaseUrl}/seller-dashboard?tab=earnings&account=payouts&stripe_connect=return`;
+  const refreshUrl = `${redirectBaseUrl}/seller-dashboard?tab=earnings&account=payouts&stripe_connect=refresh`;
   const accountLink = await stripe.accountLinks.create({
     account: account.id,
     refresh_url: refreshUrl,

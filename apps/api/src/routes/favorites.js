@@ -3,6 +3,7 @@ import express from 'express';
 import pb from '../utils/pocketbaseClient.js';
 import logger from '../utils/logger.js';
 import { requireAuth } from '../middleware/index.js';
+import { getPublicPocketBaseFileUrl } from '../utils/fileUrls.js';
 
 const router = express.Router();
 
@@ -21,7 +22,7 @@ const getProductImages = (product) => (
 
 const getProductImageUrl = (product, imageName = '') => {
   const resolvedImage = imageName || getProductImages(product)[0] || product.image || '';
-  return resolvedImage ? pb.files.getUrl(product, resolvedImage) : null;
+  return getPublicPocketBaseFileUrl(product, resolvedImage);
 };
 
 const normalizeMarketplaceProduct = (product) => product ? ({
