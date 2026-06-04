@@ -226,7 +226,7 @@ const LearningPackagePage = () => {
                   )}
 
                   {packageData.billingOptions?.length > 1 && (
-                    <div className="mt-4 grid grid-cols-2 gap-2 rounded-[8px] border border-black/6 bg-[#f7f7f7] p-2">
+                    <div className="mt-4 grid grid-cols-1 gap-2 rounded-[8px] border border-black/6 bg-[#f7f7f7] p-2 sm:grid-cols-2">
                       {packageData.billingOptions.map((option) => (
                         <button
                           key={option.id}

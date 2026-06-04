@@ -3282,7 +3282,7 @@ const AdminDashboardPage = () => {
                   </div>
 
                   <div className="space-y-4 p-5">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2">
                       <div className="rounded-[8px] border border-slate-200 bg-white px-4 py-3">
                         <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
                           {t('admin_dashboard.listing_price')}

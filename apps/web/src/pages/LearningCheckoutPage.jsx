@@ -5,7 +5,13 @@ import { ArrowLeft, ArrowRight, CheckCircle2, CreditCard, RefreshCw } from 'luci
 import { Badge } from '@/components/ui/badge.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Input } from '@/components/ui/input.jsx';
-import { createLearningBillingPortal, createLearningCheckout, getLearningDashboard, getLearningPackage } from '@/lib/learningApi.js';
+import {
+  createLearningBillingPortal,
+  createLearningCheckout,
+  getLearningDashboard,
+  getLearningPackage,
+  validateLearningCoupon,
+} from '@/lib/learningApi.js';
 import { localizeLearningDashboard, localizeLearningPackage } from '@/lib/learningContentLocalization.js';
 import {
   formatLearningPrice,
@@ -48,6 +54,8 @@ const LearningCheckoutPage = () => {
   const [portalLoading, setPortalLoading] = useState(false);
   const [billingCycle, setBillingCycle] = useState(searchParams.get('cycle') === 'year' ? 'year' : 'month');
   const [couponCode, setCouponCode] = useState('');
+  const [couponApplying, setCouponApplying] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -86,11 +94,20 @@ const LearningCheckoutPage = () => {
     };
   }, [language, navigate, slug, t]);
 
+  useEffect(() => {
+    setAppliedCoupon(null);
+  }, [billingCycle]);
+
   const locale = language === 'DE' ? 'de-DE' : 'en-US';
   const paymentState = searchParams.get('payment');
   const activeBillingOption = packageData?.billingOptions?.find((item) => item.id === billingCycle) || packageData?.billingOptions?.[0];
   const activePrice = activeBillingOption?.priceAmount || packageData?.priceAmount || 0;
   const activeInterval = activeBillingOption?.interval || billingCycle;
+  const normalizedCouponCode = couponCode.trim().toUpperCase();
+  const appliedCouponCode = appliedCoupon?.coupon?.code || '';
+  const hasAppliedCoupon = Boolean(appliedCouponCode) && appliedCouponCode === normalizedCouponCode;
+  const displayPrice = hasAppliedCoupon ? Number(appliedCoupon.finalAmount || 0) : activePrice;
+  const displayDiscount = hasAppliedCoupon ? Number(appliedCoupon.discountAmount || 0) : 0;
   const checkoutEnabled = packageData?.checkoutEnabled !== false;
   const hasManagedSubscription = dashboard?.subscription && dashboard.subscription.packageId === packageData?.id;
 
@@ -114,6 +131,36 @@ const LearningCheckoutPage = () => {
         ? (subscriptionStatus === 'canceled' ? t('learning.reactivate') : t('learning.manage_subscription'))
         : t('learning.subscribe');
 
+  const handleApplyCoupon = async () => {
+    const token = pb.authStore.token;
+    if (!token || !packageData) {
+      navigate('/auth', { state: { from: location } });
+      return;
+    }
+
+    const code = couponCode.trim();
+    if (!code) return;
+
+    setCouponApplying(true);
+    try {
+      const result = await validateLearningCoupon({
+        token,
+        packageSlug: packageData.slug,
+        billingCycle,
+        couponCode: code,
+      });
+      setAppliedCoupon(result);
+      setCouponCode(result.coupon?.code || code.toUpperCase());
+      toast.success(result.isFree ? t('learning.coupon_free_success') : t('learning.coupon_applied'));
+    } catch (error) {
+      console.error('Failed to apply learning coupon:', error);
+      setAppliedCoupon(null);
+      toast.error(error.message || t('learning.coupon_invalid'));
+    } finally {
+      setCouponApplying(false);
+    }
+  };
+
   const handleCheckout = async () => {
     const token = pb.authStore.token;
     if (!token || !packageData) {
@@ -127,7 +174,7 @@ const LearningCheckoutPage = () => {
         token,
         packageSlug: packageData.slug,
         billingCycle,
-        couponCode,
+        couponCode: hasAppliedCoupon ? appliedCouponCode : '',
       });
 
       if (!result.url) {
@@ -241,7 +288,7 @@ const LearningCheckoutPage = () => {
 
               <div className="learning-subtle-card mt-8 p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{t('learning.billing_cycle')}</p>
-                <div className="mt-4 grid grid-cols-2 gap-2 rounded-[8px] border border-black/6 bg-white p-2">
+                <div className="mt-4 grid grid-cols-1 gap-2 rounded-[8px] border border-black/6 bg-white p-2 sm:grid-cols-2">
                   {(packageData.billingOptions || []).map((option) => (
                     <button
                       key={option.id}
@@ -260,18 +307,31 @@ const LearningCheckoutPage = () => {
                   <div>
                     <p className="text-sm text-slate-500">{t('learning.price_label')}</p>
                     <p className="mt-1 text-3xl font-semibold text-slate-900">
-                      {formatLearningPrice(activePrice, packageData.currency, locale)}
+                      {formatLearningPrice(displayPrice, packageData.currency, locale)}
                     </p>
+                    {hasAppliedCoupon && (
+                      <p className="mt-1 text-sm text-slate-500 line-through">
+                        {formatLearningPrice(activePrice, packageData.currency, locale)}
+                      </p>
+                    )}
                   </div>
                   <Badge className="rounded-[8px] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 shadow-none">
                     {getBillingIntervalLabel(t, activeInterval)}
                   </Badge>
                 </div>
                 <div className="mt-5 border-t border-black/6 pt-4 text-sm leading-6 text-slate-600">
-                  <p>{t('learning.price_interval_label')}: {getPriceIntervalLabel(t, activePrice, packageData.currency, activeInterval, locale)}</p>
+                  <p>{t('learning.price_interval_label')}: {getPriceIntervalLabel(t, displayPrice, packageData.currency, activeInterval, locale)}</p>
+                  {hasAppliedCoupon && (
+                    <p className="mt-1 text-emerald-700">
+                      {t('learning.coupon_discount_applied', {
+                        code: appliedCouponCode,
+                        discount: formatLearningPrice(displayDiscount, packageData.currency, locale),
+                      })}
+                    </p>
+                  )}
                   <p className="mt-1">{nextChargeCopy}</p>
                   <p className="mt-1">{t('learning.subscription_clear_terms', {
-                    price: formatLearningPrice(activePrice, packageData.currency, locale),
+                    price: formatLearningPrice(displayPrice, packageData.currency, locale),
                     interval: getBillingIntervalLabel(t, activeInterval),
                   })}</p>
                 </div>
@@ -286,7 +346,7 @@ const LearningCheckoutPage = () => {
                   <CreditCard className="mt-0.5 size-5 shrink-0 text-[#0000FF]" />
                   <div>
                     <p className="text-sm font-semibold text-slate-900">{t('learning.price_interval_label')}</p>
-                    <p className="mt-1 text-sm text-slate-600">{getPriceIntervalLabel(t, activePrice, packageData.currency, activeInterval, locale)}</p>
+                    <p className="mt-1 text-sm text-slate-600">{getPriceIntervalLabel(t, displayPrice, packageData.currency, activeInterval, locale)}</p>
                   </div>
                 </div>
                 <div className="learning-subtle-card flex gap-3 p-4">
@@ -309,12 +369,30 @@ const LearningCheckoutPage = () => {
                 {isAuthenticated && checkoutEnabled && packageData.couponsEnabled && canStartCheckout && (
                   <div className="learning-subtle-card p-4">
                     <p className="text-sm font-semibold text-slate-900">{t('learning.coupon_code')}</p>
-                    <Input
-                      value={couponCode}
-                      onChange={(event) => setCouponCode(event.target.value)}
-                      placeholder={t('learning.coupon_code_placeholder')}
-                      className="mt-3"
-                    />
+                    <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+                      <Input
+                        value={couponCode}
+                        onChange={(event) => {
+                          setCouponCode(event.target.value);
+                          setAppliedCoupon(null);
+                        }}
+                        placeholder={t('learning.coupon_code_placeholder')}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleApplyCoupon}
+                        disabled={!couponCode.trim() || couponApplying || hasAppliedCoupon}
+                        className="rounded-[8px] border-black/10 bg-white px-5 text-slate-700 shadow-none hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {couponApplying ? t('common.loading') : 'Apply'}
+                      </Button>
+                    </div>
+                    {hasAppliedCoupon && (
+                      <p className="mt-3 text-sm font-medium text-emerald-700">
+                        {appliedCoupon.isFree ? t('learning.coupon_free_success') : t('learning.coupon_applied')}
+                      </p>
+                    )}
                   </div>
                 )}
 

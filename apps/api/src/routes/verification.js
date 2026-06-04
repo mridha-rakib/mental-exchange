@@ -9,6 +9,19 @@ import { createProductVerificationAudit } from '../utils/productValidation.js';
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const QUALITY_VERIFICATION_CONDITIONS = new Set(['Neu', 'Wie neu']);
+
+const normalizeProductIds = (body = {}) => {
+  const rawProductIds = Array.isArray(body.productIds)
+    ? body.productIds
+    : typeof body.productIds === 'string'
+      ? body.productIds.split(',')
+      : [body.productId];
+
+  return [...new Set(rawProductIds
+    .map((id) => String(id || '').trim())
+    .filter(Boolean))];
+};
 
 router.post('/request-validation', requireAuth, async (req, res) => {
   const { productId } = req.body;
@@ -61,13 +74,14 @@ router.post('/request-validation', requireAuth, async (req, res) => {
  * Create Stripe Checkout Session for product verification fee
  */
 router.post('/pay-fee', requireAuth, async (req, res) => {
-  const { productId, sellerId } = req.body;
+  const { sellerId } = req.body;
   const userId = req.auth.id;
+  const productIds = normalizeProductIds(req.body);
 
-  logger.info(`[VERIFICATION] Pay-fee request - User: ${userId}, Product: ${productId}, Seller: ${sellerId}`);
+  logger.info(`[VERIFICATION] Pay-fee request - User: ${userId}, Products: ${productIds.join(',')}, Seller: ${sellerId}`);
 
-  if (!productId || !sellerId) {
-    return res.status(400).json({ error: 'Missing required fields: productId, sellerId' });
+  if (productIds.length === 0 || !sellerId) {
+    return res.status(400).json({ error: 'Missing required fields: productIds, sellerId' });
   }
 
   if (userId !== sellerId) {
@@ -77,28 +91,49 @@ router.post('/pay-fee', requireAuth, async (req, res) => {
     throw error;
   }
 
-  const productIdStr = String(productId);
   const sellerIdStr = String(sellerId);
+  const productRecords = [];
 
-  const product = await pb.collection('products').getOne(productIdStr);
+  for (const productId of productIds) {
+    const product = await pb.collection('products').getOne(productId, { $autoCancel: false });
 
-  if (product.seller_id !== sellerIdStr) {
-    logger.warn(`[VERIFICATION] Unauthorized verification attempt - User: ${userId}, Product: ${productIdStr}`);
-    const error = new Error('Unauthorized: seller does not own this product');
-    error.status = 403;
-    throw error;
-  }
+    if (product.seller_id !== sellerIdStr) {
+      logger.warn(`[VERIFICATION] Unauthorized verification attempt - User: ${userId}, Product: ${productId}`);
+      const error = new Error('Unauthorized: seller does not own this product');
+      error.status = 403;
+      throw error;
+    }
 
-  if (product.status === 'verified' || product.status === 'pending_verification') {
-    logger.warn(`[VERIFICATION] Product already in verification - Product: ${productIdStr}, Status: ${product.status}`);
-    return res.status(400).json({ error: `Product is already ${product.status}` });
+    if (!QUALITY_VERIFICATION_CONDITIONS.has(product.condition)) {
+      return res.status(400).json({ error: `Product ${product.id} does not require paid quality verification` });
+    }
+
+    if (
+      product.status === 'active'
+      || product.status === 'verified'
+      || product.status === 'pending_verification'
+      || product.verification_fee_paid === true
+      || String(product.verification_payment_intent_id || '').trim()
+    ) {
+      logger.warn(`[VERIFICATION] Product already in verification/listing flow - Product: ${product.id}, Status: ${product.status}`);
+      return res.status(400).json({ error: `Product ${product.id} is already ${product.status}` });
+    }
+
+    productRecords.push(product);
   }
 
   const seller = await pb.collection('users').getOne(sellerIdStr);
   const fees = await getPlatformSettings();
   const verificationFee = fees.verification_fee;
+  const firstProduct = productRecords[0];
+  const productCount = productRecords.length;
+  const productName = productCount === 1
+    ? firstProduct.name
+    : `${productCount} products for quality verification`;
+  const productKind = productRecords.every((product) => product.product_type === 'Consumable') ? 'consumable' : 'item';
+  const productIdList = productRecords.map((product) => product.id).join(',');
 
-  logger.info(`[VERIFICATION] Creating Stripe checkout session - Product: ${productIdStr}, Seller: ${sellerIdStr}`);
+  logger.info(`[VERIFICATION] Creating Stripe checkout session - Products: ${productIdList}, Seller: ${sellerIdStr}`);
 
   const session = await stripe.checkout.sessions.create({
     line_items: [
@@ -107,31 +142,37 @@ router.post('/pay-fee', requireAuth, async (req, res) => {
           currency: 'eur',
           product_data: {
             name: 'Qualitätsprüfung',
-            description: `Verifizierung für: ${product.name}`,
+            description: `Verifizierung für: ${productName}`,
           },
           unit_amount: Math.round(verificationFee * 100),
         },
-        quantity: 1,
+        quantity: productCount,
       },
     ],
     mode: 'payment',
     success_url: `${process.env.FRONTEND_URL}/verification-success?sessionId={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.FRONTEND_URL}/verification-cancel?productId=${productIdStr}`,
+    cancel_url: `${process.env.FRONTEND_URL}/verification-cancel?productId=${firstProduct.id}&productIds=${encodeURIComponent(productIdList)}`,
     metadata: {
-      productId: productIdStr,
+      productId: firstProduct.id,
+      productIds: productIdList,
+      productCount: String(productCount),
+      productKind,
       sellerId: sellerIdStr,
       userEmail: seller.email,
-      productName: product.name,
+      productName,
       type: 'verification_fee',
       verificationFee: String(verificationFee),
+      totalVerificationFee: String(verificationFee * productCount),
     },
   });
 
-  logger.info(`[VERIFICATION] Stripe checkout session created - Session: ${session.id}, Product: ${productIdStr}`);
+  logger.info(`[VERIFICATION] Stripe checkout session created - Session: ${session.id}, Products: ${productIdList}`);
 
   res.json({
     checkoutUrl: session.url,
     sessionId: session.id,
+    productIds,
+    productCount,
   });
 });
 

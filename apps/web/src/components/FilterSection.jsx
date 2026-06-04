@@ -48,7 +48,7 @@ const PriceRangeGroup = ({ definition, filters, onRangeChange, language, t }) =>
   return (
     <div className="border-t border-[#ddd] pt-5 first:border-t-0 first:pt-0">
       <Label className="text-[15px] font-semibold text-[#444]">{getFilterLabel(definition, language)}</Label>
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         <Input
           type="number"
           min="0"

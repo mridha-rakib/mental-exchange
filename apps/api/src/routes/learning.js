@@ -2594,6 +2594,51 @@ const validateLearningCouponForCheckout = async ({ code, packageRecord }) => {
   return couponRecord;
 };
 
+const getLearningPackagePriceAmount = (packageRecord, billingCycle = 'month') => {
+  const normalizedBillingCycle = billingCycle === 'year' ? 'year' : 'month';
+  return normalizedBillingCycle === 'year'
+    ? Number(packageRecord.yearly_price_amount || 0)
+    : Number(packageRecord.price_amount || 0);
+};
+
+const roundCurrencyAmount = (amount) => Math.max(0, Math.round(Number(amount || 0) * 100) / 100);
+
+const calculateLearningCouponCheckoutPreview = ({ couponRecord, packageRecord, billingCycle = 'month' }) => {
+  const originalAmount = roundCurrencyAmount(getLearningPackagePriceAmount(packageRecord, billingCycle));
+  const discountType = COUPON_DISCOUNT_TYPES.has(couponRecord?.discount_type)
+    ? couponRecord.discount_type
+    : 'percent';
+  let discountAmount = 0;
+
+  if (discountType === 'fixed_amount') {
+    const couponCurrency = String(couponRecord.currency || 'EUR').trim().toUpperCase();
+    const packageCurrency = String(packageRecord.currency || 'EUR').trim().toUpperCase();
+    if (couponCurrency !== packageCurrency) {
+      const error = new Error('Coupon currency does not match this package');
+      error.status = 400;
+      throw error;
+    }
+
+    discountAmount = Number(couponRecord.amount_off || 0);
+  } else {
+    const percentOff = Number(couponRecord.percent_off || 0);
+    discountAmount = originalAmount * (percentOff / 100);
+  }
+
+  const normalizedDiscount = roundCurrencyAmount(Math.min(originalAmount, discountAmount));
+  const finalAmount = roundCurrencyAmount(originalAmount - normalizedDiscount);
+
+  return {
+    coupon: serializeLearningCoupon(couponRecord),
+    billingCycle: billingCycle === 'year' ? 'year' : 'month',
+    currency: packageRecord.currency || 'EUR',
+    originalAmount,
+    discountAmount: normalizedDiscount,
+    finalAmount,
+    isFree: finalAmount <= 0,
+  };
+};
+
 const ensureStripeCouponForLearningCoupon = async (couponRecord) => {
   const existingStripeCouponId = String(couponRecord.stripe_coupon_id || '').trim();
   if (existingStripeCouponId) {
@@ -2743,6 +2788,117 @@ const mergeRecordPayload = (record, payload) => ({
   ...record,
   ...payload,
 });
+
+const getLearningRecordsByFilter = async (collectionName, filter, sort = 'created') =>
+  pb.collection(collectionName).getFullList({
+    filter,
+    sort,
+    $autoCancel: false,
+  }).catch(() => []);
+
+const deleteLearningRecords = async (collectionName, records) => {
+  for (const record of records) {
+    await pb.collection(collectionName).delete(record.id, { $autoCancel: false });
+  }
+};
+
+const deleteLearningProgressByFilter = async (filter) => {
+  const progressRecords = await getLearningRecordsByFilter('learning_progress', filter);
+  await deleteLearningRecords('learning_progress', progressRecords);
+  return progressRecords.length;
+};
+
+const emptyLearningPlanDeleteSummary = () => ({
+  deletedPlanAssignments: 0,
+  deletedPlanDays: 0,
+  deletedPlanSnapshots: 0,
+  deletedPlans: 0,
+});
+
+const deleteLearningPlanAssignmentsByFilter = async (filter) => {
+  const assignmentRecords = await getLearningRecordsByFilter('learning_plan_assignments', filter);
+  await deleteLearningRecords('learning_plan_assignments', assignmentRecords);
+
+  return {
+    ...emptyLearningPlanDeleteSummary(),
+    deletedPlanAssignments: assignmentRecords.length,
+  };
+};
+
+const deleteLearningPackagePlanRecords = async (packageId) => {
+  const packageFilter = `package_id="${escapePbString(packageId)}"`;
+  const [assignmentRecords, dayRecords, snapshotRecords, planRecords] = await Promise.all([
+    getLearningRecordsByFilter('learning_plan_assignments', packageFilter),
+    getLearningRecordsByFilter('learning_plan_days', packageFilter),
+    getLearningRecordsByFilter('learning_plan_snapshots', packageFilter),
+    getLearningRecordsByFilter('learning_plans', packageFilter),
+  ]);
+
+  await deleteLearningRecords('learning_plan_assignments', assignmentRecords);
+  await deleteLearningRecords('learning_plan_days', dayRecords);
+  await deleteLearningRecords('learning_plan_snapshots', snapshotRecords);
+  await deleteLearningRecords('learning_plans', planRecords);
+
+  return {
+    deletedPlanAssignments: assignmentRecords.length,
+    deletedPlanDays: dayRecords.length,
+    deletedPlanSnapshots: snapshotRecords.length,
+    deletedPlans: planRecords.length,
+  };
+};
+
+const deleteLearningLessonRecord = async (lessonRecord) => {
+  const deletedProgress = await deleteLearningProgressByFilter(`lesson_id="${escapePbString(lessonRecord.id)}"`);
+  const planRecords = await deleteLearningPlanAssignmentsByFilter(`lesson_id="${escapePbString(lessonRecord.id)}"`);
+  await pb.collection('learning_lessons').delete(lessonRecord.id, { $autoCancel: false });
+  return {
+    deletedLessons: 1,
+    deletedProgress,
+    ...planRecords,
+  };
+};
+
+const deleteLearningModuleRecord = async (moduleRecord) => {
+  const lessonRecords = await getLearningRecordsByFilter(
+    'learning_lessons',
+    `module_id="${escapePbString(moduleRecord.id)}"`,
+    'position,title',
+  );
+  let deletedLessons = 0;
+  let deletedProgress = 0;
+  let deletedPlanAssignments = 0;
+  let deletedPlanDays = 0;
+  let deletedPlanSnapshots = 0;
+  let deletedPlans = 0;
+
+  for (const lessonRecord of lessonRecords) {
+    const result = await deleteLearningLessonRecord(lessonRecord);
+    deletedLessons += result.deletedLessons;
+    deletedProgress += result.deletedProgress;
+    deletedPlanAssignments += result.deletedPlanAssignments;
+    deletedPlanDays += result.deletedPlanDays;
+    deletedPlanSnapshots += result.deletedPlanSnapshots;
+    deletedPlans += result.deletedPlans;
+  }
+
+  const modulePlanRecords = await deleteLearningPlanAssignmentsByFilter(`module_id="${escapePbString(moduleRecord.id)}"`);
+  deletedPlanAssignments += modulePlanRecords.deletedPlanAssignments;
+  deletedPlanDays += modulePlanRecords.deletedPlanDays;
+  deletedPlanSnapshots += modulePlanRecords.deletedPlanSnapshots;
+  deletedPlans += modulePlanRecords.deletedPlans;
+
+  await pb.collection('learning_modules').delete(moduleRecord.id, { $autoCancel: false });
+
+  return {
+    deletedModules: 1,
+    deletedLessons,
+    deletedProgress,
+    deletedPlanAssignments,
+    deletedPlanDays,
+    deletedPlanSnapshots,
+    deletedPlans,
+  };
+};
 
 router.get('/packages', async (_req, res) => {
   const packages = await getPublishedPackages();
@@ -3091,6 +3247,34 @@ router.get('/dashboard', requireAuth, async (req, res) => {
   });
 });
 
+router.post('/coupons/validate', requireAuth, async (req, res) => {
+  const slug = String(req.body?.packageSlug || '').trim();
+  const billingCycle = String(req.body?.billingCycle || 'month').trim().toLowerCase() === 'year' ? 'year' : 'month';
+  const couponCode = String(req.body?.couponCode || '').trim().toUpperCase();
+  const packageRecord = slug
+    ? await getPackageRecordBySlug(slug).catch(() => null)
+    : await getActiveLearningPackageRecord().catch(() => null);
+
+  if (!couponCode) {
+    return res.status(400).json({ error: 'Coupon code is required' });
+  }
+
+  if (!packageRecord || !(await isActiveLearningPackageRecord(packageRecord))) {
+    return res.status(404).json({ error: 'Learning package not found' });
+  }
+
+  try {
+    const couponRecord = await validateLearningCouponForCheckout({ code: couponCode, packageRecord });
+    const preview = calculateLearningCouponCheckoutPreview({ couponRecord, packageRecord, billingCycle });
+    return res.json({
+      success: true,
+      ...preview,
+    });
+  } catch (error) {
+    return res.status(error.status || 400).json({ error: error.message || 'Coupon could not be applied' });
+  }
+});
+
 router.post('/checkout', requireAuth, async (req, res) => {
   const slug = String(req.body?.packageSlug || '').trim();
   const billingCycle = String(req.body?.billingCycle || 'month').trim().toLowerCase() === 'year' ? 'year' : 'month';
@@ -3133,6 +3317,9 @@ router.post('/checkout', requireAuth, async (req, res) => {
   });
   const stripePriceId = await ensureStripePriceForPackage(packageRecord, billingCycle);
   const couponRecord = await validateLearningCouponForCheckout({ code: couponCode, packageRecord });
+  const couponPreview = couponRecord
+    ? calculateLearningCouponCheckoutPreview({ couponRecord, packageRecord, billingCycle })
+    : null;
   const stripeCouponId = couponRecord ? await ensureStripeCouponForLearningCoupon(couponRecord) : '';
   const z3Tier = normalizeZ3TierSlug(packageRecord.slug);
   const checkoutMetadata = {
@@ -3156,6 +3343,7 @@ router.post('/checkout', requireAuth, async (req, res) => {
       { price: stripePriceId, quantity: 1 },
     ],
     ...(stripeCouponId ? { discounts: [{ coupon: stripeCouponId }] } : {}),
+    ...(couponPreview?.isFree ? { payment_method_collection: 'if_required' } : {}),
     success_url: `${FRONTEND_URL}/learning/dashboard?payment=success`,
     cancel_url: `${FRONTEND_URL}/learning/subscribe/${packageRecord.slug}?payment=cancelled&cycle=${billingCycle}`,
     metadata: checkoutMetadata,
@@ -3860,6 +4048,100 @@ router.put('/admin/packages/:id', requireAuth, admin, async (req, res) => {
   res.json(serializePackage(updatedRecord));
 });
 
+router.delete('/admin/packages/:id', requireAuth, admin, async (req, res) => {
+  const packageRecord = await pb.collection('learning_packages').getOne(req.params.id, {
+    $autoCancel: false,
+  }).catch(() => null);
+
+  if (!packageRecord) {
+    return res.status(404).json({ error: 'Learning package not found' });
+  }
+
+  const moduleRecords = await getLearningRecordsByFilter(
+    'learning_modules',
+    `package_id="${escapePbString(packageRecord.id)}"`,
+    'position,title',
+  );
+  const couponRecords = await getLearningRecordsByFilter(
+    'learning_coupons',
+    `package_id="${escapePbString(packageRecord.id)}"`,
+  );
+  let deletedModules = 0;
+  let deletedLessons = 0;
+  let deletedProgress = 0;
+  let deletedPlanAssignments = 0;
+  let deletedPlanDays = 0;
+  let deletedPlanSnapshots = 0;
+  let deletedPlans = 0;
+
+  for (const moduleRecord of moduleRecords) {
+    const result = await deleteLearningModuleRecord(moduleRecord);
+    deletedModules += result.deletedModules;
+    deletedLessons += result.deletedLessons;
+    deletedProgress += result.deletedProgress;
+    deletedPlanAssignments += result.deletedPlanAssignments;
+    deletedPlanDays += result.deletedPlanDays;
+    deletedPlanSnapshots += result.deletedPlanSnapshots;
+    deletedPlans += result.deletedPlans;
+  }
+
+  const remainingLessonRecords = await getLearningRecordsByFilter(
+    'learning_lessons',
+    `package_id="${escapePbString(packageRecord.id)}"`,
+    'position,title',
+  );
+  for (const lessonRecord of remainingLessonRecords) {
+    const result = await deleteLearningLessonRecord(lessonRecord);
+    deletedLessons += result.deletedLessons;
+    deletedProgress += result.deletedProgress;
+    deletedPlanAssignments += result.deletedPlanAssignments;
+    deletedPlanDays += result.deletedPlanDays;
+    deletedPlanSnapshots += result.deletedPlanSnapshots;
+    deletedPlans += result.deletedPlans;
+  }
+
+  deletedProgress += await deleteLearningProgressByFilter(`package_id="${escapePbString(packageRecord.id)}"`);
+  const packagePlanRecords = await deleteLearningPackagePlanRecords(packageRecord.id);
+  deletedPlanAssignments += packagePlanRecords.deletedPlanAssignments;
+  deletedPlanDays += packagePlanRecords.deletedPlanDays;
+  deletedPlanSnapshots += packagePlanRecords.deletedPlanSnapshots;
+  deletedPlans += packagePlanRecords.deletedPlans;
+  await deleteLearningRecords('learning_coupons', couponRecords);
+  await pb.collection('learning_packages').delete(packageRecord.id, { $autoCancel: false });
+
+  await logLearningAdminAction({
+    actorUserId: req.auth.id,
+    eventType: 'admin_package_deleted',
+    targetType: 'package',
+    targetId: packageRecord.id,
+    packageId: packageRecord.id,
+    payload: {
+      title: packageRecord.title,
+      deletedModules,
+      deletedLessons,
+      deletedProgress,
+      deletedPlanAssignments,
+      deletedPlanDays,
+      deletedPlanSnapshots,
+      deletedPlans,
+      deletedCoupons: couponRecords.length,
+    },
+  });
+
+  res.json({
+    success: true,
+    deletedPackageId: packageRecord.id,
+    deletedModules,
+    deletedLessons,
+    deletedProgress,
+    deletedPlanAssignments,
+    deletedPlanDays,
+    deletedPlanSnapshots,
+    deletedPlans,
+    deletedCoupons: couponRecords.length,
+  });
+});
+
 router.post('/admin/modules', requireAuth, admin, async (req, res) => {
   const payload = {
     package_id: String(req.body?.packageId || '').trim(),
@@ -3946,6 +4228,40 @@ router.put('/admin/modules/:id', requireAuth, admin, async (req, res) => {
     },
   });
   res.json(serializeModule(updatedRecord));
+});
+
+router.delete('/admin/modules/:id', requireAuth, admin, async (req, res) => {
+  const moduleRecord = await pb.collection('learning_modules').getOne(req.params.id, {
+    $autoCancel: false,
+  }).catch(() => null);
+
+  if (!moduleRecord) {
+    return res.status(404).json({ error: 'Learning module not found' });
+  }
+
+  const result = await deleteLearningModuleRecord(moduleRecord);
+  await logLearningAdminAction({
+    actorUserId: req.auth.id,
+    eventType: 'admin_module_deleted',
+    targetType: 'module',
+    targetId: moduleRecord.id,
+    packageId: moduleRecord.package_id,
+    payload: {
+      title: moduleRecord.title,
+      deletedLessons: result.deletedLessons,
+      deletedProgress: result.deletedProgress,
+      deletedPlanAssignments: result.deletedPlanAssignments,
+      deletedPlanDays: result.deletedPlanDays,
+      deletedPlanSnapshots: result.deletedPlanSnapshots,
+      deletedPlans: result.deletedPlans,
+    },
+  });
+
+  res.json({
+    success: true,
+    deletedModuleId: moduleRecord.id,
+    ...result,
+  });
 });
 
 router.post('/admin/lessons', requireAuth, admin, async (req, res) => {
@@ -4058,6 +4374,40 @@ router.put('/admin/lessons/:id', requireAuth, admin, async (req, res) => {
     },
   });
   res.json(serializeLesson(updatedRecord, { includeAssetSources: true }));
+});
+
+router.delete('/admin/lessons/:id', requireAuth, admin, async (req, res) => {
+  const lessonRecord = await pb.collection('learning_lessons').getOne(req.params.id, {
+    $autoCancel: false,
+  }).catch(() => null);
+
+  if (!lessonRecord) {
+    return res.status(404).json({ error: 'Learning lesson not found' });
+  }
+
+  const result = await deleteLearningLessonRecord(lessonRecord);
+  await logLearningAdminAction({
+    actorUserId: req.auth.id,
+    eventType: 'admin_lesson_deleted',
+    targetType: 'lesson',
+    targetId: lessonRecord.id,
+    packageId: lessonRecord.package_id,
+    payload: {
+      title: lessonRecord.title,
+      moduleId: lessonRecord.module_id,
+      deletedProgress: result.deletedProgress,
+      deletedPlanAssignments: result.deletedPlanAssignments,
+      deletedPlanDays: result.deletedPlanDays,
+      deletedPlanSnapshots: result.deletedPlanSnapshots,
+      deletedPlans: result.deletedPlans,
+    },
+  });
+
+  res.json({
+    success: true,
+    deletedLessonId: lessonRecord.id,
+    ...result,
+  });
 });
 
 router.post('/admin/lessons/:id/duplicate', requireAuth, admin, async (req, res) => {

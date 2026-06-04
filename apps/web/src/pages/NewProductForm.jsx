@@ -27,36 +27,56 @@ const SHIPPING_TYPES = [
   { value: 'pickup', key: 'product.shipping_pickup' },
 ];
 
+const QUALITY_VERIFICATION_CONDITIONS = new Set(['Neu', 'Wie neu']);
+
+const getProductVerificationKind = (productType) => (
+  productType === 'Consumable' ? 'consumable' : 'item'
+);
+
+const createEmptyFormData = (productType = 'Article') => ({
+  product_type: productType,
+  name: '',
+  description: '',
+  price: '',
+  condition: '',
+  weight_g: '',
+  brand: '',
+  location: '',
+  shipping_type: 'dhl_parcel',
+  fachbereich: [],
+  image: null,
+  images: [],
+  set_items: [{ name: '', quantity: 1 }]
+});
+
 const NewProductForm = () => {
   const { currentUser, isAdmin } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  
-  const [requiresPayment, setRequiresPayment] = useState(false);
-  const [createdProductId, setCreatedProductId] = useState(null);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [selectedListingKind, setSelectedListingKind] = useState('');
+  const [verificationKind, setVerificationKind] = useState('');
+  const [verificationQueue, setVerificationQueue] = useState([]);
+  const [formData, setFormData] = useState(createEmptyFormData('Article'));
 
-  const [formData, setFormData] = useState({
-    product_type: '',
-    name: '',
-    description: '',
-    price: '',
-    condition: '',
-    weight_g: '',
-    brand: '',
-    location: '',
-    shipping_type: 'dhl_parcel',
-    fachbereich: [],
-    image: null,
-    images: [],
-    set_items: [{ name: '', quantity: 1 }]
-  });
+  const handleTypeSelect = (kind) => {
+    const queuedKind = verificationKind || getProductVerificationKind(verificationQueue[0]?.productType);
+    if (verificationQueue.length > 0 && queuedKind && kind !== queuedKind) {
+      toast.error(t('new_product.verification_kind_locked'));
+      return;
+    }
 
-  const handleTypeSelect = (type) => {
-    setFormData(prev => ({ ...prev, product_type: type }));
+    const productType = kind === 'consumable' ? 'Consumable' : 'Article';
+    setSelectedListingKind(kind);
+    setFormData(createEmptyFormData(productType));
     setStep(2);
+  };
+
+  const handleVerifyMore = () => {
+    const kind = verificationKind || getProductVerificationKind(verificationQueue[0]?.productType);
+    handleTypeSelect(kind === 'consumable' ? 'consumable' : 'item');
   };
 
   const handleChange = (e) => {
@@ -117,6 +137,12 @@ const NewProductForm = () => {
       }
     }
 
+    const needsVerification = !isAdmin && QUALITY_VERIFICATION_CONDITIONS.has(formData.condition);
+    if (!isAdmin && verificationQueue.length > 0 && !needsVerification) {
+      toast.error(t('new_product.verification_condition_required'));
+      return;
+    }
+
     setLoading(true);
     try {
       const data = new FormData();
@@ -148,7 +174,6 @@ const NewProductForm = () => {
         data.append('set_items', JSON.stringify(formData.set_items));
       }
 
-      const needsVerification = !isAdmin && (formData.condition === 'Neu' || formData.condition === 'Wie neu');
       if (!isAdmin) {
         const status = needsVerification ? 'draft' : 'pending_verification';
         data.append('status', status);
@@ -167,8 +192,19 @@ const NewProductForm = () => {
       const record = await pb.collection(collectionName).create(data, { $autoCancel: false });
       
       if (needsVerification) {
-        setCreatedProductId(record.id);
-        setRequiresPayment(true);
+        const nextKind = getProductVerificationKind(formData.product_type);
+        setVerificationKind(nextKind);
+        setVerificationQueue((currentQueue) => [
+          ...currentQueue,
+          {
+            id: record.id,
+            name: record.name || formData.name,
+            productType: record.product_type || formData.product_type,
+            condition: record.condition || formData.condition,
+            price: Number(record.price ?? formData.price) || 0,
+          },
+        ]);
+        toast.success(t('new_product.verification_added_success'));
         setStep(3);
       } else {
         if (!isAdmin) {
@@ -197,13 +233,18 @@ const NewProductForm = () => {
   };
 
   const handleVerificationPayment = async () => {
+    if (verificationQueue.length === 0) {
+      toast.error(t('new_product.verification_empty_error'));
+      return;
+    }
+
     setPaymentProcessing(true);
     try {
       const authToken = pb.authStore.token;
       
       if (!authToken) {
         toast.error(t('auth.session_expired'));
-        navigate('/login');
+        navigate('/auth');
         return;
       }
 
@@ -214,9 +255,8 @@ const NewProductForm = () => {
           'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
-          productId: createdProductId,
-          productName: formData.name,
-          verificationFee: 15,
+          productIds: verificationQueue.map((product) => product.id),
+          productName: verificationQueue.length === 1 ? verificationQueue[0].name : '',
           sellerId: currentUser.id,
           userEmail: currentUser.email
         })
@@ -224,7 +264,7 @@ const NewProductForm = () => {
 
       if (response.status === 401) {
         toast.error(t('auth.session_expired'));
-        navigate('/login');
+        navigate('/auth');
         return;
       }
 
@@ -236,9 +276,7 @@ const NewProductForm = () => {
       const data = await response.json();
       
       if (data.checkoutUrl) {
-        window.open(data.checkoutUrl, '_blank');
-        toast.success(t('new_product.payment_window_note'));
-        navigate('/my-orders');
+        window.location.href = data.checkoutUrl;
       } else {
         throw new Error(t('checkout.no_url'));
       }
@@ -260,6 +298,13 @@ const NewProductForm = () => {
     return t('new_product.description_placeholder_article');
   };
 
+  const qualityVerificationSelected = QUALITY_VERIFICATION_CONDITIONS.has(formData.condition);
+  const verificationQueueKind = verificationKind || getProductVerificationKind(verificationQueue[0]?.productType);
+  const verifyMoreLabel = verificationQueueKind === 'consumable'
+    ? t('new_product.verify_more_consumables')
+    : t('new_product.verify_more_items');
+  const totalSteps = step === 3 || verificationQueue.length > 0 ? 3 : 2;
+
   return (
     <>
       <Helmet>
@@ -276,42 +321,29 @@ const NewProductForm = () => {
             <p className="text-muted-foreground mt-3">
               {t('new_product.step_status', {
                 step,
-                total: requiresPayment ? 3 : 2,
+                total: totalSteps,
                 label: step === 1 ? t('new_product.step_category') : step === 2 ? t('new_product.step_details') : t('new_product.step_verification')
               })}
             </p>
           </div>
 
           {step === 1 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <button
-                onClick={() => handleTypeSelect('Article')}
+                onClick={() => handleTypeSelect('item')}
                 className="flex flex-col items-center text-center p-6 md:p-8 bg-white border border-[hsl(var(--border))] rounded-[8px] hover:border-[#0000FF] hover:shadow-hover transition-all group"
               >
                 <div className="w-14 h-14 bg-blue-50 rounded-[8px] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                   <Package className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{t('new_product.type_article_title')}</h3>
+                <h3 className="text-xl font-semibold mb-2">{t('new_product.type_item_title')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {t('new_product.type_article_body')}
+                  {t('new_product.type_item_body')}
                 </p>
               </button>
 
               <button
-                onClick={() => handleTypeSelect('Set')}
-                className="flex flex-col items-center text-center p-6 md:p-8 bg-white border border-[hsl(var(--border))] rounded-[8px] hover:border-[#0000FF] hover:shadow-hover transition-all group"
-              >
-                <div className="w-14 h-14 bg-gray-100 rounded-[8px] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                  <Layers className="w-8 h-8 text-gray-700" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{t('new_product.type_set_title')}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {t('new_product.type_set_body')}
-                </p>
-              </button>
-
-              <button
-                onClick={() => handleTypeSelect('Consumable')}
+                onClick={() => handleTypeSelect('consumable')}
                 className="flex flex-col items-center text-center p-6 md:p-8 bg-white border border-[hsl(var(--border))] rounded-[8px] hover:border-[#0000FF] hover:shadow-hover transition-all group"
               >
                 <div className="w-14 h-14 bg-blue-50 rounded-[8px] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
@@ -335,6 +367,43 @@ const NewProductForm = () => {
               </button>
 
               <form onSubmit={handleSubmit} className="space-y-8">
+                {selectedListingKind === 'item' && (
+                  <div className="space-y-3 rounded-[8px] border border-[hsl(var(--border))] bg-[hsl(var(--muted-bg))] p-5">
+                    <Label className="text-base">{t('new_product.item_format')}</Label>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <button
+                        type="button"
+                        onClick={() => setFormData((current) => ({ ...current, product_type: 'Article', set_items: [{ name: '', quantity: 1 }] }))}
+                        className={`flex items-center gap-3 rounded-[8px] border bg-white p-4 text-left transition-colors ${
+                          formData.product_type === 'Article'
+                            ? 'border-[#0000FF] text-[#0000FF]'
+                            : 'border-[hsl(var(--border))] text-slate-700 hover:border-[#0000FF]/40'
+                        }`}
+                      >
+                        <Package className="h-5 w-5 shrink-0" />
+                        <span>
+                          <span className="block font-semibold">{t('new_product.type_article_title')}</span>
+                          <span className="mt-1 block text-xs text-muted-foreground">{t('new_product.type_article_body')}</span>
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData((current) => ({ ...current, product_type: 'Set' }))}
+                        className={`flex items-center gap-3 rounded-[8px] border bg-white p-4 text-left transition-colors ${
+                          formData.product_type === 'Set'
+                            ? 'border-[#0000FF] text-[#0000FF]'
+                            : 'border-[hsl(var(--border))] text-slate-700 hover:border-[#0000FF]/40'
+                        }`}
+                      >
+                        <Layers className="h-5 w-5 shrink-0" />
+                        <span>
+                          <span className="block font-semibold">{t('new_product.type_set_title')}</span>
+                          <span className="mt-1 block text-xs text-muted-foreground">{t('new_product.type_set_body')}</span>
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="space-y-3">
                   <Label className="text-base">
@@ -513,7 +582,7 @@ const NewProductForm = () => {
 
                 <div className="space-y-3">
                   <Label className="text-base">{t('new_product.subject_optional')}</Label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 min-[380px]:grid-cols-2 sm:grid-cols-4 gap-4">
                     {FACHBEREICHE.map((fb) => (
                       <div key={fb.id} className="flex items-center space-x-2">
                         <Checkbox 
@@ -545,8 +614,8 @@ const NewProductForm = () => {
 
                 <div className="pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
                   <p className="text-sm text-muted-foreground">
-                    {formData.condition === 'Neu' || formData.condition === 'Wie neu' 
-                      ? t('new_product.verification_notice') 
+                    {qualityVerificationSelected
+                      ? t('new_product.paid_verification_notice')
                       : t('new_product.instant_publish_notice')}
                   </p>
                   <Button 
@@ -555,7 +624,11 @@ const NewProductForm = () => {
                     className="w-full sm:w-auto gap-2 text-white" 
                     disabled={loading}
                   >
-                    {loading ? t('new_product.creating') : t('new_product.create_listing')}
+                    {loading
+                      ? t('new_product.creating')
+                      : qualityVerificationSelected && !isAdmin
+                        ? t('new_product.add_to_paid_verification')
+                        : t('new_product.create_listing')}
                     {!loading && <ArrowRight className="w-4 h-4" />}
                   </Button>
                 </div>
@@ -564,8 +637,8 @@ const NewProductForm = () => {
             </div>
           )}
 
-          {step === 3 && requiresPayment && (
-            <div className="bg-white border border-[hsl(var(--border))] rounded-[8px] p-8 shadow-card text-center max-w-xl mx-auto">
+          {step === 3 && verificationQueue.length > 0 && (
+            <div className="bg-white border border-[hsl(var(--border))] rounded-[8px] p-8 shadow-card text-center max-w-2xl mx-auto">
               <div className="w-16 h-16 bg-blue-50 rounded-[8px] flex items-center justify-center mx-auto mb-6">
                 <ShieldCheck className="w-10 h-10 text-blue-600" />
               </div>
@@ -573,10 +646,35 @@ const NewProductForm = () => {
               <h2 className="text-2xl font-bold mb-4">{t('new_product.verification_title')}</h2>
               
               <p className="text-muted-foreground mb-8">
-                {t('new_product.verification_body')}
+                {verificationQueueKind === 'consumable'
+                  ? t('new_product.verification_body_consumables')
+                  : t('new_product.verification_body')}
               </p>
 
-              <div className="bg-[hsl(var(--muted-bg))] rounded-[8px] border border-[hsl(var(--border))] p-6 mb-8 text-left">
+              <div className="bg-[hsl(var(--muted-bg))] rounded-[8px] border border-[hsl(var(--border))] p-6 mb-6 text-left">
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[hsl(var(--border))] pb-4">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {t('new_product.verification_queue_title', { count: verificationQueue.length })}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t('new_product.verification_queue_body')}
+                    </p>
+                  </div>
+                  <p className="rounded-[8px] bg-white px-3 py-2 text-sm font-semibold text-slate-900">
+                    {verificationQueue.length}
+                  </p>
+                </div>
+                <div className="mb-6 space-y-2">
+                  {verificationQueue.map((product, index) => (
+                    <div key={product.id} className="flex items-center justify-between gap-3 rounded-[8px] bg-white p-3 text-sm">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-slate-900">{index + 1}. {product.name}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{product.productType === 'Consumable' ? t('new_product.type_consumable_title') : t('new_product.type_item_title')} / {product.condition}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
                 <p className="font-medium mb-4">{t('new_product.verification_list_title')}</p>
                 <ul className="space-y-3 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
@@ -594,15 +692,28 @@ const NewProductForm = () => {
                 </p>
               </div>
 
-              <Button 
-                size="lg" 
-                className="w-full h-14 text-lg gap-2 bg-[#0000FF] hover:bg-[#0000CC] text-white"
-                onClick={handleVerificationPayment}
-                disabled={paymentProcessing}
-              >
-                {paymentProcessing ? t('new_product.payment_processing') : t('new_product.pay_fee')}
-                {!paymentProcessing && <CreditCard className="w-5 h-5" />}
-              </Button>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="outline"
+                  className="h-14 gap-2"
+                  onClick={handleVerifyMore}
+                  disabled={paymentProcessing}
+                >
+                  <Plus className="w-5 h-5" />
+                  {verifyMoreLabel}
+                </Button>
+                <Button
+                  size="lg"
+                  className="h-14 gap-2 bg-[#0000FF] text-white hover:bg-[#0000CC]"
+                  onClick={handleVerificationPayment}
+                  disabled={paymentProcessing}
+                >
+                  {paymentProcessing ? t('new_product.payment_processing') : t('new_product.submit_paid_verification')}
+                  {!paymentProcessing && <CreditCard className="w-5 h-5" />}
+                </Button>
+              </div>
             </div>
           )}
 

@@ -56,9 +56,9 @@ const PopularProductsSection = () => {
         </div>
 
         {/* Product Grid */}
-        {loading ? <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+        {loading ? <div className="grid grid-cols-1 min-[380px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {[...Array(4)].map((_, i) => <div key={i} className="animate-pulse bg-[hsl(var(--muted))] rounded-[8px] aspect-[3/4]"></div>)}
-          </div> : products.length > 0 ? <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+          </div> : products.length > 0 ? <div className="grid grid-cols-1 min-[380px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {products.map(product => {
           const productImageUrl = getProductImageUrl(product);
           return <Link to={`/product/${product.id}?type=shop`} key={product.id} className="flex flex-col h-full bg-white border border-[rgba(224,224,224,0.5)] rounded-[8px] overflow-hidden hover:shadow-hover transition-smooth group relative">

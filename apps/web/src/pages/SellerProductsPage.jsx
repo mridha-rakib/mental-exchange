@@ -680,7 +680,7 @@ const SellerProductsPage = () => {
 
                   <div className="space-y-2 md:col-span-2">
                     <Label>{t('seller.subjects')}</Label>
-                    <div className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 min-[380px]:grid-cols-2 sm:grid-cols-4">
                       {SUBJECTS.map((subject) => (
                         <label key={subject.id} className="flex items-center gap-2 text-sm text-slate-700">
                           <Checkbox

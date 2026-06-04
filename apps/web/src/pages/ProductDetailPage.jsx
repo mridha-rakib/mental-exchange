@@ -331,7 +331,7 @@ const ProductDetailPage = () => {
                 )}
               </div>
               {productImageUrls.length > 1 && (
-                <div className="grid grid-cols-4 gap-2 border-t border-[#d8d8d8] bg-white p-2">
+                <div className="grid grid-cols-2 gap-2 border-t border-[#d8d8d8] bg-white p-2 min-[420px]:grid-cols-4">
                   {productImageUrls.slice(0, 4).map((imageUrl, index) => (
                     <div key={imageUrl} className="aspect-square overflow-hidden rounded-[8px] bg-slate-100">
                       <img src={imageUrl} alt={`${product.name} ${index + 1}`} className="h-full w-full object-cover" />

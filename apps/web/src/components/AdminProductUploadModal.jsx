@@ -131,7 +131,7 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
             <Textarea id="description" name="description" value={formData.description} onChange={handleChange} rows={3} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="price">{t('seller.price')} (EUR) *</Label>
               <Input id="price" name="price" type="number" step="0.01" min="0" value={formData.price} onChange={handleChange} required />
@@ -154,7 +154,7 @@ const AdminProductUploadModal = ({ children, onSuccess }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="category">{t('admin_product.category')} *</Label>
               <Select onValueChange={(val) => setFormData({...formData, category: val})} required>

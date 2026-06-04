@@ -209,12 +209,12 @@ const MarketplacePage = () => {
                             )}
                           </Button>
                         </SheetTrigger>
-                        <SheetContent side="left" className="w-[320px] border-r border-black/5 p-0 sm:w-[400px]">
+                        <SheetContent side="left" className="w-[min(92vw,400px)] border-r border-black/5 p-0">
                           <SheetHeader className="border-b border-black/5 px-6 py-5">
                             <SheetTitle>{t('marketplace.adjust_filters')}</SheetTitle>
                           </SheetHeader>
                           <div className="p-6">
-                            <FilterSection filters={filters} filterDefinitions={visibleFilterDefinitions} onFiltersChange={setFilters} />
+                            <FilterSection filters={filters} filterDefinitions={visibleFilterDefinitions} onFiltersChange={setFilters} className="border-0 shadow-none" />
                           </div>
                         </SheetContent>
                       </Sheet>
@@ -247,7 +247,7 @@ const MarketplacePage = () => {
 
                 <div className="mt-6">
                   {loading ? (
-                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+                    <div className="grid grid-cols-1 gap-4 min-[380px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
                       {[...Array(10)].map((_, index) => (
                         <div key={index} className="overflow-hidden rounded-[12px] border border-[#ddd] bg-white">
                           <div className="aspect-[1.32] animate-pulse bg-[linear-gradient(135deg,#f3f4f6,#e5e7eb)]" />
@@ -260,7 +260,7 @@ const MarketplacePage = () => {
                       ))}
                     </div>
                   ) : products.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+                    <div className="grid grid-cols-1 gap-4 min-[380px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
                       {products.map((product) => (
                         <MarketplaceProductCard key={product.id} product={product} />
                       ))}

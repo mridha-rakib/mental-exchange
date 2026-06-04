@@ -141,7 +141,7 @@ const ImageUploadField = ({ onFilesSelected, maxFiles = 5, className }) => {
       )}
 
       {files.length > 0 && (
-        <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div className="mt-6 grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {files.map((file, index) => (
             <div key={file.preview} className="relative group aspect-square rounded-lg overflow-hidden border border-border bg-muted">
               <img

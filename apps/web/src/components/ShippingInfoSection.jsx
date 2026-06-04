@@ -112,7 +112,7 @@ const ShippingInfoSection = () => {
               <Label htmlFor="street_address">{t('checkout.street')} *</Label>
               <Input id="street_address" name="street_address" value={formData.street_address} onChange={handleChange} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="postal_code">{t('checkout.postal_code')} *</Label>
                 <Input id="postal_code" name="postal_code" value={formData.postal_code} onChange={handleChange} />
@@ -122,7 +122,7 @@ const ShippingInfoSection = () => {
                 <Input id="city" name="city" value={formData.city} onChange={handleChange} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="country">{t('checkout.country')}</Label>
                 <Input id="country" name="country" value={formData.country} onChange={handleChange} />

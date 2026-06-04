@@ -30,6 +30,24 @@
     scroll-behavior: smooth;
   }
 
+  html,
+  body,
+  #root {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  body {
+    overflow-x: clip;
+  }
+
+  img,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--project-font-family);
     letter-spacing: 0;
@@ -42,6 +60,15 @@
   select,
   textarea {
     font-family: var(--project-font-family);
+  }
+
+  p,
+  li,
+  dd,
+  dt,
+  figcaption,
+  blockquote {
+    overflow-wrap: break-word;
   }
 }
 
@@ -100,6 +127,10 @@
 
 /* Mobile Responsive Adjustments */
 @media (max-width: 768px) {
+  :root {
+    --mobile-page-gutter: 1rem;
+  }
+
   html {
     font-size: 15px;
   }
@@ -141,6 +172,19 @@
   .container {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
+  }
+
+  [data-radix-popper-content-wrapper] {
+    max-width: calc(100vw - 1rem) !important;
+  }
+
+  [data-radix-popper-content-wrapper] > * {
+    max-width: calc(100vw - 1rem);
+  }
+
+  .overflow-x-auto,
+  .overflow-auto {
+    -webkit-overflow-scrolling: touch;
   }
   
   .py-16, .py-12, .py-20, .py-24 {

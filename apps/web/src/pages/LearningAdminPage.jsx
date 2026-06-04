@@ -16,10 +16,21 @@ import {
   Search,
   ShieldCheck,
   Ticket,
+  Trash2,
   UploadCloud,
   Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx';
@@ -32,6 +43,9 @@ import {
   createLearningAdminModule,
   createLearningAdminPackage,
   createLearningAdminCoupon,
+  deleteLearningAdminLesson,
+  deleteLearningAdminModule,
+  deleteLearningAdminPackage,
   duplicateLearningAdminLesson,
   getLearningAdminContent,
   grantLearningAdminSubscriberAccess,
@@ -350,6 +364,8 @@ const LearningAdminPage = () => {
   const [packageSearch, setPackageSearch] = useState('');
   const [draggedModuleId, setDraggedModuleId] = useState('');
   const [draggedLessonId, setDraggedLessonId] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const token = pb.authStore.token;
   const copy = useCallback((key, fallback) => {
@@ -1067,6 +1083,56 @@ const LearningAdminPage = () => {
     }
   };
 
+  const requestDelete = (type, item) => {
+    if (!item?.id) return;
+    setDeleteTarget({ type, item });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    setDeleting(true);
+    try {
+      if (deleteTarget.type === 'package') {
+        await deleteLearningAdminPackage({ token, id: deleteTarget.item.id });
+        if (packageForm.id === deleteTarget.item.id) setPackageForm(emptyPackageForm);
+        if (moduleForm.packageId === deleteTarget.item.id) setModuleForm(emptyModuleForm);
+        if (lessonForm.packageId === deleteTarget.item.id) setLessonForm(emptyLessonForm);
+        if (selectedPackageId === deleteTarget.item.id) setSelectedPackageId('');
+        setBuilderPanel('package');
+      } else if (deleteTarget.type === 'module') {
+        await deleteLearningAdminModule({ token, id: deleteTarget.item.id });
+        if (moduleForm.id === deleteTarget.item.id) {
+          setModuleForm({
+            ...emptyModuleForm,
+            packageId: selectedPackageId || '',
+            position: getNextModulePosition(selectedPackageId || ''),
+          });
+        }
+        if (lessonForm.moduleId === deleteTarget.item.id) setLessonForm({ ...emptyLessonForm, packageId: selectedPackageId || '' });
+      } else if (deleteTarget.type === 'lesson') {
+        await deleteLearningAdminLesson({ token, id: deleteTarget.item.id });
+        if (lessonForm.id === deleteTarget.item.id) {
+          setLessonForm({
+            ...emptyLessonForm,
+            packageId: selectedPackageId || '',
+            moduleId: deleteTarget.item.moduleId || '',
+            position: getNextLessonPosition(deleteTarget.item.moduleId || ''),
+          });
+        }
+      }
+
+      toast.success(t('learning.admin_delete_success'));
+      setDeleteTarget(null);
+      await loadContent();
+    } catch (error) {
+      console.error('Failed to delete learning content:', error);
+      toast.error(error.message || t('learning.admin_delete_error'));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const submitCoupon = async (event) => {
     event.preventDefault();
 
@@ -1232,12 +1298,62 @@ const LearningAdminPage = () => {
     setActiveSection('editor');
   };
 
+  const deleteTypeLabel = deleteTarget?.type === 'package'
+    ? copy('learning.admin_package', 'Package')
+    : deleteTarget?.type === 'module'
+      ? copy('learning.admin_module', 'Module')
+      : copy('learning.admin_lesson', 'Lesson');
+  const deleteTargetName = deleteTarget?.item?.title || deleteTypeLabel;
+  const deleteConfirmTitle = deleteTarget?.type === 'package'
+    ? copy('learning.admin_delete_package_confirm_title', 'Delete this package?')
+    : deleteTarget?.type === 'module'
+      ? copy('learning.admin_delete_module_confirm_title', 'Delete this module?')
+      : deleteTarget?.type === 'lesson'
+        ? copy('learning.admin_delete_lesson_confirm_title', 'Delete this lesson?')
+        : copy('learning.admin_delete_confirm_title', 'Delete this item?');
+  const deleteConfirmBody = deleteTarget?.type === 'package'
+    ? copy('learning.admin_delete_package_confirm_body', 'Are you sure you want to delete this package?')
+    : deleteTarget?.type === 'module'
+      ? copy('learning.admin_delete_module_confirm_body', 'Are you sure you want to delete this module?')
+      : deleteTarget?.type === 'lesson'
+        ? copy('learning.admin_delete_lesson_confirm_body', 'Are you sure you want to delete this lesson?')
+        : copy('learning.admin_delete_confirm_body', 'Are you sure you want to delete this item?');
+
   return (
     <>
       <Helmet>
         <title>{`${t('learning.admin_title')} - Zahniboerse`}</title>
         <meta name="robots" content="noindex,nofollow,noarchive" />
       </Helmet>
+
+      <AlertDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogContent className="rounded-[8px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{deleteConfirmTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteConfirmBody} {deleteTargetName ? `${deleteTypeLabel}: ${deleteTargetName}` : ''}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              className="bg-red-600 text-white hover:bg-red-700"
+              onClick={(event) => {
+                event.preventDefault();
+                confirmDelete();
+              }}
+            >
+              {deleting ? t('common.loading') : copy('learning.admin_delete', 'Delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <main className="learning-shell flex-1">
         <div className="container mx-auto max-w-[1600px] px-4 py-10 sm:px-6 lg:px-8">
@@ -1441,6 +1557,16 @@ const LearningAdminPage = () => {
                                 <PencilLine className="size-4" />
                                 {t('learning.admin_edit')}
                               </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="rounded-[8px] border-white/35 bg-transparent text-white hover:bg-white/15 hover:text-white"
+                                onClick={() => requestDelete('package', selectedPackageSummary.package)}
+                              >
+                                <Trash2 className="size-4" />
+                                {copy('learning.admin_delete', 'Delete')}
+                              </Button>
                               {selectedPackageSummary.package.status === 'published' && (
                                 <Button asChild type="button" size="sm" variant="outline" className="rounded-[8px] border-white/35 bg-transparent text-white hover:bg-white/15 hover:text-white">
                                   <Link to={`/learning/packages/${selectedPackageSummary.package.slug}`}>
@@ -1452,7 +1578,7 @@ const LearningAdminPage = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2">
                           {[
                             [t('learning.admin_modules'), selectedPackageSummary.modules.length],
                             [t('learning.admin_lessons'), selectedPackageSummary.lessons.length],
@@ -1606,6 +1732,17 @@ const LearningAdminPage = () => {
                                     </Link>
                                   </Button>
                                 )}
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="outline"
+                                  className="h-9 w-9 rounded-[8px] border-red-200 text-red-700 hover:bg-red-50"
+                                  onClick={() => requestDelete('package', item.package)}
+                                  aria-label={copy('learning.admin_delete_package', 'Delete package')}
+                                  title={copy('learning.admin_delete_package', 'Delete package')}
+                                >
+                                  <Trash2 className="size-4" />
+                                </Button>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -1632,11 +1769,11 @@ const LearningAdminPage = () => {
                     {copy('learning.admin_working_package_hint', 'Modules and lessons shown below belong only to the selected package. Save a package first, then add modules, then add lessons inside those modules.')}
                   </p>
                 </div>
-                <div className="flex min-w-[260px] flex-1 flex-wrap justify-end gap-3">
+                <div className="flex w-full min-w-0 flex-1 flex-wrap justify-start gap-3 sm:min-w-[260px] md:justify-end">
                   <select
                     value={selectedPackageId}
                     onChange={(event) => selectPackage(event.target.value)}
-                    className="h-10 min-w-[260px] rounded-md border border-input bg-background px-3 text-sm"
+                    className="h-10 w-full min-w-0 rounded-md border border-input bg-background px-3 text-sm sm:min-w-[260px] sm:w-auto"
                   >
                     <option value="">{copy('learning.admin_select_content_package', 'Select learning content')}</option>
                     {content.packages.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
@@ -1649,6 +1786,17 @@ const LearningAdminPage = () => {
                     <Button type="button" variant="outline" className="rounded-[8px]" onClick={() => hydratePackageForm(selectedPackageSummary.package)}>
                       <PencilLine className="size-4" />
                       {copy('learning.admin_package_details', 'Package details')}
+                    </Button>
+                  )}
+                  {selectedPackageSummary && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-[8px] border-red-200 text-red-700 hover:bg-red-50"
+                      onClick={() => requestDelete('package', selectedPackageSummary.package)}
+                    >
+                      <Trash2 className="size-4" />
+                      {copy('learning.admin_delete_package', 'Delete package')}
                     </Button>
                   )}
                 </div>
@@ -1721,6 +1869,17 @@ const LearningAdminPage = () => {
                               <Button type="button" size="sm" variant="outline" className="rounded-[8px]" onClick={() => hydrateModuleForm(moduleRecord)}>
                                 {t('learning.admin_edit')}
                               </Button>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="outline"
+                                className="h-9 w-9 rounded-[8px] border-red-200 text-red-700 hover:bg-red-50"
+                                onClick={() => requestDelete('module', moduleRecord)}
+                                aria-label={copy('learning.admin_delete_module', 'Delete module')}
+                                title={copy('learning.admin_delete_module', 'Delete module')}
+                              >
+                                <Trash2 className="size-4" />
+                              </Button>
                             </div>
                           </div>
                           <div className="mt-4 space-y-2">
@@ -1761,6 +1920,17 @@ const LearningAdminPage = () => {
                                   </Button>
                                   <Button type="button" size="icon" variant="outline" className="rounded-[8px]" onClick={() => duplicateLesson(lesson.id)} aria-label={t('learning.admin_duplicate')}>
                                     <CopyIcon className="size-4" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="outline"
+                                    className="h-9 w-9 rounded-[8px] border-red-200 text-red-700 hover:bg-red-50"
+                                    onClick={() => requestDelete('lesson', lesson)}
+                                    aria-label={copy('learning.admin_delete_lesson', 'Delete lesson')}
+                                    title={copy('learning.admin_delete_lesson', 'Delete lesson')}
+                                  >
+                                    <Trash2 className="size-4" />
                                   </Button>
                                 </div>
                               </div>
@@ -2149,7 +2319,7 @@ const LearningAdminPage = () => {
                   </CardHeader>
                   <CardContent>
                     <form className="space-y-3" onSubmit={submitCoupon}>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <Input value={couponForm.code} onChange={(event) => setCouponForm((current) => ({ ...current, code: event.target.value }))} placeholder={t('learning.admin_coupon_code')} />
                         <Input value={couponForm.title} onChange={(event) => setCouponForm((current) => ({ ...current, title: event.target.value }))} placeholder={t('learning.admin_coupon_title')} />
                       </div>
@@ -2159,7 +2329,7 @@ const LearningAdminPage = () => {
                         <option value="">{t('learning.admin_all_packages')}</option>
                         {content.packages.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
                       </select>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <select value={couponForm.discountType} onChange={(event) => setCouponForm((current) => ({ ...current, discountType: event.target.value }))} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
                           <option value="percent">{t('learning.admin_discount_percent')}</option>
                           <option value="fixed_amount">{t('learning.admin_discount_fixed')}</option>
@@ -2170,12 +2340,12 @@ const LearningAdminPage = () => {
                           <option value="archived">{t('learning.admin_status_archived')}</option>
                         </select>
                       </div>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                         <Input value={couponForm.percentOff} onChange={(event) => setCouponForm((current) => ({ ...current, percentOff: event.target.value }))} placeholder={t('learning.admin_percent_off')} />
                         <Input value={couponForm.amountOff} onChange={(event) => setCouponForm((current) => ({ ...current, amountOff: event.target.value }))} placeholder={t('learning.admin_amount_off')} />
                         <Input value={couponForm.currency} onChange={(event) => setCouponForm((current) => ({ ...current, currency: event.target.value }))} placeholder={t('learning.currency')} />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <select value={couponForm.duration} onChange={(event) => setCouponForm((current) => ({ ...current, duration: event.target.value }))} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
                           <option value="once">{t('learning.admin_coupon_once')}</option>
                           <option value="repeating">{t('learning.admin_coupon_repeating')}</option>
@@ -2183,7 +2353,7 @@ const LearningAdminPage = () => {
                         </select>
                         <Input value={couponForm.durationInMonths} onChange={(event) => setCouponForm((current) => ({ ...current, durationInMonths: event.target.value }))} placeholder={t('learning.admin_duration_months')} />
                       </div>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                         <Input value={couponForm.startsAt} onChange={(event) => setCouponForm((current) => ({ ...current, startsAt: event.target.value }))} placeholder={t('learning.admin_starts_at')} />
                         <Input value={couponForm.expiresAt} onChange={(event) => setCouponForm((current) => ({ ...current, expiresAt: event.target.value }))} placeholder={t('learning.admin_expires_at')} />
                         <Input value={couponForm.maxRedemptions} onChange={(event) => setCouponForm((current) => ({ ...current, maxRedemptions: event.target.value }))} placeholder={t('learning.admin_max_redemptions')} />

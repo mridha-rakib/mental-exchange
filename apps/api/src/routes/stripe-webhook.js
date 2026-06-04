@@ -799,52 +799,69 @@ const processMarketplaceOrder = async ({ paymentIntentId, session, fallbackMetad
   await processing;
 };
 
+const getVerificationProductIds = (metadata = {}) => {
+  const rawProductIds = metadata.productIds || metadata.product_ids || metadata.productId || metadata.product_id || '';
+  const values = Array.isArray(rawProductIds)
+    ? rawProductIds
+    : String(rawProductIds).split(',');
+
+  return [...new Set(values
+    .map((value) => String(value || '').trim())
+    .filter(Boolean))];
+};
+
 const processVerificationFee = async ({ paymentIntentId, session, fallbackMetadata = {} }) => {
   const metadata = session?.metadata || fallbackMetadata || {};
-  const productId = String(metadata.productId || metadata.product_id || '').trim();
+  const productIds = getVerificationProductIds(metadata);
   const sellerId = String(metadata.sellerId || metadata.seller_id || '').trim();
 
-  if (!productId || !sellerId) {
-    throw new Error('Missing required verification metadata: productId, sellerId');
+  if (productIds.length === 0 || !sellerId) {
+    throw new Error('Missing required verification metadata: productIds, sellerId');
   }
 
-  const product = await pb.collection('products').getOne(productId);
+  let processedCount = 0;
+  for (const productId of productIds) {
+    const product = await pb.collection('products').getOne(productId);
 
-  if (String(product.seller_id).trim() != sellerId) {
-    throw new Error(`Verification seller mismatch for product ${productId}`);
+    if (String(product.seller_id).trim() != sellerId) {
+      throw new Error(`Verification seller mismatch for product ${productId}`);
+    }
+
+    const alreadyProcessed =
+      product.status === 'pending_verification' ||
+      product.status === 'verified' ||
+      String(product.verification_payment_intent_id || '').trim() === paymentIntentId;
+
+    if (alreadyProcessed) {
+      logger.info(`[WEBHOOK] Verification payment already processed for product ${productId}`);
+      continue;
+    }
+
+    const now = new Date().toISOString();
+    const updatedProduct = await pb.collection('products').update(productId, {
+      status: 'pending_verification',
+      verification_status: 'pending',
+      verification_requested_at: now,
+      validation_requested_at: now,
+      validation_reviewed_at: '',
+      validation_admin_id: '',
+      validation_notes: '',
+      verification_fee_paid: true,
+      verification_fee_paid_at: now,
+      verification_payment_intent_id: paymentIntentId,
+      verification_checkout_session_id: session?.id || null,
+    });
+
+    await createProductVerificationAudit({
+      product: updatedProduct,
+      status: 'pending',
+      verificationFee: metadata.verificationFee,
+    });
+
+    processedCount += 1;
   }
 
-  const alreadyProcessed =
-    product.status === 'pending_verification' ||
-    product.status === 'verified' ||
-    String(product.verification_payment_intent_id || '').trim() === paymentIntentId;
-
-  if (alreadyProcessed) {
-    logger.info(`[WEBHOOK] Verification payment already processed for product ${productId}`);
-    return;
-  }
-
-  const updatedProduct = await pb.collection('products').update(productId, {
-    status: 'pending_verification',
-    verification_status: 'pending',
-    verification_requested_at: new Date().toISOString(),
-    validation_requested_at: new Date().toISOString(),
-    validation_reviewed_at: '',
-    validation_admin_id: '',
-    validation_notes: '',
-    verification_fee_paid: true,
-    verification_fee_paid_at: new Date().toISOString(),
-    verification_payment_intent_id: paymentIntentId,
-    verification_checkout_session_id: session?.id || null,
-  });
-
-  await createProductVerificationAudit({
-    product: updatedProduct,
-    status: 'pending',
-    verificationFee: metadata.verificationFee,
-  });
-
-  logger.info(`[WEBHOOK] Verification payment processed - Product: ${productId}, Seller: ${sellerId}`);
+  logger.info(`[WEBHOOK] Verification payment processed - Products: ${productIds.join(',')}, Seller: ${sellerId}, Updated: ${processedCount}`);
 };
 
 const processSessionByType = async ({ paymentIntentId, session, fallbackMetadata = {} }) => {

@@ -125,6 +125,19 @@ export const createLearningCheckout = async ({ token, packageSlug, billingCycle 
   return withJson(response);
 };
 
+export const validateLearningCoupon = async ({ token, packageSlug, billingCycle = 'month', couponCode = '' }) => {
+  const response = await apiServerClient.fetch('/learning/coupons/validate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ packageSlug, billingCycle, couponCode }),
+  });
+
+  return withJson(response);
+};
+
 export const createLearningBillingPortal = async ({ token, action = '' }) => {
   const response = await apiServerClient.fetch('/learning/billing-portal', {
     method: 'POST',
@@ -243,6 +256,17 @@ export const updateLearningAdminPackage = async ({ token, id, payload }) => {
   return withJson(response);
 };
 
+export const deleteLearningAdminPackage = async ({ token, id }) => {
+  const response = await apiServerClient.fetch(`/learning/admin/packages/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return withJson(response);
+};
+
 export const createLearningAdminModule = async ({ token, payload }) => {
   const response = await apiServerClient.fetch('/learning/admin/modules', {
     method: 'POST',
@@ -269,6 +293,17 @@ export const updateLearningAdminModule = async ({ token, id, payload }) => {
   return withJson(response);
 };
 
+export const deleteLearningAdminModule = async ({ token, id }) => {
+  const response = await apiServerClient.fetch(`/learning/admin/modules/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return withJson(response);
+};
+
 export const createLearningAdminLesson = async ({ token, payload }) => {
   const response = await apiServerClient.fetch('/learning/admin/lessons', {
     method: 'POST',
@@ -290,6 +325,17 @@ export const updateLearningAdminLesson = async ({ token, id, payload }) => {
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
+  });
+
+  return withJson(response);
+};
+
+export const deleteLearningAdminLesson = async ({ token, id }) => {
+  const response = await apiServerClient.fetch(`/learning/admin/lessons/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   return withJson(response);
