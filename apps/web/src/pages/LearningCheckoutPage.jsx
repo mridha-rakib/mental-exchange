@@ -106,6 +106,7 @@ const LearningCheckoutPage = () => {
   const normalizedCouponCode = couponCode.trim().toUpperCase();
   const appliedCouponCode = appliedCoupon?.coupon?.code || '';
   const hasAppliedCoupon = Boolean(appliedCouponCode) && appliedCouponCode === normalizedCouponCode;
+  const isFreeCheckout = hasAppliedCoupon && appliedCoupon?.isFree === true;
   const displayPrice = hasAppliedCoupon ? Number(appliedCoupon.finalAmount || 0) : activePrice;
   const displayDiscount = hasAppliedCoupon ? Number(appliedCoupon.discountAmount || 0) : 0;
   const checkoutEnabled = packageData?.checkoutEnabled !== false;
@@ -117,7 +118,9 @@ const LearningCheckoutPage = () => {
   const dateLabelKey = getSubscriptionDateLabelKey(dashboard?.subscription);
   const displayEndDate = getSubscriptionDisplayEndDate(dashboard?.subscription);
   const formattedDisplayEndDate = formatDate(displayEndDate, locale);
-  const nextChargeCopy = hasManagedSubscription
+  const nextChargeCopy = isFreeCheckout && !hasManagedSubscription
+    ? t('learning.no_payment_details_required')
+    : hasManagedSubscription
     ? getNextChargeCopy(t, dashboard.subscription, formatDate(dashboard.subscription.currentPeriodEnd, locale))
     : t('learning.next_charge_after_checkout');
   const canStartCheckout = checkoutEnabled
@@ -127,7 +130,9 @@ const LearningCheckoutPage = () => {
     ? (hasManagedSubscription ? t('learning.manage_subscription') : t('learning.checkout_disabled_cta'))
     : subscriptionStatus === 'expired' || subscriptionStatus === 'unpaid' || subscriptionStatus === 'paused'
       ? t('learning.subscribe_again')
-      : hasManagedSubscription
+      : isFreeCheckout && canStartCheckout
+        ? t('learning.complete_free_subscription')
+        : hasManagedSubscription
         ? (subscriptionStatus === 'canceled' ? t('learning.reactivate') : t('learning.manage_subscription'))
         : t('learning.subscribe');
 
@@ -176,6 +181,12 @@ const LearningCheckoutPage = () => {
         billingCycle,
         couponCode: hasAppliedCoupon ? appliedCouponCode : '',
       });
+
+      if (result.freeSubscription) {
+        toast.success(t('learning.free_subscription_success'));
+        navigate('/learning/dashboard?payment=free-coupon');
+        return;
+      }
 
       if (!result.url) {
         throw new Error(t('learning.checkout_error'));
@@ -330,10 +341,14 @@ const LearningCheckoutPage = () => {
                     </p>
                   )}
                   <p className="mt-1">{nextChargeCopy}</p>
-                  <p className="mt-1">{t('learning.subscription_clear_terms', {
-                    price: formatLearningPrice(displayPrice, packageData.currency, locale),
-                    interval: getBillingIntervalLabel(t, activeInterval),
-                  })}</p>
+                  <p className="mt-1">
+                    {isFreeCheckout
+                      ? t('learning.free_subscription_terms')
+                      : t('learning.subscription_clear_terms', {
+                        price: formatLearningPrice(displayPrice, packageData.currency, locale),
+                        interval: getBillingIntervalLabel(t, activeInterval),
+                      })}
+                  </p>
                 </div>
               </div>
             </div>
@@ -366,7 +381,7 @@ const LearningCheckoutPage = () => {
               </div>
 
               <div className="mt-8 space-y-3">
-                {isAuthenticated && checkoutEnabled && packageData.couponsEnabled && canStartCheckout && (
+                {isAuthenticated && checkoutEnabled && canStartCheckout && (
                   <div className="learning-subtle-card p-4">
                     <p className="text-sm font-semibold text-slate-900">{t('learning.coupon_code')}</p>
                     <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">

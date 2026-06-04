@@ -82,6 +82,13 @@ const addDaysToIso = (value, days) => {
   return new Date(base.getTime() + (days * 24 * 60 * 60 * 1000)).toISOString();
 };
 
+const addMonthsToIso = (value, months) => {
+  const base = value ? new Date(value) : new Date();
+  const result = new Date(base);
+  result.setMonth(result.getMonth() + Math.max(1, Number(months || 1)));
+  return result.toISOString();
+};
+
 const getEffectiveAccessEndsAt = (subscription) => {
   if (!subscription) return '';
 
@@ -2541,12 +2548,6 @@ const assertLearningCouponUsable = ({ couponRecord, packageRecord }) => {
     throw error;
   }
 
-  if (packageRecord.coupons_enabled !== true) {
-    const error = new Error('Coupons are not enabled for this package');
-    error.status = 400;
-    throw error;
-  }
-
   const now = Date.now();
   if (couponRecord.starts_at && new Date(couponRecord.starts_at).getTime() > now) {
     const error = new Error('Coupon is not active yet');
@@ -2637,6 +2638,106 @@ const calculateLearningCouponCheckoutPreview = ({ couponRecord, packageRecord, b
     finalAmount,
     isFree: finalAmount <= 0,
   };
+};
+
+const getFreeCouponAccessEnd = ({ couponRecord, billingCycle = 'month', startIso }) => {
+  const duration = COUPON_DURATIONS.has(couponRecord?.duration) ? couponRecord.duration : 'once';
+
+  if (duration === 'forever') {
+    return '';
+  }
+
+  if (duration === 'repeating') {
+    return addMonthsToIso(startIso, Math.max(1, Number(couponRecord.duration_in_months || 1)));
+  }
+
+  return addMonthsToIso(startIso, billingCycle === 'year' ? 12 : 1);
+};
+
+const createFreeLearningSubscriptionFromCoupon = async ({
+  auth,
+  packageRecord,
+  couponRecord,
+  couponPreview,
+  billingCycle,
+  existingPackageSubscription = null,
+}) => {
+  const now = new Date().toISOString();
+  const accessEndsAt = getFreeCouponAccessEnd({ couponRecord, billingCycle, startIso: now });
+  const subscriptionPayload = {
+    user_id: auth.id,
+    package_id: packageRecord.id,
+    stripe_subscription_id: '',
+    stripe_checkout_session_id: '',
+    status: 'active',
+    cancel_at_period_end: false,
+    current_period_start: now,
+    current_period_end: accessEndsAt,
+    canceled_at: '',
+    price_amount: 0,
+    currency: packageRecord.currency || 'EUR',
+    billing_interval: billingCycle,
+    access_ends_at: accessEndsAt,
+    grace_ends_at: '',
+    last_payment_failed_at: '',
+  };
+
+  if (existingPackageSubscription?.stripe_customer_id) {
+    subscriptionPayload.stripe_customer_id = existingPackageSubscription.stripe_customer_id;
+  }
+
+  const subscriptionRecord = existingPackageSubscription
+    ? await pb.collection('learning_subscriptions').update(existingPackageSubscription.id, subscriptionPayload, { $autoCancel: false })
+    : await pb.collection('learning_subscriptions').create(subscriptionPayload, { $autoCancel: false });
+
+  const redemptionRecord = await pb.collection('learning_coupon_redemptions').create({
+    coupon_id: couponRecord.id,
+    user_id: auth.id,
+    package_id: packageRecord.id,
+    subscription_id: subscriptionRecord.id,
+    checkout_session_id: '',
+    stripe_coupon_id: String(couponRecord.stripe_coupon_id || '').trim(),
+    stripe_promotion_code_id: String(couponRecord.stripe_promotion_code_id || '').trim(),
+    status: 'applied',
+    discount_type: couponRecord.discount_type || '',
+    percent_off: Number(couponRecord.percent_off || 0),
+    amount_off: Number(couponRecord.amount_off || 0),
+    currency: couponRecord.currency || packageRecord.currency || 'EUR',
+  }, { $autoCancel: false });
+
+  await pb.collection('learning_coupons').update(couponRecord.id, {
+    redemption_count: Number(couponRecord.redemption_count || 0) + 1,
+  }, { $autoCancel: false });
+
+  await logLearningSubscriptionEvent({
+    subscriptionRecord,
+    eventType: existingPackageSubscription ? 'free_coupon_subscription_reactivated' : 'free_coupon_subscription_created',
+    source: 'coupon_checkout',
+    payload: {
+      couponId: couponRecord.id,
+      code: couponRecord.code || '',
+      redemptionId: redemptionRecord.id,
+      billingCycle,
+      originalAmount: couponPreview.originalAmount,
+      discountAmount: couponPreview.discountAmount,
+      finalAmount: couponPreview.finalAmount,
+      accessEndsAt,
+    },
+  });
+
+  await logLearningSubscriptionEvent({
+    subscriptionRecord,
+    eventType: 'coupon_redeemed',
+    source: 'coupon_checkout',
+    payload: {
+      couponId: couponRecord.id,
+      code: couponRecord.code || '',
+      redemptionId: redemptionRecord.id,
+      finalAmount: couponPreview.finalAmount,
+    },
+  });
+
+  return subscriptionRecord;
 };
 
 const ensureStripeCouponForLearningCoupon = async (couponRecord) => {
@@ -3320,6 +3421,31 @@ router.post('/checkout', requireAuth, async (req, res) => {
   const couponPreview = couponRecord
     ? calculateLearningCouponCheckoutPreview({ couponRecord, packageRecord, billingCycle })
     : null;
+
+  if (couponRecord && couponPreview?.isFree) {
+    const subscriptionRecord = await createFreeLearningSubscriptionFromCoupon({
+      auth: req.auth,
+      packageRecord,
+      couponRecord,
+      couponPreview,
+      billingCycle,
+      existingPackageSubscription,
+    });
+
+    logger.info(`[LEARNING] Activated free coupon subscription for user ${req.auth.id}, package ${packageRecord.slug}, coupon ${couponRecord.code}`);
+
+    return res.status(existingPackageSubscription ? 200 : 201).json({
+      success: true,
+      freeSubscription: true,
+      coupon: serializeLearningCoupon(couponRecord),
+      subscription: serializeSubscription(subscriptionRecord),
+      package: serializePackage(packageRecord),
+      originalAmount: couponPreview.originalAmount,
+      discountAmount: couponPreview.discountAmount,
+      finalAmount: couponPreview.finalAmount,
+    });
+  }
+
   const stripeCouponId = couponRecord ? await ensureStripeCouponForLearningCoupon(couponRecord) : '';
   const z3Tier = normalizeZ3TierSlug(packageRecord.slug);
   const checkoutMetadata = {

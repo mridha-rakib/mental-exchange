@@ -63,6 +63,10 @@ export const getNextChargeCopy = (t, subscription, formattedDate) => {
   if (!subscription) return t('learning.no_next_charge_scheduled');
 
   const status = String(subscription.status || '').trim();
+  if (Number(subscription.priceAmount || 0) <= 0) {
+    return t('learning.no_next_charge_scheduled');
+  }
+
   const hasNextCharge = ['active', 'trialing', 'past_due'].includes(status) && subscription.currentPeriodEnd;
   const hasDate = formattedDate && formattedDate !== '--';
 

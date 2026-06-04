@@ -433,9 +433,11 @@ const LearningDashboardPage = () => {
                 <h1 className="mt-5 text-4xl font-bold text-slate-900">{dashboard.package?.title}</h1>
                 <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">{dashboard.package?.subtitle}</p>
 
-                {paymentState === 'success' && (
+                {(paymentState === 'success' || paymentState === 'free-coupon') && (
                   <div className="mt-6 rounded-[8px] border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
-                    {t('learning.payment_success_dashboard')}
+                    {paymentState === 'free-coupon'
+                      ? t('learning.free_subscription_success')
+                      : t('learning.payment_success_dashboard')}
                   </div>
                 )}
 
