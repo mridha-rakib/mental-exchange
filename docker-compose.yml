@@ -1,0 +1,67 @@
+name: patrick_t
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_started
+      api:
+        condition: service_started
+      pocketbase:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    expose:
+      - "80"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+    env_file:
+      - apps/pocketbase/.env
+      - apps/api/.env
+    expose:
+      - "3001"
+
+  pocketbase:
+    build:
+      context: .
+      dockerfile: apps/pocketbase/Dockerfile
+      args:
+        PB_VERSION: "0.36.7"
+    restart: unless-stopped
+    env_file:
+      - apps/pocketbase/.env
+    volumes:
+      - /opt/patrick_t/data/pocketbase:/app/pb_data_local
+    expose:
+      - "8090"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8090/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  caddy_data:
+  caddy_config:
