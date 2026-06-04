@@ -1,0 +1,22 @@
+zahniboerse.com, www.zahniboerse.com {
+    encode zstd gzip
+
+    @www host www.zahniboerse.com
+    redir @www https://zahniboerse.com{uri} permanent
+
+    @api path /hcgi/api /hcgi/api/*
+    handle @api {
+        uri strip_prefix /hcgi/api
+        reverse_proxy api:3001
+    }
+
+    @platform path /hcgi/platform /hcgi/platform/*
+    handle @platform {
+        uri strip_prefix /hcgi/platform
+        reverse_proxy pocketbase:8090
+    }
+
+    handle {
+        reverse_proxy web:80
+    }
+}
