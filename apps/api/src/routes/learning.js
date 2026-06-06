@@ -1307,15 +1307,22 @@ const getPackageRecordBySlug = async (slug) => {
   });
 };
 
-const getPackageDetail = async (packageRecord) => {
+const getPackageDetail = async (packageRecord, { includeDrafts = false } = {}) => {
+  const moduleFilter = includeDrafts
+    ? `package_id="${packageRecord.id}"`
+    : `package_id="${packageRecord.id}" && status="published"`;
+  const lessonFilter = includeDrafts
+    ? `package_id="${packageRecord.id}"`
+    : `package_id="${packageRecord.id}" && status="published"`;
+
   const modules = await pb.collection('learning_modules').getFullList({
-    filter: `package_id="${packageRecord.id}" && status="published"`,
+    filter: moduleFilter,
     sort: 'position,title',
     $autoCancel: false,
   });
 
   const lessons = await pb.collection('learning_lessons').getFullList({
-    filter: `package_id="${packageRecord.id}" && status="published"`,
+    filter: lessonFilter,
     sort: 'position,title',
     $autoCancel: false,
   });
@@ -2535,6 +2542,27 @@ const getLearningCouponByCode = async (code) => {
   }).catch(() => null);
 };
 
+const generateLearningCouponCode = async ({ prefix = 'ZB', byteLength = 4 } = {}) => {
+  const cleanPrefix = String(prefix || 'ZB')
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9_-]/g, '')
+    .slice(0, 16) || 'ZB';
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const suffix = crypto.randomBytes(byteLength).toString('hex').toUpperCase();
+    const code = `${cleanPrefix}-${suffix}`;
+    const existingRecord = await getLearningCouponByCode(code);
+    if (!existingRecord) {
+      return code;
+    }
+  }
+
+  const error = new Error('Could not generate a unique coupon code');
+  error.status = 500;
+  throw error;
+};
+
 const assertLearningCouponUsable = ({ couponRecord, packageRecord }) => {
   if (!couponRecord) {
     const error = new Error('Coupon not found');
@@ -3008,12 +3036,13 @@ router.get('/packages', async (_req, res) => {
 
 router.get('/packages/:slug', async (req, res) => {
   const packageRecord = await getPackageRecordBySlug(req.params.slug).catch(() => null);
+  const isAdminViewer = isAdminAuth(req.auth);
 
-  if (!packageRecord || !(await isActiveLearningPackageRecord(packageRecord))) {
+  if (!packageRecord || (!isAdminViewer && !(await isActiveLearningPackageRecord(packageRecord)))) {
     return res.status(404).json({ error: 'Learning package not found' });
   }
 
-  const packageDetail = await getPackageDetail(packageRecord);
+  const packageDetail = await getPackageDetail(packageRecord, { includeDrafts: isAdminViewer });
   res.json(packageDetail);
 });
 
@@ -3396,7 +3425,6 @@ router.post('/checkout', requireAuth, async (req, res) => {
     });
   }
 
-  const user = await pb.collection('users').getOne(req.auth.id, { $autoCancel: false });
   const existingPackageSubscription = await getLearningSubscriptionForPackage({
     userId: req.auth.id,
     packageId: packageRecord.id,
@@ -3410,13 +3438,6 @@ router.post('/checkout', requireAuth, async (req, res) => {
     });
   }
 
-  const existingCustomerId = String(existingPackageSubscription?.stripe_customer_id || '').trim()
-    || await findStripeCustomerIdForUser(req.auth.id);
-  const stripeCustomerId = await ensureStripeCustomer({
-    user,
-    existingCustomerId,
-  });
-  const stripePriceId = await ensureStripePriceForPackage(packageRecord, billingCycle);
   const couponRecord = await validateLearningCouponForCheckout({ code: couponCode, packageRecord });
   const couponPreview = couponRecord
     ? calculateLearningCouponCheckoutPreview({ couponRecord, packageRecord, billingCycle })
@@ -3446,6 +3467,14 @@ router.post('/checkout', requireAuth, async (req, res) => {
     });
   }
 
+  const user = await pb.collection('users').getOne(req.auth.id, { $autoCancel: false });
+  const existingCustomerId = String(existingPackageSubscription?.stripe_customer_id || '').trim()
+    || await findStripeCustomerIdForUser(req.auth.id);
+  const stripeCustomerId = await ensureStripeCustomer({
+    user,
+    existingCustomerId,
+  });
+  const stripePriceId = await ensureStripePriceForPackage(packageRecord, billingCycle);
   const stripeCouponId = couponRecord ? await ensureStripeCouponForLearningCoupon(couponRecord) : '';
   const z3Tier = normalizeZ3TierSlug(packageRecord.slug);
   const checkoutMetadata = {
@@ -3488,12 +3517,13 @@ router.post('/checkout', requireAuth, async (req, res) => {
 });
 
 const sendLearningModuleResponse = async (req, res, moduleRecord) => {
-  if (!moduleRecord || moduleRecord.status !== 'published') {
+  const isAdminViewer = isAdminAuth(req.auth);
+  if (!moduleRecord || (!isAdminViewer && moduleRecord.status !== 'published')) {
     return res.status(404).json({ error: 'Learning module not found' });
   }
 
   const packageRecord = await pb.collection('learning_packages').getOne(moduleRecord.package_id, { $autoCancel: false }).catch(() => null);
-  const modules = await getModuleTreeForPackage(moduleRecord.package_id);
+  const modules = await getModuleTreeForPackage(moduleRecord.package_id, { includeDrafts: isAdminViewer });
   const progressMap = await getProgressMap({ userId: req.auth?.id, packageId: moduleRecord.package_id });
   const currentModule = modules.find((item) => item.id === moduleRecord.id) || null;
 
@@ -3501,13 +3531,13 @@ const sendLearningModuleResponse = async (req, res, moduleRecord) => {
     return res.status(404).json({ error: 'Learning module not found' });
   }
 
-  const fullAccess = isAdminAuth(req.auth)
+  const fullAccess = isAdminViewer
     ? true
     : await requireSubscriptionAccess(req.auth, moduleRecord.package_id).then(() => true).catch(() => false);
   const hasPreviewAccess = currentModule.isPreview || currentModule.lessons.some((lesson) => lesson.isPreview);
-  const previewOnly = !fullAccess && !isAdminAuth(req.auth) && hasPreviewAccess;
+  const previewOnly = !fullAccess && !isAdminViewer && hasPreviewAccess;
 
-  if (!fullAccess && !isAdminAuth(req.auth) && !hasPreviewAccess) {
+  if (!fullAccess && !isAdminViewer && !hasPreviewAccess) {
     const subscriptionRecord = req.auth?.id
       ? await getLearningSubscriptionForPackage({ userId: req.auth.id, packageId: moduleRecord.package_id })
       : null;
@@ -3545,9 +3575,9 @@ const sendLearningModuleResponse = async (req, res, moduleRecord) => {
   res.json({
     viewer: {
       isAuthenticated: Boolean(req.auth?.id),
-      isAdmin: isAdminAuth(req.auth),
-      hasFullAccess: fullAccess || isAdminAuth(req.auth),
-      canSaveProgress: Boolean(req.auth?.id) && (fullAccess || isAdminAuth(req.auth)),
+      isAdmin: isAdminViewer,
+      hasFullAccess: fullAccess || isAdminViewer,
+      canSaveProgress: Boolean(req.auth?.id) && (fullAccess || isAdminViewer),
       isPreviewOnly: previewOnly,
     },
     package: packageRecord ? serializePackage(packageRecord, {
@@ -3583,21 +3613,22 @@ router.get('/topics/:packageSlug/:topicSlug', async (req, res) => {
 });
 
 const sendLearningLessonResponse = async (req, res, lessonRecord) => {
-  if (!lessonRecord || lessonRecord.status !== 'published') {
+  const isAdminViewer = isAdminAuth(req.auth);
+  if (!lessonRecord || (!isAdminViewer && lessonRecord.status !== 'published')) {
     return res.status(404).json({ error: 'Learning lesson not found' });
   }
 
   const packageRecord = await pb.collection('learning_packages').getOne(lessonRecord.package_id, { $autoCancel: false }).catch(() => null);
-  const modules = await getModuleTreeForPackage(lessonRecord.package_id);
+  const modules = await getModuleTreeForPackage(lessonRecord.package_id, { includeDrafts: isAdminViewer });
   const progressMap = await getProgressMap({ userId: req.auth?.id, packageId: lessonRecord.package_id });
   const currentModule = modules.find((item) => item.id === lessonRecord.module_id) || null;
-  const fullAccess = isAdminAuth(req.auth)
+  const fullAccess = isAdminViewer
     ? true
     : await requireSubscriptionAccess(req.auth, lessonRecord.package_id).then(() => true).catch(() => false);
   const previewAccess = hasPreviewAccessToLesson({ lessonRecord, moduleRecord: currentModule });
-  const previewOnly = !fullAccess && !isAdminAuth(req.auth) && previewAccess;
+  const previewOnly = !fullAccess && !isAdminViewer && previewAccess;
 
-  if (!fullAccess && !isAdminAuth(req.auth) && !previewAccess) {
+  if (!fullAccess && !isAdminViewer && !previewAccess) {
     const subscriptionRecord = req.auth?.id
       ? await getLearningSubscriptionForPackage({ userId: req.auth.id, packageId: lessonRecord.package_id })
       : null;
@@ -3622,7 +3653,6 @@ const sendLearningLessonResponse = async (req, res, lessonRecord) => {
 
   const currentLesson = flatLessons[lessonIndex];
   const progress = progressMap.get(currentLesson.id) || buildDefaultLessonProgress();
-  const isAdminViewer = isAdminAuth(req.auth);
   const protectedAssets = buildProtectedLessonAssets({
     record: lessonRecord,
     hasEntitledAccess: fullAccess || isAdminViewer,
@@ -3676,12 +3706,12 @@ router.get('/topics/:packageSlug/:topicSlug/subtopics/:subtopicSlug', async (req
 
 const handleProtectedLessonAsset = async (req, res, attachmentIndex = null) => {
   const lessonRecord = await getLessonRecord(req.params.lessonId).catch(() => null);
-  if (!lessonRecord || lessonRecord.status !== 'published') {
-    return res.status(404).json({ error: 'Learning lesson asset not found' });
-  }
-
   const assetType = attachmentIndex === null ? req.params.assetType : 'attachment';
   const tokenPayload = verifyLearningAssetToken(req.query?.token);
+
+  if (!lessonRecord || (lessonRecord.status !== 'published' && tokenPayload?.accessRole !== 'admin')) {
+    return res.status(404).json({ error: 'Learning lesson asset not found' });
+  }
 
   if (
     !tokenPayload
@@ -4582,8 +4612,12 @@ router.post('/admin/lessons/:id/duplicate', requireAuth, admin, async (req, res)
 router.post('/admin/coupons', requireAuth, admin, async (req, res) => {
   const payload = buildLearningCouponPayload(req.body);
 
-  if (!payload.code || !payload.title) {
-    return res.status(400).json({ error: 'Coupon code and title are required' });
+  if (!payload.code) {
+    payload.code = await generateLearningCouponCode({ prefix: req.body?.codePrefix || req.body?.prefix || 'ZB' });
+  }
+
+  if (!payload.title) {
+    return res.status(400).json({ error: 'Coupon title is required' });
   }
 
   if (payload.package_id) {
@@ -4611,6 +4645,14 @@ router.post('/admin/coupons', requireAuth, admin, async (req, res) => {
   });
 
   res.status(201).json(serializeLearningCoupon(createdRecord));
+});
+
+router.post('/admin/coupons/generate-code', requireAuth, admin, async (req, res) => {
+  const code = await generateLearningCouponCode({
+    prefix: req.body?.prefix || req.body?.codePrefix || 'ZB',
+  });
+
+  res.json({ success: true, code });
 });
 
 router.put('/admin/coupons/:id', requireAuth, admin, async (req, res) => {

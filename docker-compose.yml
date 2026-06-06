@@ -51,6 +51,7 @@ services:
     restart: unless-stopped
     env_file:
       - apps/pocketbase/.env
+      - apps/api/.env
     volumes:
       - /opt/patrick_t/data/pocketbase:/app/pb_data_local
     expose:

@@ -392,18 +392,6 @@ const Header = () => {
                         <Link to="/admin" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">{t('nav.admin')}</Link>
                       </DropdownMenuItem>
                     )}
-                    {isAdmin && (
-                      <DropdownMenuItem asChild className="cursor-pointer hover:bg-gray-50 rounded-md focus:bg-gray-50">
-                        <Link to="/admin/learning" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">{t('learning.admin_title')}</Link>
-                      </DropdownMenuItem>
-                    )}
-                    {isAdmin && (
-                      <DropdownMenuItem asChild className="cursor-pointer hover:bg-gray-50 rounded-md focus:bg-gray-50">
-                        <Link to="/admin/filters" onClick={() => setDropdownOpen(false)} className="w-full text-gray-700">
-                          {language === 'EN' ? 'Shop filters' : 'Shop-Filter'}
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
                     
                     <DropdownMenuSeparator className="bg-gray-100 my-1" />
                     <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 hover:bg-red-50 hover:text-red-700 focus:bg-red-50 focus:text-red-700 rounded-md">
@@ -513,8 +501,6 @@ const Header = () => {
                   <Link to="/learning/subscription" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('learning.my_subscription')}</Link>
                   {isSeller && <Link to="/seller-products" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.seller_items')}</Link>}
                   {isAdmin && <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('nav.admin')}</Link>}
-                  {isAdmin && <Link to="/admin/learning" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{t('learning.admin_title')}</Link>}
-                  {isAdmin && <Link to="/admin/filters" onClick={() => setIsMobileMenuOpen(false)} className="rounded-[8px] px-3.5 py-3 text-[16px] font-medium hover:bg-[hsl(var(--muted-bg))]">{language === 'EN' ? 'Shop filters' : 'Shop-Filter'}</Link>}
                   <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="rounded-[8px] px-3.5 py-3 text-left text-[16px] font-medium text-red-600 hover:bg-red-50">{t('nav.logout')}</button>
                 </div>
               ) : (
