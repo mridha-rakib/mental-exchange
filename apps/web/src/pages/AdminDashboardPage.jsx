@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
 import {
   Users, Package, ShoppingCart, DollarSign, AlertCircle,
   RefreshCw, Search, Filter, MoreVertical, Edit, Trash2, Copy,
@@ -22,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx';
+import { Tabs, TabsContent } from '@/components/ui/tabs.jsx';
 import { Input } from '@/components/ui/input.jsx';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.jsx';
 import { Checkbox } from '@/components/ui/checkbox.jsx';
@@ -1456,57 +1457,6 @@ const AdminDashboardPage = () => {
     }
   };
 
-  const handleApproveProductValidation = async (product) => {
-    const notes = window.prompt(t('admin_verifications.approve_notes_prompt'), '');
-    if (notes === null) return;
-
-    try {
-      const token = pb.authStore.token;
-      const res = await apiServerClient.fetch('/admin/approve-product', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ productId: product.id, notes }),
-      });
-
-      if (!res.ok) throw new Error('Approval failed');
-      toast.success(t('admin_verifications.approve_success'));
-      fetchTableProducts();
-      fetchData(true);
-    } catch (error) {
-      toast.error(t('admin_verifications.approve_error'));
-    }
-  };
-
-  const handleRejectProductValidation = async (product) => {
-    const reason = window.prompt(t('admin_verifications.reject_prompt'));
-    if (reason === null) return;
-
-    try {
-      const token = pb.authStore.token;
-      const res = await apiServerClient.fetch('/admin/reject-product', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          productId: product.id,
-          reason: reason || t('admin_verifications.default_reject_reason'),
-        }),
-      });
-
-      if (!res.ok) throw new Error('Rejection failed');
-      toast.success(t('admin_verifications.reject_success'));
-      fetchTableProducts();
-      fetchData(true);
-    } catch (error) {
-      toast.error(t('admin_verifications.reject_error'));
-    }
-  };
-
   const handleBulkSelect = (id) => {
     setSelectedProducts(prev =>
       prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
@@ -1601,6 +1551,59 @@ const AdminDashboardPage = () => {
     currentOrderDetails?.shipping_address_parsed || currentOrderDetails?.shipping_address,
   );
 
+  const adminNavGroups = useMemo(() => ([
+    {
+      label: t('admin_dashboard.nav_group_operations'),
+      items: [
+        { value: 'overview', label: t('admin_dashboard.overview'), Icon: BarChart3 },
+        { value: 'orders', label: t('admin_dashboard.orders'), Icon: ShoppingCart },
+        { value: 'returns', label: t('admin_dashboard.returns'), Icon: RotateCcw },
+      ],
+    },
+    {
+      label: t('admin_dashboard.nav_group_marketplace'),
+      items: [
+        { value: 'products', label: t('admin_dashboard.products'), Icon: Package },
+        { value: 'users', label: t('admin_dashboard.users'), Icon: Users },
+        { value: 'sellers', label: t('admin_dashboard.sellers'), Icon: Store },
+      ],
+    },
+    {
+      label: t('admin_dashboard.nav_group_finance'),
+      items: [
+        { value: 'payouts', label: t('admin_dashboard.payouts'), Icon: DollarSign },
+        { value: 'analytics', label: t('admin_dashboard.analytics'), Icon: BarChart3 },
+      ],
+    },
+    {
+      label: t('admin_dashboard.nav_group_system'),
+      items: [
+        { value: 'settings', label: t('admin_dashboard.settings'), Icon: Settings },
+      ],
+    },
+  ]), [t]);
+
+  const adminWorkspaceLinks = useMemo(() => ([
+    {
+      to: '/admin/verifications',
+      label: t('admin_dashboard.workspace_verifications'),
+      description: t('admin_dashboard.workspace_verifications_body'),
+      Icon: CheckCircle,
+    },
+    {
+      to: '/admin/learning',
+      label: t('admin_dashboard.workspace_learning'),
+      description: t('admin_dashboard.workspace_learning_body'),
+      Icon: BarChart3,
+    },
+    {
+      to: '/admin/filters',
+      label: t('admin_dashboard.workspace_filters'),
+      description: t('admin_dashboard.workspace_filters_body'),
+      Icon: Filter,
+    },
+  ]), [t]);
+
   if (loading && !orders.length) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[hsl(var(--muted-bg))] min-h-screen">
@@ -1644,20 +1647,42 @@ const AdminDashboardPage = () => {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-            <div className="overflow-x-auto pb-2">
-              <TabsList className="bg-background border shadow-sm inline-flex w-max min-w-full sm:min-w-0">
-                <TabsTrigger value="overview" className="gap-2"><BarChart3 className="w-4 h-4" /> {t('admin_dashboard.overview')}</TabsTrigger>
-                <TabsTrigger value="orders" className="gap-2"><ShoppingCart className="w-4 h-4" /> {t('admin_dashboard.orders')}</TabsTrigger>
-                <TabsTrigger value="products" className="gap-2"><Package className="w-4 h-4" /> {t('admin_dashboard.products')}</TabsTrigger>
-                <TabsTrigger value="users" className="gap-2"><Users className="w-4 h-4" /> {t('admin_dashboard.users')}</TabsTrigger>
-                <TabsTrigger value="sellers" className="gap-2"><Store className="w-4 h-4" /> {t('admin_dashboard.sellers')}</TabsTrigger>
-                <TabsTrigger value="returns" className="gap-2"><RotateCcw className="w-4 h-4" /> {t('admin_dashboard.returns')}</TabsTrigger>
-                <TabsTrigger value="payouts" className="gap-2"><DollarSign className="w-4 h-4" /> {t('admin_dashboard.payouts')}</TabsTrigger>
-                <TabsTrigger value="analytics" className="gap-2"><BarChart3 className="w-4 h-4" /> {t('admin_dashboard.analytics')}</TabsTrigger>
-                <TabsTrigger value="settings" className="gap-2"><Settings className="w-4 h-4" /> {t('admin_dashboard.settings')}</TabsTrigger>
-              </TabsList>
-            </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+              <aside className="h-fit rounded-[8px] border border-slate-200 bg-white p-3 shadow-sm lg:sticky lg:top-24">
+                <div className="space-y-5">
+                  {adminNavGroups.map((group) => (
+                    <div key={group.label}>
+                      <p className="px-3 pb-2 text-xs font-semibold uppercase text-slate-500">
+                        {group.label}
+                      </p>
+                      <div className="space-y-1">
+                        {group.items.map(({ value, label, Icon }) => {
+                          const isActive = activeTab === value;
+
+                          return (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() => setActiveTab(value)}
+                              className={`flex min-h-11 w-full items-center gap-3 rounded-[8px] px-3 text-left text-sm font-medium transition ${
+                                isActive
+                                  ? 'bg-primary text-primary-foreground shadow-sm'
+                                  : 'text-slate-700 hover:bg-slate-100'
+                              }`}
+                            >
+                              <Icon className="h-4 w-4 shrink-0" />
+                              <span className="truncate">{label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </aside>
+
+              <div className="min-w-0 space-y-6">
 
             {/* OVERVIEW */}
             <TabsContent value="overview" className="space-y-6">
@@ -1704,6 +1729,35 @@ const AdminDashboardPage = () => {
                   </CardContent>
                 </Card>
               </div>
+
+              <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">{t('admin_dashboard.workspace_title')}</h2>
+                    <p className="mt-1 text-sm text-slate-600">{t('admin_dashboard.workspace_body')}</p>
+                  </div>
+                </div>
+                <div className="mt-5 grid gap-3 md:grid-cols-3">
+                  {adminWorkspaceLinks.map(({ to, label, description, Icon }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      className="group flex min-h-[118px] flex-col justify-between rounded-[8px] border border-slate-200 bg-slate-50 p-4 transition hover:border-primary/40 hover:bg-white hover:shadow-sm"
+                    >
+                      <span className="flex items-center justify-between gap-3">
+                        <span className="flex min-w-0 items-center gap-3">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-primary/10 text-primary">
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          <span className="truncate text-sm font-semibold text-slate-900">{label}</span>
+                        </span>
+                        <ArrowUpRight className="h-4 w-4 shrink-0 text-slate-400 transition group-hover:text-primary" />
+                      </span>
+                      <span className="mt-4 text-sm leading-5 text-slate-600">{description}</span>
+                    </Link>
+                  ))}
+                </div>
+              </section>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
@@ -1944,6 +1998,12 @@ const AdminDashboardPage = () => {
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <CardTitle>{t('admin_dashboard.product_management')}</CardTitle>
                     <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+                      <Button asChild variant="outline" size="sm">
+                        <Link to="/admin/verifications">
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          {t('admin_dashboard.workspace_verifications')}
+                        </Link>
+                      </Button>
                       {selectedProducts.length > 0 && (
                         <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
                           {t('admin_dashboard.delete_selected', { count: selectedProducts.length })}
@@ -2030,12 +2090,6 @@ const AdminDashboardPage = () => {
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-1">
-                                  {product.source === 'marketplace' && (product.status === 'pending_verification' || product.verification_status === 'pending') && (
-                                    <>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-emerald-600" onClick={() => handleApproveProductValidation(product)}><CheckCircle className="w-4 h-4" /></Button>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600" onClick={() => handleRejectProductValidation(product)}><XCircle className="w-4 h-4" /></Button>
-                                    </>
-                                  )}
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleViewDetails(product.id)}><Eye className="w-4 h-4" /></Button>
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleUpdateStock(product.id, product.stock_quantity)}><Package className="w-4 h-4" /></Button>
                                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditProduct(product.id)}><Edit className="w-4 h-4" /></Button>
@@ -3063,6 +3117,8 @@ const AdminDashboardPage = () => {
               </Card>
             </TabsContent>
 
+              </div>
+            </div>
           </Tabs>
         </div>
       </main>

@@ -482,10 +482,6 @@ const ProfilePage = () => {
                       {t('nav.admin')}
                       <ArrowRight className="h-4 w-4" />
                     </Link>
-                    <Link to="/admin/verifications" className={secondaryActionClass}>
-                      {t('profile.admin_verifications')}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
                   </div>
                 </div>
 
@@ -574,27 +570,6 @@ const ProfilePage = () => {
               </div>
 
               <div className="grid gap-5">
-                <section className="rounded-[28px] border border-black/10 bg-white p-6">
-                  <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[#0000FF]">
-                    <Store className="h-6 w-6" />
-                  </div>
-                  <h2 className="text-2xl font-semibold">{t('profile.admin_workspace_title')}</h2>
-                  <p className="mt-2 text-sm leading-6 text-[#666666]">
-                    {t('profile.admin_workspace_body')}
-                  </p>
-                  <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                    <Link to="/admin" className={primaryActionClass}>
-                      {t('profile.admin_open_dashboard')}
-                    </Link>
-                    <Link to="/admin/verifications" className={secondaryActionClass}>
-                      {t('profile.admin_review_products')}
-                    </Link>
-                    <Link to="/seller/new-product" className={secondaryActionClass}>
-                      {t('marketplace.sell_now')}
-                    </Link>
-                  </div>
-                </section>
-
                 <section className="rounded-[28px] border border-black/10 bg-white p-6">
                   <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f1f1ff] text-[#0000FF]">
                     <KeyRound className="h-6 w-6" />
