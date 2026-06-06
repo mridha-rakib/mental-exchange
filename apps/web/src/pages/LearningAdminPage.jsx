@@ -13,6 +13,7 @@ import {
   PencilLine,
   Plus,
   Receipt,
+  RefreshCw,
   Search,
   ShieldCheck,
   Ticket,
@@ -47,6 +48,7 @@ import {
   deleteLearningAdminModule,
   deleteLearningAdminPackage,
   duplicateLearningAdminLesson,
+  generateLearningAdminCouponCode,
   getLearningAdminContent,
   grantLearningAdminSubscriberAccess,
   revokeLearningAdminSubscriberAccess,
@@ -62,6 +64,7 @@ import {
   getSubscriptionDisplayEndDate,
   getSubscriptionStatusLabel,
 } from '@/lib/subscriptionStatus.js';
+import { getLearningSubtopicPath, getLearningTopicPath } from '@/lib/learningRoutes.js';
 import pb from '@/lib/pocketbaseClient.js';
 import { useTranslation } from '@/contexts/TranslationContext.jsx';
 
@@ -355,6 +358,7 @@ const LearningAdminPage = () => {
   const [lessonForm, setLessonForm] = useState(emptyLessonForm);
   const [subscriberForm, setSubscriberForm] = useState(emptySubscriberForm);
   const [couponForm, setCouponForm] = useState(emptyCouponForm);
+  const [couponGenerating, setCouponGenerating] = useState(false);
   const [subscriberStatusFilter, setSubscriberStatusFilter] = useState('all');
   const [mediaUploading, setMediaUploading] = useState('');
   const [activeSection, setActiveSection] = useState('overview');
@@ -1160,6 +1164,22 @@ const LearningAdminPage = () => {
     }
   };
 
+  const generateCouponCode = async () => {
+    setCouponGenerating(true);
+    try {
+      const result = await generateLearningAdminCouponCode({ token, prefix: 'ZB' });
+      if (result?.code) {
+        setCouponForm((current) => ({ ...current, code: result.code }));
+        toast.success(copy('learning.admin_coupon_code_generated', 'Coupon code generated.'));
+      }
+    } catch (error) {
+      console.error('Failed to generate learning coupon code:', error);
+      toast.error(error.message || t('learning.admin_save_error'));
+    } finally {
+      setCouponGenerating(false);
+    }
+  };
+
   const uploadLessonMedia = async ({ file, mediaType, targetField }) => {
     if (!file) return;
 
@@ -1567,14 +1587,12 @@ const LearningAdminPage = () => {
                                 <Trash2 className="size-4" />
                                 {copy('learning.admin_delete', 'Delete')}
                               </Button>
-                              {selectedPackageSummary.package.status === 'published' && (
-                                <Button asChild type="button" size="sm" variant="outline" className="rounded-[8px] border-white/35 bg-transparent text-white hover:bg-white/15 hover:text-white">
-                                  <Link to={`/learning/packages/${selectedPackageSummary.package.slug}`}>
-                                    <Eye className="size-4" />
-                                    {copy('learning.admin_view_public', 'View public')}
-                                  </Link>
-                                </Button>
-                              )}
+                              <Button asChild type="button" size="sm" variant="outline" className="rounded-[8px] border-white/35 bg-transparent text-white hover:bg-white/15 hover:text-white">
+                                <Link to={`/learning/packages/${selectedPackageSummary.package.slug}`}>
+                                  <Eye className="size-4" />
+                                  {copy('learning.admin_preview_as_learner', 'Preview as learner')}
+                                </Link>
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -1717,21 +1735,19 @@ const LearningAdminPage = () => {
                                 >
                                   <PencilLine className="size-4" />
                                 </Button>
-                                {item.package.status === 'published' && (
-                                  <Button
-                                    asChild
-                                    type="button"
-                                    size="icon"
-                                    variant="outline"
-                                    className="h-9 w-9 rounded-[8px]"
-                                    aria-label={copy('learning.admin_view_public', 'View public')}
-                                    title={copy('learning.admin_view_public', 'View public')}
-                                  >
-                                    <Link to={`/learning/packages/${item.package.slug}`}>
-                                      <Eye className="size-4" />
-                                    </Link>
-                                  </Button>
-                                )}
+                                <Button
+                                  asChild
+                                  type="button"
+                                  size="icon"
+                                  variant="outline"
+                                  className="h-9 w-9 rounded-[8px]"
+                                  aria-label={copy('learning.admin_preview_as_learner', 'Preview as learner')}
+                                  title={copy('learning.admin_preview_as_learner', 'Preview as learner')}
+                                >
+                                  <Link to={`/learning/packages/${item.package.slug}`}>
+                                    <Eye className="size-4" />
+                                  </Link>
+                                </Button>
                                 <Button
                                   type="button"
                                   size="icon"
@@ -1862,6 +1878,19 @@ const LearningAdminPage = () => {
                               </div>
                             </div>
                             <div className="flex shrink-0 items-center justify-end gap-2">
+                              <Button
+                                asChild
+                                type="button"
+                                size="icon"
+                                variant="outline"
+                                className="h-9 w-9 rounded-[8px]"
+                                aria-label={copy('learning.admin_preview_module', 'Preview module')}
+                                title={copy('learning.admin_preview_module', 'Preview module')}
+                              >
+                                <Link to={getLearningTopicPath(selectedPackageSummary.package, moduleRecord)}>
+                                  <Eye className="size-4" />
+                                </Link>
+                              </Button>
                               <Button type="button" size="sm" variant="outline" className="rounded-[8px]" onClick={() => startNewLessonForModule(moduleRecord)}>
                                 <Plus className="size-4" />
                                 {copy('learning.admin_add_lesson', 'Add lesson')}
@@ -1915,6 +1944,19 @@ const LearningAdminPage = () => {
                                   <Badge className={`rounded-[8px] border px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] shadow-none ${getStatusBadgeClass(lesson.status)}`}>
                                     {lesson.status}
                                   </Badge>
+                                  <Button
+                                    asChild
+                                    type="button"
+                                    size="icon"
+                                    variant="outline"
+                                    className="h-9 w-9 rounded-[8px]"
+                                    aria-label={copy('learning.admin_preview_lesson', 'Preview lesson')}
+                                    title={copy('learning.admin_preview_lesson', 'Preview lesson')}
+                                  >
+                                    <Link to={getLearningSubtopicPath(selectedPackageSummary.package, moduleRecord, lesson)}>
+                                      <Eye className="size-4" />
+                                    </Link>
+                                  </Button>
                                   <Button type="button" size="sm" variant="outline" className="rounded-[8px]" onClick={() => hydrateLessonForm(lesson)}>
                                     {t('learning.admin_edit')}
                                   </Button>
@@ -2320,7 +2362,21 @@ const LearningAdminPage = () => {
                   <CardContent>
                     <form className="space-y-3" onSubmit={submitCoupon}>
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <Input value={couponForm.code} onChange={(event) => setCouponForm((current) => ({ ...current, code: event.target.value }))} placeholder={t('learning.admin_coupon_code')} />
+                        <div className="flex gap-2">
+                          <Input value={couponForm.code} onChange={(event) => setCouponForm((current) => ({ ...current, code: event.target.value }))} placeholder={t('learning.admin_coupon_code')} />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-10 w-10 shrink-0 rounded-[8px]"
+                            onClick={generateCouponCode}
+                            disabled={couponGenerating}
+                            aria-label={copy('learning.admin_generate_coupon_code', 'Generate coupon code')}
+                            title={copy('learning.admin_generate_coupon_code', 'Generate coupon code')}
+                          >
+                            <RefreshCw className={`size-4 ${couponGenerating ? 'animate-spin' : ''}`} />
+                          </Button>
+                        </div>
                         <Input value={couponForm.title} onChange={(event) => setCouponForm((current) => ({ ...current, title: event.target.value }))} placeholder={t('learning.admin_coupon_title')} />
                       </div>
                       <Textarea value={couponForm.description} onChange={(event) => setCouponForm((current) => ({ ...current, description: event.target.value }))} placeholder={t('learning.admin_coupon_description')} />

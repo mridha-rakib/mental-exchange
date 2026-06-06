@@ -7,6 +7,7 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const appDir = resolve(scriptDir, '..');
 
 loadEnv(resolve(appDir, '.env'));
+loadEnv(resolve(appDir, '..', 'api', '.env'));
 
 const executable = process.platform === 'win32' ? 'pocketbase.exe' : 'pocketbase';
 const binaryPath = resolve(appDir, executable);

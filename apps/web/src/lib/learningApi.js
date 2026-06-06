@@ -59,8 +59,12 @@ export const listLearningPackages = async () => {
   return withJson(response);
 };
 
-export const getLearningPackage = async (slug) => {
-  const response = await apiServerClient.fetch(`/learning/packages/${encodeURIComponent(slug)}`);
+export const getLearningPackage = async (slug, { token = '' } = {}) => {
+  const response = await apiServerClient.fetch(`/learning/packages/${encodeURIComponent(slug)}`, {
+    headers: token ? {
+      Authorization: `Bearer ${token}`,
+    } : undefined,
+  });
   return withJson(response);
 };
 
@@ -380,6 +384,19 @@ export const createLearningAdminCoupon = async ({ token, payload }) => {
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
+  });
+
+  return withJson(response);
+};
+
+export const generateLearningAdminCouponCode = async ({ token, prefix = 'ZB' }) => {
+  const response = await apiServerClient.fetch('/learning/admin/coupons/generate-code', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ prefix }),
   });
 
   return withJson(response);
