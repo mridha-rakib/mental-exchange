@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import pb from '@/lib/pocketbaseClient.js';
+import pb, { POCKETBASE_API_URL } from '@/lib/pocketbaseClient.js';
+import { getDeviceSessionHeaders } from '@/lib/deviceSession.js';
 
 const AuthContext = createContext();
 
@@ -86,8 +87,24 @@ export const AuthProvider = ({ children }) => {
     };
   };
 
-  const logout = () => {
-    pb.authStore.clear();
+  const logout = async () => {
+    const token = pb.authStore.token;
+
+    try {
+      if (token) {
+        await window.fetch(`${POCKETBASE_API_URL}/api/device-sessions/logout`, {
+          method: 'POST',
+          headers: {
+            ...getDeviceSessionHeaders(),
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Failed to close device session:', error);
+    } finally {
+      pb.authStore.clear();
+    }
   };
 
   const refreshUser = async () => {
