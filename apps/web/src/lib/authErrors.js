@@ -30,6 +30,7 @@ export const getAuthErrorKey = (error, mode = 'login') => {
   if (!hasRemoteError) return '';
   if (status === 429 || text.includes('rate limit')) return 'auth.error_rate_limited';
   if (status >= 500) return 'auth.error_server';
+  if (text.includes('device limit') || text.includes('up to 3 devices')) return 'auth.error_device_limit';
 
   if (text.includes('verified') || text.includes('confirm') || text.includes('verification')) {
     return 'auth.error_email_unverified';
