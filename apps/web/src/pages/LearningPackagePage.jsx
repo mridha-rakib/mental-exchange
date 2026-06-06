@@ -37,7 +37,7 @@ const LearningPackagePage = () => {
       try {
         const token = pb.authStore.token;
         const [data, dashboardData] = await Promise.all([
-          getLearningPackage(slug),
+          getLearningPackage(slug, { token }),
           token ? getLearningDashboard(token).catch(() => null) : Promise.resolve(null),
         ]);
         if (active) {

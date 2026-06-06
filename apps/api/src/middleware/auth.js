@@ -47,6 +47,20 @@ const auth = async (req, res, next) => {
   try {
     const requestPb = new PocketBase(POCKETBASE_HOST);
     requestPb.autoCancellation(false);
+    requestPb.beforeSend = (url, options) => ({
+      url,
+      options: {
+        ...options,
+        headers: {
+          ...(options.headers || {}),
+          ...(req.headers['x-device-id'] ? { 'X-Device-Id': String(req.headers['x-device-id']) } : {}),
+          ...(req.headers['x-device-label'] ? { 'X-Device-Label': String(req.headers['x-device-label']) } : {}),
+          ...(req.headers['user-agent'] ? { 'User-Agent': String(req.headers['user-agent']) } : {}),
+          ...(req.headers['x-forwarded-for'] ? { 'X-Forwarded-For': String(req.headers['x-forwarded-for']) } : {}),
+          ...(req.headers['x-real-ip'] ? { 'X-Real-Ip': String(req.headers['x-real-ip']) } : {}),
+        },
+      },
+    });
     requestPb.authStore.save(token, null);
 
     const authData = await requestPb.collection('users').authRefresh();
